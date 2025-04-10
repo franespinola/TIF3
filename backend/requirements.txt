@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+python-dotenv
+faster-whisper
+pyannote.audio
+pydub
+ffmpeg-python
