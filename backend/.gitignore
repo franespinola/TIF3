@@ -1,6 +1,0 @@
-# backend/.gitignore
-.env
-__pycache__/
-temp_uploads/
-*.pyc
-venv/

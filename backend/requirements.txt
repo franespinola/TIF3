@@ -1,7 +1,8 @@
 fastapi
 uvicorn
-python-dotenv
-faster-whisper
 pyannote.audio
-pydub
+faster-whisper
 ffmpeg-python
+pydub
+python-multipart
+requests
