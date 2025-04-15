@@ -1,8 +1,7 @@
 # backend/routes/transcription.py
 
 from fastapi import APIRouter, UploadFile, File, HTTPException
-from services.transcription_service import process_audio, parsear_transcripcion_lista
-from services.ollama_service import guardar_conversacion_y_paciente
+from services.whisperx_service import transcribir_con_whisperx, exportar_transcripcion_txt
 import os
 import tempfile
 
@@ -22,21 +21,22 @@ async def transcribe_audio(file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail="Error al guardar el archivo.")
 
     try:
-        transcripcion_raw = process_audio(temp_path)
-        transcripcion = parsear_transcripcion_lista(transcripcion_raw)
+        from config import HUGGINGFACE_TOKEN
+        segmentos = transcribir_con_whisperx(temp_path, hf_token=HUGGINGFACE_TOKEN)
         os.remove(temp_path)
 
-        speaker, texto_paciente = guardar_conversacion_y_paciente(
-            transcripcion,
-            ruta_json="conversacion.json",
-            ruta_txt="paciente.txt"
+        # Exportar charla completa a .txt para registro o LLM
+        exportar_transcripcion_txt(segmentos, ruta_txt="conversacion.txt")
+
+        # Convertir a formato SPEAKER: texto
+        texto_conversacion = "\n".join(
+            f"{seg.get('speaker', 'SPEAKER_??')}: {seg.get('text', '').strip()}"
+            for seg in segmentos
         )
 
         return {
             "mensaje": "Transcripción completada",
-            "paciente": speaker,
-            "solo_paciente": texto_paciente,
-            "transcripcion_completa": transcripcion
+            "transcripcion": texto_conversacion
         }
 
     except Exception as e:

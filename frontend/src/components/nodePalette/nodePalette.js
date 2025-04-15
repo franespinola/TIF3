@@ -6,6 +6,7 @@ const nodePalette = [
     { type: "embarazo", label: "Embarazo" },
     { type: "aborto", label: "Aborto" },
     { type: "adopcion", label: "Adopción" },
+    { type: "paciente", label: "Paciente" }, // 👈 AÑADIR ESTA LÍNEA
   ];
   
   export default nodePalette;

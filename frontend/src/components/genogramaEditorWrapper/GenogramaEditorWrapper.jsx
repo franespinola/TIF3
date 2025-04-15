@@ -15,6 +15,7 @@ import nodeTypes from "../../nodeTypes";
 import edgeTypes from "../../edgeTypes";
 import Sidebar from "../sidebar/Sidebar";
 import layoutWithDagre from "../../utils/layoutWithDagre";
+import { transformToReactFlow } from '../transformToReactFlow';
 
 function GenogramaEditorWrapper() {
   const [nodes, setNodes, onNodesChange] = useNodesState([
@@ -137,40 +138,55 @@ function GenogramaEditorWrapper() {
 
   // IMPORT / EXPORT
 
-  const onImportJSON = useCallback(
-    (e) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        try {
-          const parsed = JSON.parse(event.target.result);
-          if (parsed.nodes && parsed.edges) {
-            // 1) Aplico dagre layout
-            const laidOutNodes = layoutWithDagre(parsed.nodes, parsed.edges);
-            setNodes(laidOutNodes);
-            setEdges(parsed.edges);
-
-            // 2) Ajustar idCounter para evitar colisiones
-            let maxId = 0;
-            laidOutNodes.forEach((n) => {
-              const numericId = parseInt(n.id, 10);
-              if (!isNaN(numericId) && numericId > maxId) {
-                maxId = numericId;
-              }
-            });
-            setIdCounter(maxId + 1);
-          } else {
-            alert("Archivo JSON inválido.");
-          }
-        } catch (err) {
-          alert("Error al leer JSON.");
+  const onImportJSON = useCallback((e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const rawData = JSON.parse(event.target.result);
+  
+        let finalNodes = [];
+        let finalEdges = [];
+  
+        // 1) Ver si es “nuevo” o “viejo” formato
+        if (rawData.people && rawData.relationships) {
+          // Es el nuevo formato universal
+          const { nodes, edges } = transformToReactFlow(rawData);
+          finalNodes = nodes;
+          finalEdges = edges;
+        } else if (rawData.nodes && rawData.edges) {
+          // Es el antiguo
+          finalNodes = rawData.nodes;
+          finalEdges = rawData.edges;
+        } else {
+          alert("JSON inválido: no contiene people/relationships ni nodes/edges");
+          return;
         }
-      };
-      reader.readAsText(file);
-    },
-    [setNodes, setEdges]
-  );
+  
+        // 2) Aplico dagre layout
+        const laidOutNodes = layoutWithDagre(finalNodes, finalEdges);
+        setNodes(laidOutNodes);
+        setEdges(finalEdges);
+  
+        // 3) Ajustar idCounter para evitar colisiones
+        let maxId = 0;
+        laidOutNodes.forEach((n) => {
+          // si los IDs son "p1", parseInt(p1,10) = NaN => 
+          // quizás adaptas tu parse
+          const numericId = parseInt(n.id.replace(/[^0-9]/g, ""), 10); 
+          if (!isNaN(numericId) && numericId > maxId) {
+            maxId = numericId;
+          }
+        });
+        setIdCounter(maxId + 1);
+  
+      } catch (err) {
+        alert("Error al leer JSON: " + err.message);
+      }
+    };
+    reader.readAsText(file);
+  }, [setNodes, setEdges]);
 
   const onExportJSON = useCallback(() => {
     const dataToExport = { nodes, edges };

@@ -86,42 +86,52 @@ function RelationshipEdge(props) {
       break;
 
     case "violencia":
-      strokeColor = "#ff0000";
-      strokeWidth = 2;
-      edgePath = createRoundedWavePath(
-        sourceX,
-        sourceY,
-        targetX,
-        targetY,
-        30,
-        30
+      edgePath = "";
+      extraElements = (
+        <path
+          d={createRoundedWavePath(sourceX, sourceY, targetX, targetY, 30, 30)}
+          stroke="#ff0000"
+          strokeWidth={2}
+          fill="none"
+        />
       );
       break;
 
     case "conflicto":
-      strokeColor = "#800000";
-      strokeWidth = 2;
-      edgePath = createZigZagPath(sourceX, sourceY, targetX, targetY, 12, 10);
+      edgePath = "";
+      extraElements = (
+        <path
+          d={createZigZagPath(sourceX, sourceY, targetX, targetY, 12, 10)}
+          stroke="#800000"
+          strokeWidth={2}
+          fill="none"
+        />
+      );
       break;
+
 
     case "cercana":
       const aquaColor = "#20c997";
+      const offset = 8; // Aumentá este valor para más separación
+
       const [path1] = getSmoothStepPath({
         sourceX,
-        sourceY: sourceY - 3,
+        sourceY: sourceY - offset,
         targetX,
-        targetY: targetY - 3,
+        targetY: targetY - offset,
         sourcePosition,
         targetPosition,
       });
+
       const [path2] = getSmoothStepPath({
         sourceX,
-        sourceY: sourceY + 3,
+        sourceY: sourceY + offset,
         targetX,
-        targetY: targetY + 3,
+        targetY: targetY + offset,
         sourcePosition,
         targetPosition,
       });
+
       extraElements = (
         <>
           <path d={path1} stroke={aquaColor} strokeWidth="3" fill="none" />
@@ -131,10 +141,28 @@ function RelationshipEdge(props) {
       edgePath = "";
       break;
 
+
     case "distante":
-      strokeColor = "#ff0000";
-      pathProps.strokeDasharray = "6 6";
-      edgePath = defaultSmooth;
+      const redColor = "#ff0000";
+      const [distantePath] = getSmoothStepPath({
+        sourceX,
+        sourceY,
+        targetX,
+        targetY,
+        sourcePosition,
+        targetPosition,
+      });
+
+      extraElements = (
+        <path
+          d={distantePath}
+          stroke={redColor}
+          strokeWidth="2"
+          fill="none"
+          strokeDasharray="6 6"
+        />
+      );
+      edgePath = "";
       break;
 
     case "rota":
