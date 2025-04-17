@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import MiniIcon from "../miniIcon/MiniIcon";
-import nodePalette from "../nodePalette/nodePalette";
+import MiniIcon from "./MiniIcon";
+import nodePalette from "./nodePalette";
 
 function Sidebar({
   onRelate,
@@ -8,7 +8,7 @@ function Sidebar({
   onExportJSON,
   onExportCSV,
   onExportPNG,
-  onExportJPG,
+  onExportJPG
 }) {
   const [source, setSource] = useState("");
   const [target, setTarget] = useState("");
@@ -48,17 +48,18 @@ function Sidebar({
   };
 
   // Estilos para los elementos del palette
-  const paletteItemStyle = {
+  const paletteItemStyle = (isDrawing = false) => ({
     padding: "10px",
     marginBottom: "8px",
-    background: "#e5e7eb",
+    background: isDrawing ? "#e5f7ed" : "#e5e7eb", // Color diferente para herramientas de anotación
     cursor: "grab",
     borderRadius: "8px",
     textAlign: "center",
     display: "flex",
     alignItems: "center",
     transition: "transform 0.2s",
-  };
+    border: isDrawing ? "1px solid #10b981" : "none", // Borde para herramientas de anotación
+  });
 
   // Estilo para cada ítem de la leyenda
   const legendItemStyle = {
@@ -95,20 +96,38 @@ function Sidebar({
     marginBottom: "10px",
   };
 
+  // Separar el palette en nodos de genograma y herramientas de anotación
+  const genogramaNodes = nodePalette.filter(item => !item.isDrawing);
+  const drawingNodes = nodePalette.filter(item => item.isDrawing);
+
   return (
     <div style={sidebarContainerStyle}>
-      <h3 style={sectionHeaderStyle}>Agregar nodo</h3>
-      {nodePalette.map((item, idx) => (
+      <h3 style={sectionHeaderStyle}>Nodos de Genograma</h3>
+      {genogramaNodes.map((item, idx) => (
         <div
           key={idx}
           draggable
           onDragStart={(e) =>
-            e.dataTransfer.setData(
-              "application/reactflow",
-              JSON.stringify(item)
-            )
+            e.dataTransfer.setData("application/reactflow", JSON.stringify(item))
           }
-          style={paletteItemStyle}
+          style={paletteItemStyle()}
+        >
+          <MiniIcon type={item.type} />
+          <span style={{ marginLeft: "8px" }}>{item.label}</span>
+        </div>
+      ))}
+
+      <hr style={{ margin: "20px 0", borderColor: "#ddd" }} />
+      
+      <h3 style={sectionHeaderStyle}>Herramientas de Anotación</h3>
+      {drawingNodes.map((item, idx) => (
+        <div
+          key={`drawing-${idx}`}
+          draggable
+          onDragStart={(e) =>
+            e.dataTransfer.setData("application/reactflow", JSON.stringify(item))
+          }
+          style={paletteItemStyle(true)}
         >
           <MiniIcon type={item.type} />
           <span style={{ marginLeft: "8px" }}>{item.label}</span>
@@ -172,36 +191,21 @@ function Sidebar({
         Leyenda de relaciones
       </h4>
 
+      {/* Distintos ejemplos de relaciones */}
       <div style={legendItemStyle}>
         <svg width="80" height="20">
           <path d="M10,10 L70,10" stroke="black" strokeWidth="2" />
         </svg>
         <span style={{ marginLeft: "8px" }}>Matrimonio</span>
       </div>
-
       <div style={legendItemStyle}>
         <svg width="80" height="20">
           <path d="M10,10 L70,10" stroke="black" strokeWidth="2" />
-          <line
-            x1="45"
-            y1="0"
-            x2="35"
-            y2="20"
-            stroke="black"
-            strokeWidth="2"
-          />
-          <line
-            x1="49"
-            y1="0"
-            x2="39"
-            y2="20"
-            stroke="black"
-            strokeWidth="2"
-          />
+          <line x1="45" y1="0" x2="35" y2="20" stroke="black" strokeWidth="2" />
+          <line x1="49" y1="0" x2="39" y2="20" stroke="black" strokeWidth="2" />
         </svg>
         <span style={{ marginLeft: "8px" }}>Divorcio</span>
       </div>
-
       <div style={legendItemStyle}>
         <svg width="80" height="20">
           <path
@@ -219,7 +223,6 @@ function Sidebar({
         </svg>
         <span style={{ marginLeft: "8px" }}>Cohabitación</span>
       </div>
-
       <div style={legendItemStyle}>
         <svg width="80" height="20">
           <path
@@ -231,7 +234,6 @@ function Sidebar({
         </svg>
         <span style={{ marginLeft: "8px" }}>Compromiso</span>
       </div>
-
       <div style={legendItemStyle}>
         <svg width="80" height="20">
           <path
@@ -243,19 +245,12 @@ function Sidebar({
         </svg>
         <span style={{ marginLeft: "8px" }}>Conflicto</span>
       </div>
-
       <div style={legendItemStyle}>
         <svg width="80" height="20">
-          <path
-            d="M10,10 L70,10"
-            stroke="#ff0000"
-            strokeWidth="2"
-            fill="none"
-          />
+          <path d="M10,10 L70,10" stroke="#ff0000" strokeWidth="2" fill="none" />
         </svg>
         <span style={{ marginLeft: "8px" }}>Violencia</span>
       </div>
-
       <div style={legendItemStyle}>
         <svg width="80" height="20">
           <path d="M10,7 L70,7" stroke="#20c997" strokeWidth="3" />
@@ -263,7 +258,6 @@ function Sidebar({
         </svg>
         <span style={{ marginLeft: "8px" }}>Relación cercana</span>
       </div>
-
       <div style={legendItemStyle}>
         <svg width="80" height="20">
           <line
@@ -278,7 +272,6 @@ function Sidebar({
         </svg>
         <span style={{ marginLeft: "8px" }}>Relación distante</span>
       </div>
-
       <div style={legendItemStyle}>
         <svg width="80" height="20">
           <path d="M10,10 L70,10" stroke="gray" strokeWidth="2" />

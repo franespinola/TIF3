@@ -1,0 +1,924 @@
+{
+  "people": [
+    {
+      "id": "p1_igna",
+      "name": "Ignacia (Paciente)",
+      "gender": "F",
+      "generation": 3,
+      "birthDate": null,
+      "age": null,
+      "deathDate": null,
+      "role": "paciente",
+      "notes": "",
+      "attributes": {
+        "isPatient": true,
+        "isDeceased": false,
+        "isPregnancy": false,
+        "isAbortion": false,
+        "isAdopted": false
+      }
+    },
+    {
+      "id": "p2_lucas",
+      "name": "Lucas de la Rosa",
+      "gender": "M",
+      "generation": 2,
+      "birthDate": "1972-01-01",
+      "age": 53,
+      "deathDate": null,
+      "role": "padre",
+      "notes": "Mayor de 4 hermanos, mellizo de Julián",
+      "attributes": {
+        "isPatient": false,
+        "isDeceased": false,
+        "isPregnancy": false,
+        "isAbortion": false,
+        "isAdopted": false
+      }
+    },
+    {
+      "id": "p3_fernanda",
+      "name": "Fernanda Espínola",
+      "gender": "F",
+      "generation": 2,
+      "birthDate": "1973-01-01",
+      "age": 52,
+      "deathDate": null,
+      "role": "madre",
+      "notes": "Mayor de 5 hermanos",
+      "attributes": {
+        "isPatient": false,
+        "isDeceased": false,
+        "isPregnancy": false,
+        "isAbortion": false,
+        "isAdopted": false
+      }
+    },
+    {
+      "id": "p4_lourdes",
+      "name": "Lourdes",
+      "gender": "F",
+      "generation": 3,
+      "birthDate": "2003-01-01",
+      "age": 22,
+      "deathDate": null,
+      "role": "hermana",
+      "notes": "",
+      "attributes": {
+        "isPatient": false,
+        "isDeceased": false,
+        "isPregnancy": false,
+        "isAbortion": false,
+        "isAdopted": false
+      }
+    },
+    {
+      "id": "a1_aborto",
+      "name": "Aborto Espontáneo 1",
+      "gender": "F",
+      "generation": 3,
+      "birthDate": null,
+      "age": null,
+      "deathDate": null,
+      "role": "aborto_materno",
+      "notes": "Aborto a los 5 meses",
+      "attributes": {
+        "isPatient": false,
+        "isDeceased": true,
+        "isPregnancy": false,
+        "isAbortion": true,
+        "isAdopted": false
+      }
+    },
+    {
+      "id": "p5_francisco",
+      "name": "Francisco",
+      "gender": "M",
+      "generation": 2,
+      "birthDate": null,
+      "age": null,
+      "deathDate": null,
+      "role": "tio_materno_mellizo",
+      "notes": "Mellizo de María",
+      "attributes": {
+        "isPatient": false,
+        "isDeceased": false,
+        "isPregnancy": false,
+        "isAbortion": false,
+        "isAdopted": false
+      }
+    },
+    {
+      "id": "p6_paula",
+      "name": "Paula",
+      "gender": "F",
+      "generation": 2,
+      "birthDate": "1975-01-01",
+      "age": 50,
+      "deathDate": null,
+      "role": "tia_materna",
+      "notes": "",
+      "attributes": {
+        "isPatient": false,
+        "isDeceased": false,
+        "isPregnancy": false,
+        "isAbortion": false,
+        "isAdopted": false
+      }
+    },
+    {
+      "id": "p7_mariano",
+      "name": "Mariano",
+      "gender": "M",
+      "generation": 2,
+      "birthDate": null,
+      "age": null,
+      "deathDate": null,
+      "role": "tio_materno",
+      "notes": "",
+      "attributes": {
+        "isPatient": false,
+        "isDeceased": false,
+        "isPregnancy": false,
+        "isAbortion": false,
+        "isAdopted": false
+      }
+    },
+    {
+      "id": "p8_maria",
+      "name": "María",
+      "gender": "F",
+      "generation": 2,
+      "birthDate": null,
+      "age": null,
+      "deathDate": null,
+      "role": "tia_materna_melliza",
+      "notes": "Melliza de Francisco",
+      "attributes": {
+        "isPatient": false,
+        "isDeceased": false,
+        "isPregnancy": false,
+        "isAbortion": false,
+        "isAdopted": false
+      }
+    },
+    {
+      "id": "p9_nicolas",
+      "name": "Nicolás",
+      "gender": "M",
+      "generation": 2,
+      "birthDate": null,
+      "age": null,
+      "deathDate": null,
+      "role": "tio_materno",
+      "notes": "",
+      "attributes": {
+        "isPatient": false,
+        "isDeceased": false,
+        "isPregnancy": false,
+        "isAbortion": false,
+        "isAdopted": false
+      }
+    },
+    {
+      "id": "p10_julian",
+      "name": "Julián",
+      "gender": "M",
+      "generation": 2,
+      "birthDate": null,
+      "age": null,
+      "deathDate": null,
+      "role": "tio_paterno_mellizo",
+      "notes": "Mellizo de Lucas",
+      "attributes": {
+        "isPatient": false,
+        "isDeceased": false,
+        "isPregnancy": false,
+        "isAbortion": false,
+        "isAdopted": false
+      }
+    },
+    {
+      "id": "p11_facundo",
+      "name": "Facundo",
+      "gender": "M",
+      "generation": 2,
+      "birthDate": null,
+      "age": null,
+      "deathDate": null,
+      "role": "tio_paterno",
+      "notes": "",
+      "attributes": {
+        "isPatient": false,
+        "isDeceased": false,
+        "isPregnancy": false,
+        "isAbortion": false,
+        "isAdopted": false
+      }
+    },
+    {
+      "id": "p12_lucia",
+      "name": "Lucía",
+      "gender": "F",
+      "generation": 2,
+      "birthDate": null,
+      "age": null,
+      "deathDate": null,
+      "role": "tia_paterna",
+      "notes": "",
+      "attributes": {
+        "isPatient": false,
+        "isDeceased": false,
+        "isPregnancy": false,
+        "isAbortion": false,
+        "isAdopted": false
+      }
+    },
+    {
+      "id": "p13_paulina",
+      "name": "Paulina",
+      "gender": "F",
+      "generation": 3,
+      "birthDate": null,
+      "age": null,
+      "deathDate": null,
+      "role": "prima_materna",
+      "notes": "",
+      "attributes": {
+        "isPatient": false,
+        "isDeceased": false,
+        "isPregnancy": false,
+        "isAbortion": false,
+        "isAdopted": false
+      }
+    },
+    {
+      "id": "p14_sofia",
+      "name": "Sofía",
+      "gender": "F",
+      "generation": 3,
+      "birthDate": null,
+      "age": null,
+      "deathDate": null,
+      "role": "prima_materna",
+      "notes": "",
+      "attributes": {
+        "isPatient": false,
+        "isDeceased": false,
+        "isPregnancy": false,
+        "isAbortion": false,
+        "isAdopted": false
+      }
+    },
+    {
+      "id": "p15_faustino",
+      "name": "Faustino",
+      "gender": "M",
+      "generation": 3,
+      "birthDate": null,
+      "age": null,
+      "deathDate": null,
+      "role": "primo_materno",
+      "notes": "",
+      "attributes": {
+        "isPatient": false,
+        "isDeceased": false,
+        "isPregnancy": false,
+        "isAbortion": false,
+        "isAdopted": false
+      }
+    },
+    {
+      "id": "p16_agustin",
+      "name": "Agustín",
+      "gender": "M",
+      "generation": 3,
+      "birthDate": null,
+      "age": null,
+      "deathDate": null,
+      "role": "primo_materno",
+      "notes": "",
+      "attributes": {
+        "isPatient": false,
+        "isDeceased": false,
+        "isPregnancy": false,
+        "isAbortion": false,
+        "isAdopted": false
+      }
+    },
+    {
+      "id": "p17_eusebio",
+      "name": "Eusebio",
+      "gender": "M",
+      "generation": 3,
+      "birthDate": null,
+      "age": null,
+      "deathDate": null,
+      "role": "primo_materno",
+      "notes": "",
+      "attributes": {
+        "isPatient": false,
+        "isDeceased": false,
+        "isPregnancy": false,
+        "isAbortion": false,
+        "isAdopted": false
+      }
+    },
+    {
+      "id": "p18_paloma",
+      "name": "Paloma",
+      "gender": "F",
+      "generation": 3,
+      "birthDate": null,
+      "age": null,
+      "deathDate": null,
+      "role": "prima_paterna",
+      "notes": "",
+      "attributes": {
+        "isPatient": false,
+        "isDeceased": false,
+        "isPregnancy": false,
+        "isAbortion": false,
+        "isAdopted": false
+      }
+    },
+    {
+      "id": "p19_ambar",
+      "name": "Ámbar",
+      "gender": "F",
+      "generation": 3,
+      "birthDate": null,
+      "age": null,
+      "deathDate": null,
+      "role": "prima_paterna",
+      "notes": "",
+      "attributes": {
+        "isPatient": false,
+        "isDeceased": false,
+        "isPregnancy": false,
+        "isAbortion": false,
+        "isAdopted": false
+      }
+    },
+    {
+      "id": "p20_micaela",
+      "name": "Micaela",
+      "gender": "F",
+      "generation": 3,
+      "birthDate": null,
+      "age": null,
+      "deathDate": null,
+      "role": "prima_paterna",
+      "notes": "",
+      "attributes": {
+        "isPatient": false,
+        "isDeceased": false,
+        "isPregnancy": false,
+        "isAbortion": false,
+        "isAdopted": false
+      }
+    },
+    {
+      "id": "p21_catalina",
+      "name": "Catalina",
+      "gender": "F",
+      "generation": 3,
+      "birthDate": null,
+      "age": null,
+      "deathDate": null,
+      "role": "prima_paterna",
+      "notes": "",
+      "attributes": {
+        "isPatient": false,
+        "isDeceased": false,
+        "isPregnancy": false,
+        "isAbortion": false,
+        "isAdopted": false
+      }
+    },
+    {
+      "id": "p22_camila",
+      "name": "Camila",
+      "gender": "F",
+      "generation": 3,
+      "birthDate": null,
+      "age": null,
+      "deathDate": null,
+      "role": "prima_paterna",
+      "notes": "",
+      "attributes": {
+        "isPatient": false,
+        "isDeceased": false,
+        "isPregnancy": false,
+        "isAbortion": false,
+        "isAdopted": false
+      }
+    },
+    {
+      "id": "p23_jose",
+      "name": "José",
+      "gender": "M",
+      "generation": 1,
+      "birthDate": null,
+      "age": null,
+      "deathDate": null,
+      "role": "abuelo_materno",
+      "notes": "",
+      "attributes": {
+        "isPatient": false,
+        "isDeceased": false,
+        "isPregnancy": false,
+        "isAbortion": false,
+        "isAdopted": false
+      }
+    },
+    {
+      "id": "p24_silvia",
+      "name": "Silvia",
+      "gender": "F",
+      "generation": 1,
+      "birthDate": null,
+      "age": null,
+      "deathDate": null,
+      "role": "abuela_materna",
+      "notes": "",
+      "attributes": {
+        "isPatient": false,
+        "isDeceased": false,
+        "isPregnancy": false,
+        "isAbortion": false,
+        "isAdopted": false
+      }
+    },
+    {
+      "id": "p25_liliana",
+      "name": "Liliana",
+      "gender": "F",
+      "generation": 1,
+      "birthDate": null,
+      "age": null,
+      "deathDate": null,
+      "role": "abuela_paterna",
+      "notes": "Hipertensión",
+      "attributes": {
+        "isPatient": false,
+        "isDeceased": false,
+        "isPregnancy": false,
+        "isAbortion": false,
+        "isAdopted": false
+      }
+    },
+    {
+      "id": "p26_carlos",
+      "name": "Carlos",
+      "gender": "M",
+      "generation": 1,
+      "birthDate": null,
+      "age": null,
+      "deathDate": "2022-01-01",
+      "role": "abuelo_paterno",
+      "notes": "Fallecido hace 3 años por cáncer de próstata y piel",
+      "attributes": {
+        "isPatient": false,
+        "isDeceased": true,
+        "isPregnancy": false,
+        "isAbortion": false,
+        "isAdopted": false
+      }
+    },
+    {
+      "id": "p27_veronica",
+      "name": "Verónica",
+      "gender": "F",
+      "generation": 2,
+      "birthDate": null,
+      "age": null,
+      "deathDate": null,
+      "role": "tia_materna_politica",
+      "notes": "",
+      "attributes": {
+        "isPatient": false,
+        "isDeceased": false,
+        "isPregnancy": false,
+        "isAbortion": false,
+        "isAdopted": false
+      }
+    },
+    {
+      "id": "p28_jimena",
+      "name": "Jimena",
+      "gender": "F",
+      "generation": 2,
+      "birthDate": null,
+      "age": null,
+      "deathDate": null,
+      "role": "tia_materna_politica",
+      "notes": "",
+      "attributes": {
+        "isPatient": false,
+        "isDeceased": false,
+        "isPregnancy": false,
+        "isAbortion": false,
+        "isAdopted": false
+      }
+    }
+  ],
+  "relationships": [
+    {
+      "id": "r1_padres_igna",
+      "source": "p1_igna",
+      "target": "p2_lucas",
+      "type": "parentChild",
+      "legalStatus": null,
+      "emotionalBond": "cercana",
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r2_padres_igna",
+      "source": "p1_igna",
+      "target": "p3_fernanda",
+      "type": "parentChild",
+      "legalStatus": null,
+      "emotionalBond": "cercana",
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r3_padres_lourdes",
+      "source": "p4_lourdes",
+      "target": "p2_lucas",
+      "type": "parentChild",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r4_padres_lourdes",
+      "source": "p4_lourdes",
+      "target": "p3_fernanda",
+      "type": "parentChild",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r5_hermanas",
+      "source": "p1_igna",
+      "target": "p4_lourdes",
+      "type": "hermanos",
+      "legalStatus": null,
+      "emotionalBond": "conflicto",
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r6_padres_aborto",
+      "source": "a1_aborto",
+      "target": "p2_lucas",
+      "type": "parentChild",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r7_padres_aborto",
+      "source": "a1_aborto",
+      "target": "p3_fernanda",
+      "type": "parentChild",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r8_conyugal_padres",
+      "source": "p2_lucas",
+      "target": "p3_fernanda",
+      "type": "conyugal",
+      "legalStatus": "separacion",
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": "2023-07-01",
+      "notes": "Separados hace 1 año y medio (desde 2023-07-01 aprox.)"
+    },
+    {
+      "id": "r9_padres_fernanda",
+      "source": "p3_fernanda",
+      "target": "p23_jose",
+      "type": "parentChild",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r10_padres_fernanda",
+      "source": "p3_fernanda",
+      "target": "p24_silvia",
+      "type": "parentChild",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r11_hermanos_fernanda_francisco",
+      "source": "p3_fernanda",
+      "target": "p5_francisco",
+      "type": "hermanos",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r12_hermanos_fernanda_paula",
+      "source": "p3_fernanda",
+      "target": "p6_paula",
+      "type": "hermanos",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r13_hermanos_fernanda_mariano",
+      "source": "p3_fernanda",
+      "target": "p7_mariano",
+      "type": "hermanos",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r14_hermanos_fernanda_maria",
+      "source": "p3_fernanda",
+      "target": "p8_maria",
+      "type": "hermanos",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r15_hermanos_fernanda_nicolas",
+      "source": "p3_fernanda",
+      "target": "p9_nicolas",
+      "type": "hermanos",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r16_mellizos_francisco_maria",
+      "source": "p5_francisco",
+      "target": "p8_maria",
+      "type": "mellizos",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r17_padres_lucas",
+      "source": "p2_lucas",
+      "target": "p25_liliana",
+      "type": "parentChild",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r18_padres_lucas",
+      "source": "p2_lucas",
+      "target": "p26_carlos",
+      "type": "parentChild",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r19_hermanos_lucas_julian",
+      "source": "p2_lucas",
+      "target": "p10_julian",
+      "type": "hermanos",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r20_hermanos_lucas_facundo",
+      "source": "p2_lucas",
+      "target": "p11_facundo",
+      "type": "hermanos",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r21_hermanos_lucas_lucia",
+      "source": "p2_lucas",
+      "target": "p12_lucia",
+      "type": "hermanos",
+      "legalStatus": null,
+      "emotionalBond": "cercana",
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r22_mellizos_lucas_julian",
+      "source": "p2_lucas",
+      "target": "p10_julian",
+      "type": "mellizos",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r23_padres_paulina",
+      "source": "p13_paulina",
+      "target": "p6_paula",
+      "type": "parentChild",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r24_padres_sofia",
+      "source": "p14_sofia",
+      "target": "p9_nicolas",
+      "type": "parentChild",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r25_padres_faustino",
+      "source": "p15_faustino",
+      "target": "p9_nicolas",
+      "type": "parentChild",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r26_padres_agustin",
+      "source": "p16_agustin",
+      "target": "p9_nicolas",
+      "type": "parentChild",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r27_padres_eusebio",
+      "source": "p17_eusebio",
+      "target": "p7_mariano",
+      "type": "parentChild",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r28_padres_paloma",
+      "source": "p18_paloma",
+      "target": "p11_facundo",
+      "type": "parentChild",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r29_padres_ambar",
+      "source": "p19_ambar",
+      "target": "p11_facundo",
+      "type": "parentChild",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r30_padres_micaela",
+      "source": "p20_micaela",
+      "target": "p10_julian",
+      "type": "parentChild",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r31_padres_catalina",
+      "source": "p21_catalina",
+      "target": "p12_lucia",
+      "type": "parentChild",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r32_padres_camila",
+      "source": "p22_camila",
+      "target": "p12_lucia",
+      "type": "parentChild",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r33_conyugal_nicolas_veronica",
+      "source": "p9_nicolas",
+      "target": "p27_veronica",
+      "type": "conyugal",
+      "legalStatus": "matrimonio",
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r34_conyugal_mariano_jimena",
+      "source": "p7_mariano",
+      "target": "p28_jimena",
+      "type": "conyugal",
+      "legalStatus": "cohabitacion",
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r35_conyugal_abuelos_maternos",
+      "source": "p23_jose",
+      "target": "p24_silvia",
+      "type": "conyugal",
+      "legalStatus": "matrimonio",
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r36_conyugal_abuelos_paternos",
+      "source": "p25_liliana",
+      "target": "p26_carlos",
+      "type": "conyugal",
+      "legalStatus": "matrimonio",
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": "2022-01-01",
+      "notes": ""
+    }
+  ]
+}
