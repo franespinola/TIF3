@@ -4,6 +4,9 @@ import { Handle, Position } from 'reactflow';
 const MasculinoNode = ({ data, id }) => {
     const [editing, setEditing] = useState(false);
     const [label, setLabel] = useState(data?.label || "");
+    
+    // Determinar si los handles son conectables
+    const isConnectable = data?.isConnectable !== false;
   
     const handleBlur = () => {
       setEditing(false);
@@ -28,23 +31,31 @@ const MasculinoNode = ({ data, id }) => {
           <Handle
             type="target"
             position={Position.Top}
+            id="t"
             style={{ background: "#555" }}
+            isConnectable={isConnectable}
           />
           <Handle
             type="source"
             position={Position.Bottom}
+            id="b"
             style={{ background: "#555" }}
+            isConnectable={isConnectable}
           />
   
           <Handle
             type="target"
             position={Position.Left}
-            style={{ background: "#555" }}
+            id="l"
+            style={{ background: "#555", top: '50%', transform: 'translateY(-50%)' }}
+            isConnectable={isConnectable}
           />
           <Handle
             type="source"
             position={Position.Right}
-            style={{ background: "#555" }}
+            id="r"
+            style={{ background: "#555", top: '50%', transform: 'translateY(-50%)' }}
+            isConnectable={isConnectable}
           />
         </div>
         {editing ? (

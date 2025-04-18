@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { useNodesState, useEdgesState, addEdge } from 'reactflow';
+import { useNodesState, useEdgesState, addEdge, useReactFlow } from 'reactflow'; // Importar useReactFlow
 import layoutWithDagre from '../utils/layoutWithDagre';
 import { transformToReactFlow } from '../utils/transformToReactFlow';
 
@@ -8,6 +8,7 @@ import { transformToReactFlow } from '../utils/transformToReactFlow';
  * Centraliza la gestión de nodos, aristas, relaciones, etc.
  */
 export default function useGenogramaState() {
+  const { project } = useReactFlow(); // Obtener la función project
   // Estado inicial con un nodo paciente
   const [nodes, setNodes, onNodesChange] = useNodesState([
     {
@@ -69,6 +70,35 @@ export default function useGenogramaState() {
         return;
       }
 
+      // Obtener los nodos de origen y destino para determinar la mejor manera de conectarlos
+      const sourceNode = nodes.find(n => n.id === source);
+      const targetNode = nodes.find(n => n.id === target);
+      
+      // Determinar los handles de origen y destino basados en la posición relativa
+      let sourceHandle = 'b'; // Por defecto, usar el handle inferior (bottom)
+      let targetHandle = 't'; // Por defecto, usar el handle superior (top)
+      
+      // Si los nodos están a la misma altura, preferir conexión lateral
+      if (Math.abs(sourceNode.position.y - targetNode.position.y) < 100) {
+        if (sourceNode.position.x < targetNode.position.x) {
+          // El origen está a la izquierda del destino
+          sourceHandle = 'r'; // Handle derecho del nodo origen
+          targetHandle = 'l'; // Handle izquierdo del nodo destino
+        } else {
+          // El origen está a la derecha del destino
+          sourceHandle = 'l'; // Handle izquierdo del nodo origen
+          targetHandle = 'r'; // Handle derecho del nodo destino
+        }
+      } else if (sourceNode.position.y < targetNode.position.y) {
+        // El origen está arriba del destino, conexión vertical hacia abajo
+        sourceHandle = 'b'; // Handle inferior del nodo origen
+        targetHandle = 't'; // Handle superior del nodo destino
+      } else {
+        // El origen está abajo del destino, conexión vertical hacia arriba
+        sourceHandle = 't'; // Handle superior del nodo origen
+        targetHandle = 'b'; // Handle inferior del nodo destino
+      }
+
       setEdges((eds) => [
         ...eds.filter(
           (edge) => !(edge.source === source && edge.target === target)
@@ -77,6 +107,8 @@ export default function useGenogramaState() {
           id: `${source}-${target}-${relType}`,
           source,
           target,
+          sourceHandle,
+          targetHandle,
           type: "relationshipEdge",
           data: { relType },
         },
@@ -109,20 +141,23 @@ export default function useGenogramaState() {
       const data = JSON.parse(
         event.dataTransfer.getData("application/reactflow")
       );
-      const position = {
+
+      // Usar project para obtener las coordenadas correctas del grafo
+      const position = project({
         x: event.clientX - reactFlowBounds.left,
         y: event.clientY - reactFlowBounds.top,
-      };
+      });
+
       const newNode = {
         id: String(idCounter),
         type: data.type,
-        position,
+        position, // Usar la posición proyectada
         data: { label: data.label },
       };
       setNodes((nds) => nds.concat(newNode));
       setIdCounter((prev) => prev + 1);
     },
-    [idCounter, setNodes]
+    [idCounter, setNodes, project] // Añadir project a las dependencias
   );
 
   // Permitir drop

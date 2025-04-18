@@ -11,3 +11,28 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/* Animación para el borde seleccionado */
+@keyframes dash-animation {
+  to {
+    stroke-dashoffset: 1000;
+  }
+}
+
+/* Estilo para nodos seleccionados */
+.react-flow__node.selected > div {
+  /* Usamos > div para apuntar al contenedor interno del nodo si existe */
+  /* o directamente al elemento si no hay div interno */
+  outline: 2px dashed #A9A9A9; /* Borde discontinuo gris */
+  outline-offset: 3px; /* Separación del borde */
+  animation: dash-animation 40s linear infinite; /* Aplicar animación */
+  stroke-dasharray: 10; /* Longitud de los guiones */
+}
+
+/* Estilo para relaciones seleccionadas */
+.react-flow__edge.selected .react-flow__edge-path {
+  stroke: #A9A9A9; /* Color gris */
+  stroke-width: 2.5; /* Un poco más grueso */
+  stroke-dasharray: 5; /* Guiones */
+  animation: dash-animation 20s linear infinite; /* Animación más rápida */
+}
