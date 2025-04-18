@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useMemo } from "react";
 import { useViewport, useReactFlow } from 'reactflow';
 import { Stage, Layer, Line, Rect, Circle, Arrow, Text, Group } from "react-konva";
 
@@ -34,6 +34,24 @@ function FreeDrawOverlay({
   const stageRef = useRef(null);
   const containerRef = useRef(null);
   const startPointRef = useRef({ x: 0, y: 0 });
+
+  // Custom eraser cursor: circle sized to strokeWidth
+  const eraserCursor = useMemo(() => {
+    const size = strokeWidth;
+    const d = size * 2;
+    const canvas = document.createElement('canvas');
+    canvas.width = d;
+    canvas.height = d;
+    const ctx = canvas.getContext('2d');
+    ctx.beginPath();
+    ctx.arc(size, size, size - 1, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    ctx.fill();
+    ctx.strokeStyle = 'black';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    return canvas.toDataURL('image/png');
+  }, [strokeWidth]);
 
   // Deseleccionar al cambiar herramienta
   useEffect(() => {
@@ -399,7 +417,9 @@ function FreeDrawOverlay({
         top: 0, left: 0,
         width: '100%', height: '100%',
         zIndex: 10,
-        cursor: getCursor(),
+        cursor: tool === 'eraser'
+          ? `url(${eraserCursor}) ${strokeWidth} ${strokeWidth}, auto`
+          : getCursor(),
         pointerEvents: tool ? 'auto' : 'none',
       }}
     >

@@ -67,7 +67,8 @@ export default function DrawingTools({ activeTool, toggleTool, drawingColor, set
       </div>
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: '20px' }}>
         <label style={{ marginRight: '8px' }}>Grosor:</label>
-        <input type="range" min="1" max="10" value={strokeWidth} onChange={e => setStrokeWidth(+e.target.value)} />
+        <input type="range" min="1" max="50" value={strokeWidth} onChange={e => setStrokeWidth(+e.target.value)} /> {/* Updated max to 50 */}
+        <span style={{ marginLeft: '8px' }}>{strokeWidth}</span> {/* Display current value */}
       </div>
     </div>
   );

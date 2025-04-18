@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 import ReactFlow, {
   // ReactFlowProvider, // Eliminar importación
   Background,
@@ -40,10 +40,38 @@ function GenogramaEditorWrapper() {
   const [activeTool, setActiveTool] = useState(null);
   const [drawingColor, setDrawingColor] = useState('#000000');
   const [strokeWidth, setStrokeWidth] = useState(2);
+  const MAX_STROKE_WIDTH = 50; // Increased max width
+  const MIN_STROKE_WIDTH = 1;
 
   const toggleTool = useCallback(tool => {
     setActiveTool(current => current === tool ? null : tool);
   }, []);
+
+  // Añadir un event listener para la tecla Escape y +/- para grosor
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape' && activeTool) {
+        // Deseleccionar la herramienta activa
+        setActiveTool(null);
+      }
+      // Increase stroke width with '+'
+      if (event.key === '+') {
+        setStrokeWidth(prev => Math.min(MAX_STROKE_WIDTH, prev + 1));
+      }
+      // Decrease stroke width with '-'
+      if (event.key === '-') {
+        setStrokeWidth(prev => Math.max(MIN_STROKE_WIDTH, prev - 1));
+      }
+    };
+
+    // Agregar el event listener
+    window.addEventListener('keydown', handleKeyDown);
+
+    // Limpiar el event listener cuando el componente se desmonte
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [activeTool]); // Dependencia: activeTool
 
   const handleExportImage = useCallback(() => {
     const container = document.getElementById('flowWrapper');
