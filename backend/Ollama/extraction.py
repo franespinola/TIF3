@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from services.ollama_service import extract_family_structure
+from backend.Ollama.ollama_service import extract_family_structure
 
 router = APIRouter()
 

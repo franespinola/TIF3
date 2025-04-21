@@ -1,9 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Handle, Position } from 'reactflow';
 
 const FallecidoFNode = ({ data, id }) => {
     const [editing, setEditing] = useState(false);
     const [label, setLabel] = useState(data?.label || "");
+  
+    // Log para depuración
+    useEffect(() => {
+      console.log(`Nodo fallecido femenino ${id} data:`, data);
+    }, [data, id]);
   
     const handleBlur = () => {
       setEditing(false);
@@ -47,6 +52,22 @@ const FallecidoFNode = ({ data, id }) => {
             style={{ background: "#555" }}
           />
   
+          {/* Mostrar edad dentro del nodo */}
+          {data.age != null && (
+            <div style={{ 
+              position: 'absolute', 
+              top: '50%', 
+              left: '50%', 
+              transform: 'translate(-50%, -50%)',
+              fontSize: 14,
+              fontWeight: 'bold',
+              color: '#be123c',
+              zIndex: 10 // Para asegurar que esté por encima de la cruz
+            }}>
+              {data.age}
+            </div>
+          )}
+  
           {/* Cruz centrada en el círculo */}
           <svg
             width="60"
@@ -73,20 +94,32 @@ const FallecidoFNode = ({ data, id }) => {
           </svg>
         </div>
         {editing ? (
-          <input
-            value={label}
-            onChange={(e) => setLabel(e.target.value)}
-            onBlur={handleBlur}
-            autoFocus
-            style={{ textAlign: "center", fontSize: 10, marginTop: 4 }}
-          />
+          <>
+            <input
+              value={label}
+              onChange={(e) => setLabel(e.target.value)}
+              onBlur={handleBlur}
+              autoFocus
+              style={{ textAlign: "center", fontSize: 10, marginTop: 4 }}
+            />
+            {data.age != null && (
+              <div style={{ textAlign: "center", fontSize: 10, marginTop: 4, fontWeight: 'bold' }}>
+                Edad: {data.age}
+              </div>
+            )}
+          </>
         ) : (
           <div
             onDoubleClick={() => setEditing(true)}
             style={{ marginTop: 4, textAlign: "center", fontSize: 10 }}
           >
             <strong>ID: {id}</strong> <br />
-            {label}
+            {label} <br />
+            {data.age != null && (
+              <div style={{ textAlign: "center", fontSize: 10, marginTop: 4, fontWeight: 'bold' }}>
+                Edad: {data.age}
+              </div>
+            )}
           </div>
         )}
       </div>

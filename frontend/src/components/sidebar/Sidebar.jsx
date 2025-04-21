@@ -1,15 +1,21 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import MiniIcon from "./MiniIcon";
 import nodePalette from "./nodePalette";
 import DrawingTools from "./DrawingTools";
 
 function Sidebar({
   onRelate,
+  updateEdgeRelation,
+  selectedEdge,
   onImportJSON,
   onExportJSON,
   onExportCSV,
   onExportPNG,
   onExportJPG,
+  isRecording,
+  onRecordToggle,
+  patientName,
+  onPatientNameChange,
   activeTool,
   toggleTool,
   drawingColor,
@@ -21,6 +27,15 @@ function Sidebar({
   const [source, setSource] = useState("");
   const [target, setTarget] = useState("");
   const [relType, setRelType] = useState("matrimonio");
+
+  // Actualizar campos si hay una conexión seleccionada
+  useEffect(() => {
+    if (selectedEdge) {
+      setSource(selectedEdge.source);
+      setTarget(selectedEdge.target);
+      setRelType(selectedEdge.data?.relType || "matrimonio");
+    }
+  }, [selectedEdge]);
 
   const relationshipTypes = [
     "matrimonio",
@@ -181,6 +196,24 @@ function Sidebar({
       {/* Sidebar content hidden when collapsed */}
       {!collapsed && (
         <>
+          {/* Input nombre paciente */}
+          <input
+            placeholder="Nombre Paciente"
+            value={patientName}
+            onChange={(e) => onPatientNameChange(e.target.value)}
+            style={inputStyle}
+          />
+          {/* Botón de grabar/stop */}
+          <button
+            onClick={onRecordToggle}
+            style={{
+              ...baseButtonStyle,
+              background: isRecording ? '#e53e3e' : '#38a169',
+              color: 'white'
+            }}
+          >
+            {isRecording ? 'Detener' : 'Grabar'}
+          </button>
           <DrawingTools
             activeTool={activeTool}
             toggleTool={toggleTool}
@@ -233,19 +266,21 @@ function Sidebar({
               color: "#3b82f6",
             }}
           >
-            Crear relación
+            {selectedEdge ? "Modificar relación seleccionada" : "Crear relación"}
           </h4>
           <input
             placeholder="ID origen"
             value={source}
             onChange={(e) => setSource(e.target.value)}
-            style={inputStyle}
+            style={{...inputStyle, backgroundColor: selectedEdge ? '#f0f0f0' : 'white'}}
+            readOnly={selectedEdge !== null}
           />
           <input
             placeholder="ID destino"
             value={target}
             onChange={(e) => setTarget(e.target.value)}
-            style={inputStyle}
+            style={{...inputStyle, backgroundColor: selectedEdge ? '#f0f0f0' : 'white'}}
+            readOnly={selectedEdge !== null}
           />
           <select
             value={relType}
@@ -258,12 +293,23 @@ function Sidebar({
               </option>
             ))}
           </select>
-          <button
-            onClick={() => onRelate(source, target, relType)}
-            style={{ ...baseButtonStyle, background: "#3b82f6", color: "white" }}
-          >
-            Relacionar
-          </button>
+          {selectedEdge ? (
+            <button
+              onClick={() => {
+                updateEdgeRelation(selectedEdge.id, relType);
+              }}
+              style={{ ...baseButtonStyle, background: "#10b981", color: "white" }}
+            >
+              Actualizar Relación
+            </button>
+          ) : (
+            <button
+              onClick={() => onRelate(source, target, relType)}
+              style={{ ...baseButtonStyle, background: "#3b82f6", color: "white" }}
+            >
+              Relacionar
+            </button>
+          )}
 
           <hr style={{ margin: "20px 0", borderColor: "#ddd" }} />
           <h4

@@ -109,7 +109,6 @@ function RelationshipEdge(props) {
       );
       break;
 
-
     case "cercana":
       const aquaColor = "#20c997";
       const offset = 8; // Aumentá este valor para más separación
@@ -140,7 +139,6 @@ function RelationshipEdge(props) {
       );
       edgePath = "";
       break;
-
 
     case "distante":
       const redColor = "#ff0000";
@@ -195,8 +193,25 @@ function RelationshipEdge(props) {
       break;
   }
 
+  // Ancho aumentado para la zona seleccionable
+  const hitStrokeWidth = 15; // Ancho del área seleccionable invisible
+
   return (
     <g className="react-flow__edge">
+      {/* Path invisible con ancho aumentado para mejorar la selección */}
+      {edgePath && (
+        <path
+          id={`${id}-hit-area`}
+          className="react-flow__edge-interaction"
+          d={edgePath}
+          stroke="transparent"
+          strokeWidth={hitStrokeWidth}
+          fill="none"
+          style={{ cursor: 'pointer' }}
+        />
+      )}
+      
+      {/* Path original visible */}
       {edgePath && (
         <path
           id={id}
@@ -208,7 +223,26 @@ function RelationshipEdge(props) {
           {...pathProps}
         />
       )}
+      
+      {/* Elementos adicionales específicos de cada tipo de relación */}
       {extraElements}
+
+      {/* Áreas de selección para relaciones especiales que no usan edgePath */}
+      {!edgePath && extraElements && (
+        <path
+          d={relType === "violencia" 
+              ? createRoundedWavePath(sourceX, sourceY, targetX, targetY, 30, 30)
+              : relType === "conflicto" 
+                ? createZigZagPath(sourceX, sourceY, targetX, targetY, 12, 10)
+                : relType === "cercana" || relType === "distante"
+                  ? defaultSmooth
+                  : ""}
+          stroke="transparent"
+          strokeWidth={hitStrokeWidth}
+          fill="none"
+          style={{ cursor: 'pointer' }}
+        />
+      )}
     </g>
   );
 }

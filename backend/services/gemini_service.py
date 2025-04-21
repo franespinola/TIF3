@@ -227,6 +227,17 @@ def generate_initial_prompt(transcripcion: str) -> str:
     prompt = f"""
 Eres un asistente experto en psicología familiar y tu tarea es convertir la siguiente transcripción de una entrevista en un esquema JSON estructurado y válido para un genograma. Sigue rigurosamente TODAS las instrucciones y sé EXHAUSTIVO.
 
+####################  REGLAS DE INFERENCIA DE VÍNCULOS  ####################
+Si detectas en la transcripción:
+
+1. Frases de hostilidad, discusiones, "no nos hablamos", "en malos términos", etc. → asigna `"emotionalBond": "conflicto"`
+2. Agresiones físicas o verbales, amenazas, "me pegó", "maltrato", "violencia" → asigna `"emotionalBond": "violencia"`
+3. Frialdad afectiva o poca interacción, "somos distantes", "casi no hablamos" → asigna `"emotionalBond": "distante"`
+4. Expresiones como "vivo con…", "convivimos", "compartimos casa" respecto de una pareja → crea la relación con `"type": "conyugal"` y `"legalStatus": "cohabitacion"`
+
+Si varias reglas coinciden, prevalece la gravedad (violencia > conflicto > distante).
+###########################################################################
+
 **Instrucciones Críticas:**
 
 1.  **Formato de Salida Exclusivo:** Tu respuesta DEBE ser **únicamente** un objeto JSON válido. No incluyas NINGÚN texto antes o después del JSON. Esto incluye:
@@ -240,8 +251,8 @@ Eres un asistente experto en psicología familiar y tu tarea es convertir la sig
     * `"relationships"`: Una lista (`[]`) de objetos vínculo.
 
 3.  **Estructura del Objeto Persona (`people`):** Cada objeto en la lista `"people"` debe tener **exactamente** las siguientes claves:
-    * `"id"`: (String) Identificador único y descriptivo (ej: "p1_igna", "p2_lucas", "p3_fernanda", "a1_aborto"). NO uses solo números. Debe ser único dentro de la lista 'people'.
-    * `"name"`: (String) Nombre completo o etiqueta clara (ej: "Ignacia (Paciente)", "Lucas de la Rosa", "Fernanda Espínola", "Aborto Espontáneo 1", no inventes palabras).
+    * `"id"`: (String) Identificador único y descriptivo (ej: "p1_persona1", "p2_persona2", "a1_evento"). NO uses solo números. Debe ser único dentro de la lista 'people'.
+    * `"name"`: (String) Nombre completo o etiqueta clara (ej: "Juan Pérez (Paciente)", "María López", "Evento Importante 1"). NO inventes palabras.
     * `"gender"`: (String) "M" (masculino), "F" (femenino). Usa `null` si el sexo es desconocido (ej: aborto temprano).
     * `"generation"`: (Number) Número de generación (ej: 5 para nietos del paciente, 4 hijos del paciente y sobrinos, 3 para el paciente, sus hermanos y primos, 2 para padres del paciente y tíos, 1 para los abuelos del paciente).
     * `"birthDate"`: (String | null) Fecha en formato "YYYY-MM-DD". **Calcula un año aproximado si solo se da la edad** (asume el año actual {current_year}) para tener una referencia temporal. Si no hay información para calcularla, usa `null`.
@@ -500,4 +511,4 @@ if __name__ == "__main__":
         # Este bloque se ejecuta siempre, haya error o no
         print("\n" + "*"*60)
         print("   Proceso de extracción de genograma completado.   ")
-        print("*"*60)
+        print("*" * 60)

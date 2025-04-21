@@ -60,20 +60,28 @@ const AbortoNode = ({ data, id }) => {
         </div>
   
         {editing ? (
-          <input
-            value={label}
-            onChange={(e) => setLabel(e.target.value)}
-            onBlur={handleBlur}
-            autoFocus
-            style={{ textAlign: "center", fontSize: 10, marginTop: 4, width: 40 }}
-          />
+          <>
+            <input
+              value={label}
+              onChange={(e) => setLabel(e.target.value)}
+              onBlur={handleBlur}
+              autoFocus
+              style={{ textAlign: "center", fontSize: 10, marginTop: 4, width: 40 }}
+            />
+            {data.age != null && (
+              <div style={{ textAlign: "center", fontSize: 10, marginTop: 4 }}>
+                Edad: {data.age}
+              </div>
+            )}
+          </>
         ) : (
           <div
             onDoubleClick={() => setEditing(true)}
             style={{ marginTop: 4, textAlign: "center", fontSize: 10, width: 50 }}
           >
             <strong>ID: {id}</strong> <br />
-            {label}
+            {label} <br />
+            {data.age != null && <>Edad: {data.age}</>}
           </div>
         )}
       </div>

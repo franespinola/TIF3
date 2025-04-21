@@ -133,6 +133,35 @@ export default function useGenogramaState() {
     [nodes, setEdges, setNodes, showToast]
   );
 
+  // Actualizar el tipo de relación de una conexión existente
+  const updateEdgeRelation = useCallback(
+    (edgeId, newRelType) => {
+      if (!edgeId) return;
+      
+      setEdges((eds) => 
+        eds.map((edge) => {
+          if (edge.id === edgeId) {
+            return {
+              ...edge,
+              data: { ...edge.data, relType: newRelType }
+            };
+          }
+          return edge;
+        })
+      );
+      
+      // Extraer IDs de origen y destino del edge.id (formato "source-target-relType")
+      const edgeParts = edgeId.split('-');
+      if (edgeParts.length >= 2) {
+        const [source, target] = edgeParts;
+        showToast(`✔ Relación actualizada a '${newRelType}' entre ${source} y ${target}`);
+      } else {
+        showToast(`✔ Relación actualizada a '${newRelType}'`);
+      }
+    },
+    [setEdges, showToast]
+  );
+
   // Arrastrar nodos al canvas
   const onDrop = useCallback(
     (event) => {
@@ -286,6 +315,7 @@ export default function useGenogramaState() {
     onConnect,
     handleEditLabel,
     onRelate,
+    updateEdgeRelation,
     onDrop,
     onDragOver,
     onImportJSON,

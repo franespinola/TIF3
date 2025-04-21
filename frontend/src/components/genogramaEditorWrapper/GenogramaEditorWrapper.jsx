@@ -1,10 +1,10 @@
 import React, { useCallback, useState, useEffect } from "react";
 import ReactFlow, {
-  // ReactFlowProvider, // Eliminar importación
   Background,
   Controls,
   MiniMap,
-  addEdge
+  addEdge,
+  useReactFlow
 } from "reactflow";
 import "reactflow/dist/style.css";
 
@@ -15,8 +15,14 @@ import FreeDrawOverlay from "../drawing/FreeDrawOverlay";
 import html2canvas from 'html2canvas';
 import useGenogramaState from "../../hooks/useGenogramaState";
 import MenuBar from "../menuBar/MenuBar";
+import { transformToReactFlow } from "../../utils/transformToReactFlow";
+import useRecorder from "../../hooks/useRecorder";
+import layoutWithDagre from "../../utils/layoutWithDagre";
 
 function GenogramaEditorWrapper() {
+  // Estado para la conexión seleccionada
+  const [selectedEdge, setSelectedEdge] = useState(null);
+  
   // Usar nuestro hook personalizado para gestión del genograma
   const {
     nodes,
@@ -34,8 +40,24 @@ function GenogramaEditorWrapper() {
     onExportPNG,
     onExportJPG,
     setEdges,
-    setNodes
+    setNodes,
+    updateEdgeRelation
   } = useGenogramaState();
+
+  const [patientName, setPatientName] = useState("");
+
+  // Callback para procesar el resultado tras grabación
+  const handleRecordingResult = useCallback((result) => {
+    const genData = result.genogram.genogram_data;
+    const { nodes: newNodes, edges: newEdges } = transformToReactFlow(genData);
+    // Aplicar layout con dagre para ordenar nodos
+    const laidOutNodes = layoutWithDagre(newNodes, newEdges);
+    setNodes(laidOutNodes);
+    setEdges(newEdges);
+  }, [setNodes, setEdges]);
+
+  // Hook de grabación modularizado
+  const { isRecording, toggleRecording } = useRecorder(patientName, handleRecordingResult);
 
   const [activeTool, setActiveTool] = useState(null);
   const [drawingColor, setDrawingColor] = useState('#000000');
@@ -113,82 +135,97 @@ function GenogramaEditorWrapper() {
     }
   }, [nodes, onConnect, setEdges]);
 
+  // Manejador para la selección de Edge (conexión)
+  const handleEdgeClick = useCallback((event, edge) => {
+    event.stopPropagation();
+    setSelectedEdge(edge);
+  }, []);
+
+  // Manejador para limpiar la selección al hacer clic en el fondo
+  const handlePaneClick = useCallback(() => {
+    setSelectedEdge(null);
+  }, []);
+
   return (
-    // <ReactFlowProvider> // Eliminar Provider de aquí
-      <>
-        <MenuBar
+    <>
+      <MenuBar
+        onImportJSON={onImportJSON}
+        onExportJSON={onExportJSON}
+        onExportCSV={onExportCSV}
+        onExportPNG={onExportPNG}
+        onExportJPG={onExportJPG}
+      />
+      <div style={{ display: "flex", height: "100vh" }}>
+        <div
+          id="flowWrapper"
+          style={{ 
+            flexGrow: 1,
+            height: "100vh",
+            position: "relative"
+          }}
+          onDrop={onDrop}
+          onDragOver={onDragOver}
+        >
+          <ReactFlow
+            nodes={nodes.map((node) => ({
+              ...node,
+              data: { ...node.data, onEdit: handleEditLabel },
+            }))}
+            edges={edges}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            onConnect={handleConnect}
+            nodeTypes={nodeTypes}
+            edgeTypes={edgeTypes}
+            fitView
+            snapToGrid
+            deleteKeyCode={['Delete', 'Backspace']}
+            selectionOnDrag={true}
+            multiSelectionKeyCode={null}
+            connectionMode="loose"
+            connectionLineType="straight"
+            onEdgeClick={handleEdgeClick}
+            onPaneClick={handlePaneClick}
+          >
+            <MiniMap />
+            <Controls />
+            <Background gap={12} size={1} />
+            {/* Overlay para dibujo libre */}
+            <FreeDrawOverlay 
+              selectedDrawingTool={activeTool}
+              drawingColor={drawingColor}
+              strokeWidth={strokeWidth}
+              nodes={nodes}
+              setNodes={setNodes}
+              edges={edges}
+              setEdges={setEdges}
+            />
+          </ReactFlow>
+        </div>
+        
+        <Sidebar
+          onRelate={onRelate}
+          updateEdgeRelation={updateEdgeRelation}
+          selectedEdge={selectedEdge}
           onImportJSON={onImportJSON}
           onExportJSON={onExportJSON}
           onExportCSV={onExportCSV}
           onExportPNG={onExportPNG}
           onExportJPG={onExportJPG}
+          isRecording={isRecording}
+          onRecordToggle={toggleRecording}
+          patientName={patientName}
+          onPatientNameChange={setPatientName}
+          activeTool={activeTool}
+          toggleTool={toggleTool}
+          drawingColor={drawingColor}
+          setDrawingColor={setDrawingColor}
+          strokeWidth={strokeWidth}
+          setStrokeWidth={setStrokeWidth}
+          onExportDrawing={handleExportImage}
         />
-        <div style={{ display: "flex", height: "100vh" }}>
-          <div
-            id="flowWrapper"
-            style={{ 
-              flexGrow: 1,
-              height: "100vh",
-              position: "relative"
-            }}
-            onDrop={onDrop}
-            onDragOver={onDragOver}
-          >
-            <ReactFlow
-              nodes={nodes.map((node) => ({
-                ...node,
-                data: { ...node.data, onEdit: handleEditLabel },
-              }))}
-              edges={edges}
-              onNodesChange={onNodesChange}
-              onEdgesChange={onEdgesChange}
-              onConnect={handleConnect}
-              nodeTypes={nodeTypes}
-              edgeTypes={edgeTypes}
-              fitView
-              snapToGrid
-              deleteKeyCode={['Delete', 'Backspace']}
-              selectionOnDrag={true}
-              multiSelectionKeyCode={null}
-              // Habilitar conexiones para todos los nodos
-              connectionMode="loose"
-              connectionLineType="straight"
-            >
-              <MiniMap />
-              <Controls />
-              <Background gap={12} size={1} />
-              {/* Overlay para dibujo libre */}
-              <FreeDrawOverlay 
-                selectedDrawingTool={activeTool}
-                drawingColor={drawingColor}
-                strokeWidth={strokeWidth}
-                // Pasar estado y setters de React Flow
-                nodes={nodes}
-                setNodes={setNodes}
-                edges={edges}
-                setEdges={setEdges}
-              />
-            </ReactFlow>
-          </div>
-          
-          <Sidebar
-            onRelate={onRelate}
-            onImportJSON={onImportJSON}
-            onExportJSON={onExportJSON}
-            onExportCSV={onExportCSV}
-            onExportPNG={onExportPNG}
-            onExportJPG={onExportJPG}
-            activeTool={activeTool}
-            toggleTool={toggleTool}
-            drawingColor={drawingColor}
-            setDrawingColor={setDrawingColor}
-            strokeWidth={strokeWidth}
-            setStrokeWidth={setStrokeWidth}
-            onExportDrawing={handleExportImage}
-          />
-        </div>
-      </>
-    // </ReactFlowProvider> // Eliminar Provider de aquí
+      </div>
+    </>
   );
 }
 
