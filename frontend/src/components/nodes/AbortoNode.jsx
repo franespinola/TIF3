@@ -1,58 +1,49 @@
-import React, { useState, useEffect } from 'react';
-import { Handle, Position } from 'reactflow';
-import useResizable from '../../hooks/useResizable';
+import React from 'react';
+import BaseNodeComponent from './BaseNodeComponent';
+import NodeTextInput from './NodeTextInput';
+import ResizeHandle from './ResizeHandle';
+import useCircleNode from '../../hooks/useCircleNode';
+import useNodeEditor from '../../hooks/useNodeEditor';
 
 const AbortoNode = ({ data, id, selected }) => {
-    const [editing, setEditing] = useState(false);
-    const [label, setLabel] = useState(data?.label || "✖");
+    // Usar el hook de edición de nodos
+    const onSave = (newLabel) => {
+      if (data?.onEdit) {
+        data.onEdit(id, newLabel);
+      }
+    };
+    
+    const {
+      isEditing, 
+      value: label, 
+      handleDoubleClick, 
+      handleChange, 
+      handleBlur, 
+      handleKeyDown 
+    } = useNodeEditor(data?.label || "✖", onSave);
     
     // Tamaño inicial del nodo
     const defaultSize = data?.size || 40;
     
-    // Usar el hook de redimensionamiento - corregida la desestructuración para incluir setSize
-    const [size, resizeHandleRef, isResizing, setSize] = useResizable(
+    // Usar el hook especializado para nodos circulares
+    const [radius, size, resizeHandleRef, isResizing] = useCircleNode(
       id,
-      { width: defaultSize, height: defaultSize },
-      30, // min size
-      30  // min size
+      { radius: defaultSize / 2 },
+      defaultSize / 2,
+      15 // min radius
     );
-    
-    // Actualizar cuando cambia el tamaño en data
-    useEffect(() => {
-      if (data?.size !== undefined && !isResizing) {
-        const newSize = data.size;
-        if (size.width !== newSize || size.height !== newSize) {
-          setSize({ width: newSize, height: newSize });
-        }
-      }
-    }, [data?.size, isResizing, setSize, size.width, size.height]);
     
     // Determinar si los handles son conectables
     const isConnectable = data?.isConnectable !== false;
-
-    // Estilo común para los handles para mayor tamaño y área de selección
-    const handleStyle = {
-      background: "#555",
-      width: 8,
-      height: 8,
-      border: "2px solid #fff",
-      borderRadius: "50%",
-      zIndex: 5
-    };
-  
-    const handleBlur = () => {
-      setEditing(false);
-      if (data?.onEdit) {
-        data.onEdit(id, label);
-      }
-    };
   
     return (
-      <div
-        style={{ display: "flex", flexDirection: "column", alignItems: "center" }}
-      >
-        <div
-          style={{
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+        <BaseNodeComponent
+          selected={selected}
+          resizeHandleRef={resizeHandleRef}
+          isConnectable={isConnectable}
+          showResizeHandle={false} // Ocultamos el manejador predeterminado
+          nodeStyles={{
             width: size.width,
             height: size.height,
             borderRadius: "50%",
@@ -61,60 +52,22 @@ const AbortoNode = ({ data, id, selected }) => {
             position: "relative",
           }}
         >
-          <Handle
-            type="target"
-            position={Position.Top}
-            id="t"
-            style={{ ...handleStyle, top: -6 }}
-            isConnectable={isConnectable}
-          />
-          <Handle
-            type="source"
-            position={Position.Bottom}
-            id="b"
-            style={{ ...handleStyle, bottom: -6 }}
-            isConnectable={isConnectable}
-          />
-          <Handle
-            type="target"
-            position={Position.Left}
-            id="l"
-            style={{ ...handleStyle, left: -6, top: '50%', transform: 'translateY(-50%)' }}
-            isConnectable={isConnectable}
-          />
-          <Handle
-            type="source"
-            position={Position.Right}
-            id="r"
-            style={{ ...handleStyle, right: -6, top: '50%', transform: 'translateY(-50%)' }}
-            isConnectable={isConnectable}
-          />
-          
-          {/* Control de redimensionamiento que solo aparece cuando el nodo está seleccionado */}
+          {/* Control de redimensionamiento personalizado en la posición correcta */}
           {selected && (
-            <div
-              ref={resizeHandleRef}
-              style={{
-                position: 'absolute',
-                bottom: 0,
-                right: 0,
-                width: 10,
-                height: 10,
-                background: '#3b82f6',
-                borderRadius: '50%',
-                cursor: 'nwse-resize',
-                zIndex: 10
-              }}
+            <ResizeHandle 
+              resizeHandleRef={resizeHandleRef} 
+              position="bottom-right"
             />
           )}
-        </div>
-  
-        {editing ? (
+        </BaseNodeComponent>
+
+        {isEditing ? (
           <>
             <input
               value={label}
-              onChange={(e) => setLabel(e.target.value)}
+              onChange={handleChange}
               onBlur={handleBlur}
+              onKeyDown={handleKeyDown}
               autoFocus
               style={{ 
                 textAlign: "center", 
@@ -131,7 +84,7 @@ const AbortoNode = ({ data, id, selected }) => {
           </>
         ) : (
           <div
-            onDoubleClick={() => setEditing(true)}
+            onDoubleClick={handleDoubleClick}
             style={{ 
               marginTop: 4, 
               textAlign: "center", 

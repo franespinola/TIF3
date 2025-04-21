@@ -1,164 +1,179 @@
-import React, { useState, useEffect } from 'react';
-import { Handle, Position } from 'reactflow';
-import useResizable from '../../hooks/useResizable';
+import React, { useState } from 'react';
+import BaseNodeComponent from './BaseNodeComponent';
+import useNodeSize from '../../hooks/useNodeSize';
+import useNodeEditor from '../../hooks/useNodeEditor';
 
 const MasculinoNode = ({ data, id, selected }) => {
-    const [editing, setEditing] = useState(false);
-    const [label, setLabel] = useState(data?.label || "");
-    
-    // Tamaño inicial del nodo
-    const defaultSize = data?.size || 60;
-    
-    // Usar el hook de redimensionamiento para cuadrados - corregida la desestructuración
-    const [size, resizeHandleRef, isResizing, setSize] = useResizable(
-      id,
-      { width: defaultSize, height: defaultSize },
-      40, // min size
-      40  // min size
-    );
-    
-    // Actualizar cuando cambia el tamaño en data
-    useEffect(() => {
-      if (data?.size !== undefined && !isResizing) {
-        const newSize = data.size;
-        if (size.width !== newSize || size.height !== newSize) {
-          setSize({ width: newSize, height: newSize });
-        }
+  // Estado para campos editables
+  const [editingField, setEditingField] = useState(null);
+  
+  // Asegurarse de usar los valores desde data
+  const name = data?.name || data?.label || 'Nombre';
+  const age = data?.age !== undefined && data?.age !== null ? data.age : '';
+  const profession = data?.profession || '';
+  const info = data?.info || '';
+  
+  // Tamaño del nodo
+  const defaultSize = data?.size || 60;
+  
+  // Usar el hook para gestionar el tamaño
+  const [size, resizeHandleRef, isResizing] = useNodeSize(
+    id,
+    data,
+    { width: defaultSize, height: defaultSize },
+    40, // min width
+    40  // min height
+  );
+  
+  // Determinar si los handles son conectables
+  const isConnectable = data?.isConnectable !== false;
+  
+  // Manejadores para edición de campos
+  const handleEdit = (field) => {
+    setEditingField(field);
+  };
+  
+  const handleSave = (field, value) => {
+    setEditingField(null);
+    if (data?.onEdit) {
+      const updates = {};
+      switch (field) {
+        case 'name':
+          updates.name = value;
+          break;
+        case 'age':
+          updates.age = value;
+          break;
+        case 'profession':
+          updates.profession = value;
+          break;
+        case 'info':
+          updates.info = value;
+          break;
       }
-    }, [data?.size, isResizing, setSize, size.width, size.height]);
-    
-    // Determinar si los handles son conectables
-    const isConnectable = data?.isConnectable !== false;
+      data.onEdit(id, updates);
+    }
+  };
+  
+  const handleKeyDown = (e, field, value) => {
+    if (e.key === 'Enter') {
+      handleSave(field, value);
+    }
+  };
 
-    // Estilo común para los handles para mayor tamaño y área de selección
-    const handleStyle = {
-      background: "#555",
-      width: 8,
-      height: 8,
-      border: "2px solid #fff",
-      borderRadius: "50%",
-      zIndex: 5
-    };
-  
-    const handleBlur = () => {
-      setEditing(false);
-      if (data?.onEdit) {
-        data.onEdit(id, label);
-      }
-    };
-  
-    return (
-      <div
-        style={{ display: "flex", flexDirection: "column", alignItems: "center" }}
+  return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+      <BaseNodeComponent
+        selected={selected}
+        resizeHandleRef={resizeHandleRef}
+        isConnectable={isConnectable}
+        nodeStyles={{
+          width: size.width,
+          height: size.height,
+          background: "#dbeafe",
+          border: "2px solid #2563eb",
+          position: "relative",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
       >
-        <div
-          style={{
-            width: size.width,
-            height: size.height,
-            background: "#ddd6fe",
-            border: "2px solid #4f46e5",
-            position: "relative",
-          }}
-        >
-          <Handle
-            type="target"
-            position={Position.Top}
-            id="t"
-            style={{ ...handleStyle, top: -6 }}
-            isConnectable={isConnectable}
-          />
-          <Handle
-            type="source"
-            position={Position.Bottom}
-            id="b"
-            style={{ ...handleStyle, bottom: -6 }}
-            isConnectable={isConnectable}
-          />
-  
-          <Handle
-            type="target"
-            position={Position.Left}
-            id="l"
-            style={{ ...handleStyle, left: -6, top: '50%', transform: 'translateY(-50%)' }}
-            isConnectable={isConnectable}
-          />
-          <Handle
-            type="source"
-            position={Position.Right}
-            id="r"
-            style={{ ...handleStyle, right: -6, top: '50%', transform: 'translateY(-50%)' }}
-            isConnectable={isConnectable}
-          />
-
-          {/* Mostrar edad dentro del nodo para hacerla más visible */}
-          {data.age != null && (
-            <div style={{ 
-              position: 'absolute', 
-              top: '50%', 
-              left: '50%', 
-              transform: 'translate(-50%, -50%)',
-              fontSize: Math.max(12, size.width * 0.2),
-              fontWeight: 'bold',
-              color: '#000'
-            }}>
-              {data.age}
-            </div>
-          )}
-          
-          {/* Control de redimensionamiento que solo aparece cuando el nodo está seleccionado */}
-          {selected && (
-            <div
-              ref={resizeHandleRef}
-              style={{
-                position: 'absolute',
-                bottom: -5,
-                right: -5,
-                width: 10,
-                height: 10,
-                background: '#3b82f6',
-                borderRadius: '50%',
-                cursor: 'nwse-resize',
-                zIndex: 10
-              }}
-            />
-          )}
-        </div>
-        {editing ? (
-          <>
-            <input
-              value={label}
-              onChange={(e) => setLabel(e.target.value)}
-              onBlur={handleBlur}
-              autoFocus
-              style={{ textAlign: "center", fontSize: 10, marginTop: 4, width: Math.max(size.width, 80) }}
-            />
-            {data.age != null && (
-              <div style={{ textAlign: "center", fontSize: 10, marginTop: 4, fontWeight: 'bold' }}>
-                Edad: {data.age}
-              </div>
-            )}
-          </>
-        ) : (
-          <div
-            onDoubleClick={() => setEditing(true)}
-            style={{ 
-              marginTop: 4, 
-              textAlign: "center", 
-              fontSize: 10, 
-              width: Math.max(size.width, 80) 
-            }}
-          >
-            <strong>ID: {id}</strong> <br />
-            {label} <br />
-            {data.age != null && (
-              <div style={{ textAlign: "center", fontSize: 10, marginTop: 4, fontWeight: 'bold' }}>
-                Edad: {data.age}
-              </div>
-            )}
+        {/* Mostrar edad dentro del nodo si está disponible */}
+        {age !== '' && (
+          <div style={{ 
+            fontSize: Math.max(14, size.width * 0.2),
+            fontWeight: 'bold',
+            color: '#2563eb',
+          }}>
+            {age}
           </div>
         )}
+      </BaseNodeComponent>
+      
+      {/* Información del nodo debajo */}
+      <div style={{ marginTop: 4, width: Math.max(120, size.width + 20) }}>
+        {/* Nombre */}
+        {editingField === 'name' ? (
+          <input
+            value={name}
+            onChange={(e) => handleSave('name', e.target.value)}
+            onBlur={() => handleSave('name', name)}
+            onKeyDown={(e) => handleKeyDown(e, 'name', name)}
+            autoFocus
+            style={{ width: "100%", fontWeight: "bold", textAlign: "center" }}
+          />
+        ) : (
+          <div 
+            onDoubleClick={() => handleEdit('name')}
+            style={{ fontWeight: "bold", textAlign: "center", cursor: "text" }}
+          >
+            {name}
+          </div>
+        )}
+        
+        {/* Edad */}
+        {editingField === 'age' ? (
+          <input
+            value={age}
+            onChange={(e) => handleSave('age', e.target.value)}
+            onBlur={() => handleSave('age', age)}
+            onKeyDown={(e) => handleKeyDown(e, 'age', age)}
+            autoFocus
+            style={{ width: "100%", textAlign: "center", fontSize: 12 }}
+          />
+        ) : (
+          <div 
+            onDoubleClick={() => handleEdit('age')}
+            style={{ textAlign: "center", fontSize: 12, cursor: "text" }}
+          >
+            {age !== '' ? `Edad: ${age}` : "Edad: --"}
+          </div>
+        )}
+        
+        {/* Profesión */}
+        {editingField === 'profession' ? (
+          <input
+            value={profession}
+            onChange={(e) => handleSave('profession', e.target.value)}
+            onBlur={() => handleSave('profession', profession)}
+            onKeyDown={(e) => handleKeyDown(e, 'profession', profession)}
+            autoFocus
+            style={{ width: "100%", textAlign: "center", fontSize: 12 }}
+          />
+        ) : (
+          <div 
+            onDoubleClick={() => handleEdit('profession')}
+            style={{ textAlign: "center", fontSize: 12, cursor: "text" }}
+          >
+            {profession || "Profesión: --"}
+          </div>
+        )}
+        
+        {/* Información adicional */}
+        {editingField === 'info' ? (
+          <textarea
+            value={info}
+            onChange={(e) => handleSave('info', e.target.value)}
+            onBlur={() => handleSave('info', info)}
+            autoFocus
+            style={{ width: "100%", fontSize: 11, minHeight: 40 }}
+          />
+        ) : (
+          <div 
+            onDoubleClick={() => handleEdit('info')}
+            style={{ fontSize: 11, marginTop: 2, cursor: "text" }}
+          >
+            {info ? info : "Información adicional..."}
+          </div>
+        )}
+        
+        {/* Identificador del nodo */}
+        <div style={{ fontSize: 10, marginTop: 2, textAlign: "center" }}>
+          ID: {id}
+        </div>
       </div>
-    );
-  };
+    </div>
+  );
+};
 
 export default MasculinoNode;

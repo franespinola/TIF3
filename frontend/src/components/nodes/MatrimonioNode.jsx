@@ -4,7 +4,7 @@ import NodeTextInput from './NodeTextInput';
 import useNodeSize from '../../hooks/useNodeSize';
 import useNodeEditor from '../../hooks/useNodeEditor';
 
-const AdopcionNode = ({ data, id, selected }) => {
+const MatrimonioNode = ({ data, id, selected }) => {
   // Usar el hook de edición de nodos
   const onSave = (newLabel) => {
     if (data?.onEdit) {
@@ -19,16 +19,24 @@ const AdopcionNode = ({ data, id, selected }) => {
     handleChange, 
     handleBlur, 
     handleKeyDown 
-  } = useNodeEditor(data?.label || "Adopción", onSave);
+  } = useNodeEditor(data?.label || "Matrimonio", onSave);
+  
+  // Configuración de tamaño
+  const defaultWidth = data?.width || 120;
+  const defaultHeight = data?.height || 40;
   
   // Usar el hook para gestionar el tamaño
   const [size, resizeHandleRef, isResizing] = useNodeSize(
     id,
     data,
-    { width: 120, height: 30 },
+    { width: defaultWidth, height: defaultHeight },
     80, // min width
-    25  // min height
+    30  // min height
   );
+  
+  // Extraer información adicional
+  const year = data?.year || '';
+  const status = data?.status || 'activo';
   
   // Determinar si los handles son conectables
   const isConnectable = data?.isConnectable !== false;
@@ -42,16 +50,16 @@ const AdopcionNode = ({ data, id, selected }) => {
         nodeStyles={{
           width: size.width,
           height: size.height,
-          background: "#e5e7eb",
-          border: "2px solid #4b5563",
-          borderRadius: "6px",
+          background: status === 'activo' ? "#dcfce7" : "#f3f4f6",
+          border: `2px solid ${status === 'activo' ? "#16a34a" : "#9ca3af"}`,
+          borderRadius: "8px",
+          position: "relative",
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          position: "relative",
         }}
       >
-        {/* Texto del nodo */}
+        {/* Contenido del nodo */}
         <NodeTextInput
           value={label}
           isEditing={isEditing}
@@ -60,18 +68,20 @@ const AdopcionNode = ({ data, id, selected }) => {
           onBlur={handleBlur}
           onKeyDown={handleKeyDown}
           labelStyle={{
-            fontSize: 12,
+            fontSize: 13,
             fontWeight: "bold"
           }}
         />
       </BaseNodeComponent>
       
-      {/* Identificador del nodo */}
-      <div style={{ fontSize: 10, marginTop: 2, textAlign: "center" }}>
-        ID: {id}
+      {/* Información adicional debajo */}
+      <div style={{ fontSize: 11, marginTop: 4, textAlign: "center" }}>
+        {year && <div>Año: {year}</div>}
+        <div>Estado: {status}</div>
+        <div style={{ fontSize: 10 }}>ID: {id}</div>
       </div>
     </div>
   );
 };
 
-export default AdopcionNode;
+export default MatrimonioNode;

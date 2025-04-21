@@ -1,151 +1,92 @@
-import React, { useState, useEffect } from 'react';
-import { Handle, Position } from 'reactflow';
-import useResizable from '../../hooks/useResizable';
+import React from 'react';
+import BaseNodeComponent from './BaseNodeComponent';
+import NodeTextInput from './NodeTextInput';
+import useCircleNode from '../../hooks/useCircleNode';
+import useNodeEditor from '../../hooks/useNodeEditor';
 
 const EmbarazoNode = ({ data, id, selected }) => {
-    const [editing, setEditing] = useState(false);
-    const [label, setLabel] = useState(data?.label || "E");
-    
-    // Tamaño inicial del nodo
-    const defaultSize = data?.size || 40;
-    
-    // Usar el hook de redimensionamiento - corregida la desestructuración
-    const [size, resizeHandleRef, isResizing, setSize] = useResizable(
-      id,
-      { width: defaultSize, height: defaultSize },
-      30, // min size
-      30  // min size
-    );
-    
-    // Actualizar cuando cambia el tamaño en data
-    useEffect(() => {
-      if (data?.size !== undefined && !isResizing) {
-        const newSize = data.size;
-        if (size.width !== newSize || size.height !== newSize) {
-          setSize({ width: newSize, height: newSize });
-        }
-      }
-    }, [data?.size, isResizing, setSize, size.width, size.height]);
+  // Usar el hook de edición de nodos
+  const onSave = (newLabel) => {
+    if (data?.onEdit) {
+      data.onEdit(id, newLabel);
+    }
+  };
+  
+  const {
+    isEditing, 
+    value: label, 
+    handleDoubleClick, 
+    handleChange, 
+    handleBlur, 
+    handleKeyDown 
+  } = useNodeEditor(data?.label || "E", onSave);
+  
+  // Tamaño inicial del nodo
+  const defaultSize = data?.size || 40;
+  
+  // Usar el hook especializado para nodos circulares
+  const [radius, size, resizeHandleRef, isResizing] = useCircleNode(
+    id,
+    { radius: defaultSize / 2 },
+    defaultSize / 2,
+    15 // min radius
+  );
+  
+  // Determinar si los handles son conectables
+  const isConnectable = data?.isConnectable !== false;
 
-    // Determinar si los handles son conectables
-    const isConnectable = data?.isConnectable !== false;
-  
-    // Estilo común para los handles para mayor tamaño y área de selección
-    const handleStyle = {
-      background: "#555",
-      width: 8,
-      height: 8,
-      border: "2px solid #fff",
-      borderRadius: "50%",
-      zIndex: 5
-    };
-  
-    const handleBlur = () => {
-      setEditing(false);
-      if (data?.onEdit) {
-        data.onEdit(id, label);
-      }
-    };
-  
-    return (
-      <div
-        style={{ display: "flex", flexDirection: "column", alignItems: "center" }}
+  return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+      <BaseNodeComponent
+        selected={selected}
+        resizeHandleRef={resizeHandleRef}
+        isConnectable={isConnectable}
+        nodeStyles={{
+          width: size.width,
+          height: size.height,
+          borderRadius: "50%",
+          background: "#e0f2fe",
+          border: "2px solid #0369a1",
+          position: "relative",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
       >
-        <div
-          style={{
-            width: size.width,
-            height: size.height,
-            borderRadius: "50%",
-            background: "#fffbe6",
-            border: "2px dashed #facc15",
-            position: "relative",
-          }}
-        >
-          <Handle
-            type="target"
-            position={Position.Top}
-            id="t"
-            style={{ ...handleStyle, top: -6 }}
-            isConnectable={isConnectable}
-          />
-          <Handle
-            type="source"
-            position={Position.Bottom}
-            id="b"
-            style={{ ...handleStyle, bottom: -6 }}
-            isConnectable={isConnectable}
-          />
-  
-          <Handle
-            type="target"
-            position={Position.Left}
-            id="l"
-            style={{ ...handleStyle, left: -6, top: '50%', transform: 'translateY(-50%)' }}
-            isConnectable={isConnectable}
-          />
-          <Handle
-            type="source"
-            position={Position.Right}
-            id="r"
-            style={{ ...handleStyle, right: -6, top: '50%', transform: 'translateY(-50%)' }}
-            isConnectable={isConnectable}
-          />
-          
-          {/* Control de redimensionamiento que solo aparece cuando el nodo está seleccionado */}
-          {selected && (
-            <div
-              ref={resizeHandleRef}
-              style={{
-                position: 'absolute',
-                bottom: 0,
-                right: 0,
-                width: 10,
-                height: 10,
-                background: '#3b82f6',
-                borderRadius: '50%',
-                cursor: 'nwse-resize',
-                zIndex: 10
-              }}
-            />
-          )}
+        {/* Texto dentro del círculo */}
+        <div style={{ 
+          fontSize: Math.max(radius * 0.6, 10),
+          fontWeight: "bold",
+          color: "#0369a1"
+        }}>
+          {label}
         </div>
-        {editing ? (
-          <>
-            <input
-              value={label}
-              onChange={(e) => setLabel(e.target.value)}
-              onBlur={handleBlur}
-              autoFocus
-              style={{ 
-                textAlign: "center", 
-                fontSize: 10, 
-                marginTop: 4, 
-                width: Math.max(size.width, 40)
-              }}
-            />
-            {data.age != null && (
-              <div style={{ textAlign: "center", fontSize: 10, marginTop: 4 }}>
-                Edad: {data.age}
-              </div>
-            )}
-          </>
-        ) : (
-          <div
-            onDoubleClick={() => setEditing(true)}
+      </BaseNodeComponent>
+
+      {/* Identificador del nodo */}
+      <div style={{ fontSize: 10, marginTop: 2, textAlign: "center" }}>
+        {isEditing ? (
+          <input
+            value={label}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
+            autoFocus
             style={{ 
-              marginTop: 4, 
               textAlign: "center", 
               fontSize: 10, 
-              width: Math.max(size.width, 50)
+              width: Math.max(size.width, 40) 
             }}
-          >
-            <strong>ID: {id}</strong> <br />
-            {label} <br />
-            {data.age != null && <>Edad: {data.age}</>}
+          />
+        ) : (
+          <div onDoubleClick={handleDoubleClick}>
+            <strong>ID: {id}</strong>
+            {data.meses && <div>Meses: {data.meses}</div>}
           </div>
         )}
       </div>
-    );
-  };
-  
+    </div>
+  );
+};
+
 export default EmbarazoNode;

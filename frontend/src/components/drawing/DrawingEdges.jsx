@@ -1,32 +1,31 @@
 import React from 'react';
-import { BaseEdge, getBezierPath } from 'reactflow';
+import { getBezierPath } from 'reactflow';
+import BaseEdgeComponent from '../edges/BaseEdgeComponent';
 
 // Componente para líneas de dibujo
 export function DrawingLineEdge({ id, data, sourceX, sourceY, targetX, targetY, selected }) {
   const { color = '#000000', strokeWidth = 2 } = data || {};
   
-  const [edgePath] = getBezierPath({
-    sourceX, 
-    sourceY, 
-    targetX, 
-    targetY,
-    curvature: 0 // Una línea recta
-  });
+  const edgeStyle = {
+    stroke: color,
+    strokeWidth,
+    strokeOpacity: 1,
+    strokeDasharray: selected ? '5,5' : 'none',
+  };
   
   return (
-    <g>
-      <path
-        id={id}
-        d={edgePath}
-        stroke={color}
-        strokeWidth={strokeWidth}
-        fill="none"
-        strokeOpacity={1}
-        style={{
-          strokeDasharray: selected ? '5,5' : 'none',
-        }}
-      />
-    </g>
+    <BaseEdgeComponent
+      id={id}
+      sourceX={sourceX}
+      sourceY={sourceY}
+      targetX={targetX}
+      targetY={targetY}
+      style={edgeStyle}
+      renderPath={(params) => getBezierPath({
+        ...params,
+        curvature: 0 // Una línea recta
+      })}
+    />
   );
 }
 
@@ -57,22 +56,21 @@ export function DrawingArrowEdge({ id, data, sourceX, sourceY, targetX, targetY,
   const lineEndX = targetX - 8 * Math.cos(angle);
   const lineEndY = targetY - 8 * Math.sin(angle);
   
+  const edgeStyle = {
+    stroke: color,
+    strokeWidth,
+    strokeDasharray: selected ? '5,5' : 'none',
+  };
+  
   return (
     <g>
-      {/* Línea principal */}
       <line
         x1={sourceX}
         y1={sourceY}
         x2={lineEndX}
         y2={lineEndY}
-        stroke={color}
-        strokeWidth={strokeWidth}
-        style={{
-          strokeDasharray: selected ? '5,5' : 'none',
-        }}
+        style={edgeStyle}
       />
-      
-      {/* Punta de flecha */}
       <polygon
         points={`${tipX},${tipY} ${leftWingX},${leftWingY} ${rightWingX},${rightWingY}`}
         fill={color}
