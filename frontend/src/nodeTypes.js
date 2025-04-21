@@ -4,7 +4,9 @@ import FemeninoNode from "./components/nodes/FemeninoNode";
 import FallecidoMNode from "./components/nodes/FallecidoMNode";
 import FallecidoFNode from "./components/nodes/FallecidoFNode";
 import EmbarazoNode from "./components/nodes/EmbarazoNode";
-import AbortoNode from "./components/nodes/AbortoNode";
+import AbortoEspontaneoNode from "./components/nodes/AbortoEspontaneoNode";
+import AbortoProvocadoNode from "./components/nodes/AbortoProvocadoNode";
+import FetoMuertoNode, { FetoMuertoMujer } from "./components/nodes/FetoMuertoNode";
 import AdopcionNode from "./components/nodes/AdopcionNode";
 import RectangleNode from "./components/nodes/RectangleNode";
 import CircleNode from "./components/nodes/CircleNode";
@@ -19,7 +21,10 @@ const nodeTypes = {
   fallecidoM: FallecidoMNode,
   fallecidoF: FallecidoFNode,
   embarazo: EmbarazoNode,
-  aborto: AbortoNode,
+  abortoEspontaneo: AbortoEspontaneoNode,
+  abortoProvocado: AbortoProvocadoNode,
+  fetoMuerto: FetoMuertoNode,
+  fetoMuertoMujer: FetoMuertoMujer,
   adopcion: AdopcionNode,
   
   // Nodos de anotación

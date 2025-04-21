@@ -1,9 +1,8 @@
 // transformToReactFlow.js
 
 /**
- * En esta versión la función assignGenerations respeta el valor que
- * viene en el JSON, sin recalcular la generación a partir de las relaciones.
- */
+se asigna los actores identificados en el json a los distintos estilos de nodos creados
+*/
 function assignGenerations(people, relationships) {
     // Simplemente se retorna una copia de cada objeto en people, respetando el campo 'generation'
     return people.map((p) => {
@@ -49,7 +48,22 @@ export function transformToReactFlow(genoData) {
         // --- ORDEN DE COMPROBACIÓN CORREGIDO ---
         // 1. Tipos más específicos primero
         if (attributes.isAbortion === true) {
-            nodeType = "aborto";
+            // Detectar el tipo específico de aborto
+            if (attributes.abortionType === "spontaneous") {
+                nodeType = "abortoEspontaneo";
+            } else if (attributes.abortionType === "induced") {
+                nodeType = "abortoProvocado";
+            } else if (attributes.abortionType === "fetalDeath") {
+                // Para feto muerto, diferenciar por género
+                if (gender === 'F') {
+                    nodeType = "fetoMuertoMujer";
+                } else {
+                    nodeType = "fetoMuerto";
+                }
+            } else {
+                // Tipo por defecto si no se especifica el tipo
+                nodeType = "abortoEspontaneo"; // Usar un valor predeterminado
+            }
         } else if (attributes.isPatient === true) {
             nodeType = "paciente"; // Asumiendo estilo propio para paciente
         } else if (attributes.isDeceased === true) {

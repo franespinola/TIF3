@@ -221,7 +221,7 @@ def call_gemini_api(prompt: str) -> str:
 def generate_initial_prompt(transcripcion: str) -> str:
     """
     Genera el prompt inicial para extraer el genograma en formato JSON.
-    *** VERSIÓN MODIFICADA PARA INCLUIR CAMPO 'age' ***
+    *** VERSIÓN MODIFICADA PARA INCLUIR CAMPO 'age' Y TIPOS DE PÉRDIDAS GESTACIONALES ***
     """
     current_year = datetime.now().year
     prompt = f"""
@@ -236,6 +236,27 @@ Si detectas en la transcripción:
 4. Expresiones como "vivo con…", "convivimos", "compartimos casa" respecto de una pareja → crea la relación con `"type": "conyugal"` y `"legalStatus": "cohabitacion"`
 
 Si varias reglas coinciden, prevalece la gravedad (violencia > conflicto > distante).
+###########################################################################
+
+####################  REGLAS DE DETECCIÓN DE PÉRDIDAS GESTACIONALES  ####################
+
+Cuando detectes menciones sobre pérdidas de embarazos, asigna los siguientes valores según la terminología:
+
+1. **Aborto espontáneo**: Si identificas términos como "pérdida natural", "pérdida del embarazo", "aborto espontáneo", "se le vino", "lo perdió sin querer", "pérdida involuntaria", etc. → asigna `"abortionType": "spontaneous"`, `"isAbortion": true`, `"isPregnancy": true`, `"isDeceased": true`
+
+2. **Aborto provocado/voluntario**: Si identificas términos como "interrupción voluntaria", "aborto inducido", "decidió no tenerlo", "procedimiento para terminar el embarazo", etc. → asigna `"abortionType": "induced"`, `"isAbortion": true`, `"isPregnancy": true`, `"isDeceased": true`
+
+3. **Mortinato/Feto muerto**: Si identificas términos como "nació muerto", "mortinato", "muerte intrauterina", "falleció en el útero", "muerte fetal tardía", "después de la semana 20", etc. → asigna `"abortionType": "stillbirth"`, `"isAbortion": true`, `"isPregnancy": true`, `"isDeceased": true`
+
+4. **Género del feto**: Si se especifica el género del feto perdido → asigna el valor correspondiente en `"gender"` (M/F). Si no se especifica, usa `null`.
+
+5. **Semanas de gestación**: Si se menciona información sobre el tiempo de gestación (ej: "estaba de 8 semanas", "perdió el bebé a los 5 meses", etc.) → calcula y asigna el valor numérico en semanas a `"gestationalAge"`.
+
+Cuando se mencione cualquier tipo de pérdida gestacional:
+- Crea un nodo específico para representarla
+- Establece la relación `parentChild` con el progenitor o progenitores mencionados
+- Utiliza un formato de `id` descriptivo (ej: "a1_aborto_maria", "s1_mortinato_pedro_ana")
+- En el campo `name`, utiliza un formato descriptivo según el tipo (ej: "Aborto espontáneo de María", "Mortinato de Ana y Pedro")
 ###########################################################################
 
 **Instrucciones Críticas:**
@@ -266,6 +287,13 @@ Si varias reglas coinciden, prevalece la gravedad (violencia > conflicto > dista
         * `"isPregnancy"`: (Boolean) Normalmente `false`. Usar `isAbortion` o `isDeceased` para resultados específicos.
         * `"isAbortion"`: (Boolean) `true` si representa un aborto, `false` en caso contrario.
         * `"isAdopted"`: (Boolean) `true` si es adoptado, `false` en caso contrario.
+        * `"abortionType"`: (String | null) **Obligatorio cuando `isAbortion` es `true`**. Valores permitidos: 
+            * `"spontaneous"` (aborto espontáneo, pérdida natural)
+            * `"induced"` (aborto provocado o voluntario)
+            * `"stillbirth"` (mortinato, feto muerto después de semana 20)
+            * `"unknown"` (cuando se menciona un aborto pero no se especifica el tipo)
+            * `null` cuando `isAbortion` es `false`.
+        * `"gestationalAge"`: (Number | null) Semanas de gestación cuando se produjo la pérdida, si se menciona (ej: 8, 24). Usar `null` si no se especifica.
 
 4.  **Estructura del Objeto Relación (`relationships`):** Cada objeto en `"relationships"` debe tener **exactamente** las siguientes claves:
     * `"id"`: (String) Identificador único y descriptivo para la relación (ej: "r1_padres_paciente", "r2_padres_separacion", "r3_paciente_hermana"). Debe ser único dentro de la lista 'relationships'.

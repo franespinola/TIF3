@@ -24,8 +24,20 @@ const nodePalette = [
     label: "Embarazo",
   },
   {
-    type: "aborto",
-    label: "Aborto",
+    type: "abortoEspontaneo",
+    label: "Aborto Espontáneo",
+  },
+  {
+    type: "abortoProvocado",
+    label: "Aborto Provocado",
+  },
+  {
+    type: "fetoMuerto",
+    label: "Feto Muerto",
+  },
+  {
+    type: "fetoMuertoMujer",
+    label: "Feto Muerto Mujer",
   },
   {
     type: "adopcion",

@@ -1,8 +1,7 @@
 import React from 'react';
 import BaseNodeComponent from './BaseNodeComponent';
-import NodeTextInput from './NodeTextInput';
-import useCircleNode from '../../hooks/useCircleNode';
 import useNodeEditor from '../../hooks/useNodeEditor';
+import useTriangleNode from '../../hooks/useTriangleNode';
 
 const EmbarazoNode = ({ data, id, selected }) => {
   // Usar el hook de edición de nodos
@@ -21,15 +20,14 @@ const EmbarazoNode = ({ data, id, selected }) => {
     handleKeyDown 
   } = useNodeEditor(data?.label || "E", onSave);
   
-  // Tamaño inicial del nodo
-  const defaultSize = data?.size || 40;
+  // Tamaño inicial del nodo (ajustado para ser más pequeño, como los nodos de feto)
+  const defaultSize = data?.size || 35;
   
-  // Usar el hook especializado para nodos circulares
-  const [radius, size, resizeHandleRef, isResizing] = useCircleNode(
+  // Usar el hook especializado para nodos triangulares (invertidos)
+  const [size, resizeHandleRef] = useTriangleNode(
     id,
-    { radius: defaultSize / 2 },
-    defaultSize / 2,
-    15 // min radius
+    { width: defaultSize, height: defaultSize },
+    20 // min size
   );
   
   // Determinar si los handles son conectables
@@ -44,24 +42,48 @@ const EmbarazoNode = ({ data, id, selected }) => {
         nodeStyles={{
           width: size.width,
           height: size.height,
-          borderRadius: "50%",
-          background: "#e0f2fe",
-          border: "2px solid #0369a1",
           position: "relative",
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
         }}
       >
-        {/* Texto dentro del círculo */}
+        {/* Triángulo simple con contorno negro y fondo blanco */}
         <div style={{ 
-          fontSize: Math.max(radius * 0.6, 10),
-          fontWeight: "bold",
-          color: "#0369a1"
-        }}>
-          {label}
-        </div>
+          width: 0,
+          height: 0,
+          borderLeft: `${size.width / 2}px solid transparent`,
+          borderRight: `${size.width / 2}px solid transparent`,
+          borderBottom: `${size.height}px solid white`,
+          filter: `drop-shadow(0px 0px 0px #000) drop-shadow(0px 0px 3px #000)`,
+          position: "absolute",
+          top: 0,
+          zIndex: 1,
+        }} />
+        
+        {/* Borde del triángulo */}
+        <div style={{ 
+          width: 0,
+          height: 0,
+          borderLeft: `${size.width / 2}px solid transparent`,
+          borderRight: `${size.width / 2}px solid transparent`,
+          borderBottom: `${size.height}px solid black`,
+          position: "absolute",
+          top: 0,
+          zIndex: 0,
+        }} />
       </BaseNodeComponent>
+
+      {/* Etiqueta del nodo - Ahora debajo del nodo */}
+      <div style={{ 
+        fontSize: Math.max(size.width * 0.25, 10),
+        fontWeight: "bold",
+        color: "#000",
+        marginTop: 5,
+        textAlign: "center"
+      }}>
+        {label}
+      </div>
 
       {/* Identificador del nodo */}
       <div style={{ fontSize: 10, marginTop: 2, textAlign: "center" }}>

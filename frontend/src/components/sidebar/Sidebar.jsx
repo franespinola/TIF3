@@ -7,11 +7,6 @@ function Sidebar({
   onRelate,
   updateEdgeRelation,
   selectedEdge,
-  onImportJSON,
-  onExportJSON,
-  onExportCSV,
-  onExportPNG,
-  onExportJPG,
   isRecording,
   onRecordToggle,
   patientName,
@@ -27,6 +22,7 @@ function Sidebar({
   const [source, setSource] = useState("");
   const [target, setTarget] = useState("");
   const [relType, setRelType] = useState("matrimonio");
+  const [activeDrawingTool, setActiveDrawingTool] = useState("");
 
   // Actualizar campos si hay una conexión seleccionada
   useEffect(() => {
@@ -71,18 +67,20 @@ function Sidebar({
     color: "#3b82f6",
   };
 
-  // Estilos para los elementos del palette
-  const paletteItemStyle = (isDrawing = false) => ({
+  // Estilos para los elementos del palette con estado activo
+  const paletteItemStyle = (isDrawing = false, isActive = false) => ({
     padding: "10px",
     marginBottom: "8px",
-    background: isDrawing ? "#e5f7ed" : "#e5e7eb", // Color diferente para herramientas de anotación
-    cursor: "grab",
+    background: isActive ? "#c7f9e2" : isDrawing ? "#e5f7ed" : "#e5e7eb",
+    cursor: isDrawing ? "pointer" : "grab",
     borderRadius: "8px",
     textAlign: "center",
     display: "flex",
     alignItems: "center",
-    transition: "transform 0.2s",
-    border: isDrawing ? "1px solid #10b981" : "none", // Borde para herramientas de anotación
+    transition: "all 0.2s ease-in-out",
+    border: isActive ? "2px solid #059669" : isDrawing ? "1px solid #10b981" : "none",
+    boxShadow: isActive ? "0 0 8px rgba(16, 185, 129, 0.3)" : "none",
+    transform: isActive ? "scale(1.02)" : "scale(1)",
   });
 
   // Estilo para cada ítem de la leyenda
@@ -124,35 +122,6 @@ function Sidebar({
   const genogramaNodes = nodePalette.filter(item => !item.isDrawing);
   const drawingNodes = nodePalette.filter(item => item.isDrawing);
 
-  // Styles for hamburger-to-X animated icon
-  const iconContainerStyle = {
-    position: 'relative',
-    width: '20px',
-    height: '20px',
-  };
-  const barBaseStyle = {
-    position: 'absolute',
-    width: '100%',
-    height: '2px',
-    background: '#4f46e5',
-    transition: 'all 0.3s ease',
-  };
-  const topBarStyle = {
-    ...barBaseStyle,
-    top: collapsed ? '9px' : '4px',
-    transform: collapsed ? 'rotate(45deg)' : 'none',
-  };
-  const midBarStyle = {
-    ...barBaseStyle,
-    top: '9px',
-    opacity: collapsed ? 0 : 1,
-  };
-  const botBarStyle = {
-    ...barBaseStyle,
-    top: collapsed ? '9px' : '14px',
-    transform: collapsed ? 'rotate(-45deg)' : 'none',
-  };
-
   // Base style for collapse toggle button
   const toggleButtonStyle = {
     background: 'linear-gradient(135deg, #e0e5ec, #f5f7fa)',
@@ -181,6 +150,16 @@ function Sidebar({
     stroke: '#4f46e5',
     strokeWidth: 2,
     fill: 'none',
+  };
+
+  // Verificar si un tipo de herramienta de anotación está activo
+  const isToolActive = (type) => {
+    return activeDrawingTool === type;
+  };
+
+  // Manejar la selección de herramientas de anotación
+  const handleDrawingToolSelect = (type) => {
+    setActiveDrawingTool(type === activeDrawingTool ? "" : type);
   };
 
   return (
@@ -241,19 +220,29 @@ function Sidebar({
           <hr style={{ margin: "20px 0", borderColor: "#ddd" }} />
           
           <h3 style={sectionHeaderStyle}>Herramientas de Anotación</h3>
-          {drawingNodes.map((item, idx) => (
-            <div
-              key={`drawing-${idx}`}
-              draggable
-              onDragStart={(e) =>
-                e.dataTransfer.setData("application/reactflow", JSON.stringify(item))
-              }
-              style={paletteItemStyle(true)}
-            >
-              <MiniIcon type={item.type} />
-              <span style={{ marginLeft: "8px" }}>{item.label}</span>
-            </div>
-          ))}
+          {drawingNodes.map((item, idx) => {
+            const isActive = isToolActive(item.type);
+            return (
+              <div
+                key={`drawing-${idx}`}
+                draggable
+                onDragStart={(e) =>
+                  e.dataTransfer.setData("application/reactflow", JSON.stringify(item))
+                }
+                onClick={() => handleDrawingToolSelect(item.type)}
+                style={paletteItemStyle(true, isActive)}
+              >
+                <MiniIcon type={item.type} isActive={isActive} />
+                <span style={{ 
+                  marginLeft: "8px",
+                  fontWeight: isActive ? "bold" : "normal",
+                  color: isActive ? "#059669" : "inherit"
+                }}>
+                  {item.label}
+                </span>
+              </div>
+            );
+          })}
 
           <hr style={{ margin: "20px 0", borderColor: "#ddd" }} />
           <h4
