@@ -1,20 +1,50 @@
 import React, { useState, useEffect } from 'react';
 import { Handle, Position } from 'reactflow';
+import useResizable from '../../hooks/useResizable';
 
-const FallecidoFNode = ({ data, id }) => {
+const FallecidoFNode = ({ data, id, selected }) => {
     const [editing, setEditing] = useState(false);
     const [label, setLabel] = useState(data?.label || "");
-  
-    // Log para depuración
+    
+    // Tamaño inicial del nodo
+    const defaultSize = data?.size || 60;
+    
+    // Usar el hook de redimensionamiento - corregida la desestructuración
+    const [size, resizeHandleRef, isResizing, setSize] = useResizable(
+      id,
+      { width: defaultSize, height: defaultSize },
+      40, // min size
+      40  // min size
+    );
+    
+    // Actualizar cuando cambia el tamaño en data
     useEffect(() => {
-      console.log(`Nodo fallecido femenino ${id} data:`, data);
-    }, [data, id]);
+      if (data?.size !== undefined && !isResizing) {
+        const newSize = data.size;
+        if (size.width !== newSize || size.height !== newSize) {
+          setSize({ width: newSize, height: newSize });
+        }
+      }
+    }, [data?.size, isResizing, setSize, size.width, size.height]);
   
     const handleBlur = () => {
       setEditing(false);
       if (data?.onEdit) {
         data.onEdit(id, label);
       }
+    };
+
+    // Determinar si los handles son conectables
+    const isConnectable = data?.isConnectable !== false;
+    
+    // Estilo común para los handles para mayor tamaño y área de selección
+    const handleStyle = {
+      background: "#555",
+      width: 8,
+      height: 8,
+      border: "2px solid #fff",
+      borderRadius: "50%",
+      zIndex: 5
     };
   
     return (
@@ -23,33 +53,42 @@ const FallecidoFNode = ({ data, id }) => {
       >
         <div
           style={{
-            width: 60,
-            height: 60,
+            width: size.width,
+            height: size.height,
             borderRadius: "50%",
             background: "#fff1f2",
             border: "2px solid #be123c",
             position: "relative",
           }}
         >
+          {/* Handles con IDs específicos y mayor tamaño */}
           <Handle
             type="target"
             position={Position.Top}
-            style={{ background: "#555" }}
+            id="t"
+            style={{ ...handleStyle, top: -6 }}
+            isConnectable={isConnectable}
           />
           <Handle
             type="source"
             position={Position.Bottom}
-            style={{ background: "#555" }}
+            id="b"
+            style={{ ...handleStyle, bottom: -6 }}
+            isConnectable={isConnectable}
           />
           <Handle
             type="target"
             position={Position.Left}
-            style={{ background: "#555" }}
+            id="l"
+            style={{ ...handleStyle, left: -6, top: '50%', transform: 'translateY(-50%)' }}
+            isConnectable={isConnectable}
           />
           <Handle
             type="source"
             position={Position.Right}
-            style={{ background: "#555" }}
+            id="r"
+            style={{ ...handleStyle, right: -6, top: '50%', transform: 'translateY(-50%)' }}
+            isConnectable={isConnectable}
           />
   
           {/* Mostrar edad dentro del nodo */}
@@ -59,7 +98,7 @@ const FallecidoFNode = ({ data, id }) => {
               top: '50%', 
               left: '50%', 
               transform: 'translate(-50%, -50%)',
-              fontSize: 14,
+              fontSize: Math.max(14, size.width * 0.2),
               fontWeight: 'bold',
               color: '#be123c',
               zIndex: 10 // Para asegurar que esté por encima de la cruz
@@ -70,28 +109,46 @@ const FallecidoFNode = ({ data, id }) => {
   
           {/* Cruz centrada en el círculo */}
           <svg
-            width="60"
-            height="60"
-            viewBox="0 0 60 60"
+            width={size.width}
+            height={size.height}
+            viewBox={`0 0 ${size.width} ${size.height}`}
             style={{ position: "absolute", top: 0, left: 0 }}
           >
             <line
               x1="0"
               y1="0"
-              x2="60"
-              y2="60"
+              x2={size.width}
+              y2={size.height}
               stroke="#be123c"
               strokeWidth="2"
             />
             <line
-              x1="60"
+              x1={size.width}
               y1="0"
               x2="0"
-              y2="60"
+              y2={size.height}
               stroke="#be123c"
               strokeWidth="2"
             />
           </svg>
+          
+          {/* Control de redimensionamiento que solo aparece cuando el nodo está seleccionado */}
+          {selected && (
+            <div
+              ref={resizeHandleRef}
+              style={{
+                position: 'absolute',
+                bottom: 0,
+                right: 0,
+                width: 10,
+                height: 10,
+                background: '#3b82f6',
+                borderRadius: '50%',
+                cursor: 'nwse-resize',
+                zIndex: 20 // Debe estar por encima de la cruz
+              }}
+            />
+          )}
         </div>
         {editing ? (
           <>
@@ -100,7 +157,12 @@ const FallecidoFNode = ({ data, id }) => {
               onChange={(e) => setLabel(e.target.value)}
               onBlur={handleBlur}
               autoFocus
-              style={{ textAlign: "center", fontSize: 10, marginTop: 4 }}
+              style={{ 
+                textAlign: "center", 
+                fontSize: 10, 
+                marginTop: 4,
+                width: Math.max(size.width, 80)
+              }}
             />
             {data.age != null && (
               <div style={{ textAlign: "center", fontSize: 10, marginTop: 4, fontWeight: 'bold' }}>
@@ -111,7 +173,12 @@ const FallecidoFNode = ({ data, id }) => {
         ) : (
           <div
             onDoubleClick={() => setEditing(true)}
-            style={{ marginTop: 4, textAlign: "center", fontSize: 10 }}
+            style={{ 
+              marginTop: 4, 
+              textAlign: "center", 
+              fontSize: 10,
+              width: Math.max(size.width, 80)
+            }}
           >
             <strong>ID: {id}</strong> <br />
             {label} <br />

@@ -4,7 +4,7 @@ import ReactFlow, {
   Controls,
   MiniMap,
   addEdge,
-  useReactFlow
+  Panel
 } from "reactflow";
 import "reactflow/dist/style.css";
 
@@ -18,6 +18,32 @@ import MenuBar from "../menuBar/MenuBar";
 import { transformToReactFlow } from "../../utils/transformToReactFlow";
 import useRecorder from "../../hooks/useRecorder";
 import layoutWithDagre from "../../utils/layoutWithDagre";
+
+// Constante para la altura del MenuBar - asegúrate de que coincida con el height en MenuBar.jsx
+const MENU_BAR_HEIGHT = 48;
+
+// Estilos para los elementos fijos en la parte inferior
+const FIXED_CONTROL_STYLES = {
+  position: 'absolute', // Cambiado de 'fixed' a 'absolute' para que se posicione respecto al contenedor del canvas
+  bottom: '20px',
+  left: '20px',
+  zIndex: 100,
+  background: 'rgba(255, 255, 255, 0.7)',
+  borderRadius: '4px',
+  padding: '5px',
+  boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)'
+};
+
+const FIXED_MINIMAP_STYLES = {
+  position: 'absolute', // Cambiado de 'fixed' a 'absolute' para que se posicione respecto al contenedor del canvas
+  bottom: '20px',
+  right: '20px',
+  zIndex: 100,
+  background: 'rgba(255, 255, 255, 0.7)',
+  borderRadius: '4px',
+  padding: '5px',
+  boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)'
+};
 
 function GenogramaEditorWrapper() {
   // Estado para la conexión seleccionada
@@ -155,12 +181,16 @@ function GenogramaEditorWrapper() {
         onExportPNG={onExportPNG}
         onExportJPG={onExportJPG}
       />
-      <div style={{ display: "flex", height: "100vh" }}>
+      <div style={{ 
+        display: "flex", 
+        height: "100vh",
+        paddingTop: `${MENU_BAR_HEIGHT}px` // Añadir espacio para el menú fijo
+      }}>
         <div
           id="flowWrapper"
           style={{ 
             flexGrow: 1,
-            height: "100vh",
+            height: "100%", // Cambiado de 100vh a 100% para ajustarse al contenedor padre
             position: "relative"
           }}
           onDrop={onDrop}
@@ -187,9 +217,22 @@ function GenogramaEditorWrapper() {
             onEdgeClick={handleEdgeClick}
             onPaneClick={handlePaneClick}
           >
-            <MiniMap />
-            <Controls />
             <Background gap={12} size={1} />
+            
+            {/* Panel fijo para los controles en la esquina inferior izquierda */}
+            <Panel position="bottom-left" style={FIXED_CONTROL_STYLES}>
+              <Controls showInteractive={false} />
+            </Panel>
+            
+            {/* Panel fijo para el minimap en la esquina inferior derecha */}
+            <Panel position="bottom-right" style={FIXED_MINIMAP_STYLES}>
+              <MiniMap 
+                nodeStrokeWidth={3}
+                zoomable 
+                pannable
+              />
+            </Panel>
+            
             {/* Overlay para dibujo libre */}
             <FreeDrawOverlay 
               selectedDrawingTool={activeTool}

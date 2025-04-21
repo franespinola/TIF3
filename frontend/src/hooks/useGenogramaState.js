@@ -23,7 +23,17 @@ export default function useGenogramaState() {
 
   // Conectar nodos
   const onConnect = useCallback(
-    (params) => setEdges((eds) => addEdge(params, eds)),
+    (params) => {
+      // 1) Creamos la nueva arista usando tu tipo custom "relationshipEdge"
+      // 2) Inicializamos data.relType para que luego updateEdgeRelation pueda sobreescribirlo
+      const newEdge = {
+        ...params,
+        type: "relationshipEdge",          // usa tu RelationshipEdge
+        data: { relType: "bezier" },   // relType por defecto
+      };
+  
+      setEdges((eds) => addEdge(newEdge, eds));
+    },
     [setEdges]
   );
 

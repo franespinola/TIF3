@@ -1,5 +1,5 @@
 import React from "react";
-import { getSmoothStepPath } from "reactflow";
+import { getSmoothStepPath, getBezierPath } from "reactflow";
 import { createRoundedWavePath, createZigZagPath } from "../../utils/pathUtils";
 
 function RelationshipEdge(props) {
@@ -23,6 +23,7 @@ function RelationshipEdge(props) {
   let pathProps = { fill: "none" };
   let extraElements = null;
 
+  // Ruta "smooth" y posición de etiqueta
   const [defaultSmooth, labelX, labelY] = getSmoothStepPath({
     sourceX,
     sourceY,
@@ -31,12 +32,27 @@ function RelationshipEdge(props) {
     sourcePosition,
     targetPosition,
   });
+
+  // Ruta Bézier (solo la ruta, sin los labels)
+  const [bezierPath] = getBezierPath({
+    sourceX,
+    sourceY,
+    targetX,
+    targetY,
+    sourcePosition,
+    targetPosition,
+  });
+
   const midX = labelX;
   const midY = labelY;
 
   switch (relType) {
     case "matrimonio":
       edgePath = defaultSmooth;
+      break;
+
+    case "bezier":
+      edgePath = bezierPath;
       break;
 
     case "divorcio":
@@ -64,8 +80,6 @@ function RelationshipEdge(props) {
       break;
 
     case "cohabitacion":
-      strokeColor = "black";
-      strokeWidth = 2;
       pathProps.strokeDasharray = "4 4";
       edgePath = defaultSmooth;
       extraElements = (
@@ -80,13 +94,11 @@ function RelationshipEdge(props) {
       break;
 
     case "compromiso":
-      strokeColor = "black";
       pathProps.strokeDasharray = "6 3";
       edgePath = defaultSmooth;
       break;
 
     case "violencia":
-      edgePath = "";
       extraElements = (
         <path
           d={createRoundedWavePath(sourceX, sourceY, targetX, targetY, 30, 30)}
@@ -98,7 +110,6 @@ function RelationshipEdge(props) {
       break;
 
     case "conflicto":
-      edgePath = "";
       extraElements = (
         <path
           d={createZigZagPath(sourceX, sourceY, targetX, targetY, 12, 10)}
@@ -109,10 +120,9 @@ function RelationshipEdge(props) {
       );
       break;
 
-    case "cercana":
+    case "cercana": {
       const aquaColor = "#20c997";
-      const offset = 8; // Aumentá este valor para más separación
-
+      const offset = 8;
       const [path1] = getSmoothStepPath({
         sourceX,
         sourceY: sourceY - offset,
@@ -121,7 +131,6 @@ function RelationshipEdge(props) {
         sourcePosition,
         targetPosition,
       });
-
       const [path2] = getSmoothStepPath({
         sourceX,
         sourceY: sourceY + offset,
@@ -130,17 +139,16 @@ function RelationshipEdge(props) {
         sourcePosition,
         targetPosition,
       });
-
       extraElements = (
         <>
           <path d={path1} stroke={aquaColor} strokeWidth="3" fill="none" />
           <path d={path2} stroke={aquaColor} strokeWidth="3" fill="none" />
         </>
       );
-      edgePath = "";
       break;
+    }
 
-    case "distante":
+    case "distante":{
       const redColor = "#ff0000";
       const [distantePath] = getSmoothStepPath({
         sourceX,
@@ -150,7 +158,6 @@ function RelationshipEdge(props) {
         sourcePosition,
         targetPosition,
       });
-
       extraElements = (
         <path
           d={distantePath}
@@ -160,8 +167,8 @@ function RelationshipEdge(props) {
           strokeDasharray="6 6"
         />
       );
-      edgePath = "";
       break;
+    }
 
     case "rota":
       strokeColor = "gray";
@@ -190,15 +197,13 @@ function RelationshipEdge(props) {
 
     default:
       edgePath = defaultSmooth;
-      break;
   }
 
-  // Ancho aumentado para la zona seleccionable
-  const hitStrokeWidth = 15; // Ancho del área seleccionable invisible
+  // Zona "hit" invisible para mejorar la selección
+  const hitStrokeWidth = 15;
 
   return (
     <g className="react-flow__edge">
-      {/* Path invisible con ancho aumentado para mejorar la selección */}
       {edgePath && (
         <path
           id={`${id}-hit-area`}
@@ -210,8 +215,6 @@ function RelationshipEdge(props) {
           style={{ cursor: 'pointer' }}
         />
       )}
-      
-      {/* Path original visible */}
       {edgePath && (
         <path
           id={id}

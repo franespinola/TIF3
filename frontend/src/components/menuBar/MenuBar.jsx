@@ -1,12 +1,43 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
 /**
  * MenuBar component renders the top "Archivo" menu with import/export options
  */
-export default function MenuBar({ onImportJSON, onExportJSON, onExportCSV, onExportPNG, onExportJPG }) {
+export default function MenuBar({
+  onImportJSON,
+  onExportJSON,
+  onExportCSV,
+  onExportPNG,
+  onExportJPG
+}) {
   const [showMenu, setShowMenu] = useState(false);
   const fileInputRef = useRef(null);
-  // Estilos mejorados para el menú y desplegable
+  const menuRef = useRef(null);
+  const menuButtonRef = useRef(null);
+
+  // Cierra el menú si clicás fuera del botón o del dropdown
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        showMenu &&
+        menuRef.current &&
+        !menuRef.current.contains(event.target) &&
+        menuButtonRef.current &&
+        !menuButtonRef.current.contains(event.target)
+      ) {
+        setShowMenu(false);
+      }
+    };
+
+    if (showMenu) {
+      document.addEventListener('click', handleClickOutside, true);
+    }
+    return () => {
+      document.removeEventListener('click', handleClickOutside, true);
+    };
+  }, [showMenu]);
+
+  // Estilos
   const menuBarStyle = {
     display: 'flex',
     alignItems: 'center',
@@ -14,8 +45,13 @@ export default function MenuBar({ onImportJSON, onExportJSON, onExportCSV, onExp
     background: '#f0f4f8',
     height: '48px',
     borderBottom: '1px solid #d1d9e6',
-    padding: '0 32px',       // increase separation from screen edges
+    padding: '0 32px',
     fontFamily: 'Segoe UI, Tahoma, sans-serif',
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 1000,
   };
   const logoStyle = {
     height: '32px',
@@ -42,7 +78,7 @@ export default function MenuBar({ onImportJSON, onExportJSON, onExportCSV, onExp
   const dropdownStyle = {
     position: 'absolute',
     top: '100%',
-    left: '12px', // align dropdown precisely with start of 'Archivo' text
+    left: '12px',
     background: '#ffffff',
     border: '1px solid #e2e8f0',
     boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
@@ -70,25 +106,106 @@ export default function MenuBar({ onImportJSON, onExportJSON, onExportCSV, onExp
         accept=".json"
         ref={fileInputRef}
         style={{ display: 'none' }}
-        onChange={onImportJSON}
+        onChange={(e) => {
+          onImportJSON(e);
+          // (por si acaso) cerramos aquí también tras elegir archivo
+          setShowMenu(false);
+        }}
       />
-      {/* Top menu bar similar to Lucidchart */}
+
+      {/* Top menu bar */}
       <div style={menuBarStyle}>
         <img src="/logo192.png" alt="App Logo" style={logoStyle} />
-        <div style={menuLabelStyle} onClick={() => setShowMenu(prev => !prev)}>
+
+        <div
+          ref={menuButtonRef}
+          style={menuLabelStyle}
+          onClick={() => setShowMenu(prev => !prev)}
+        >
           <span>Archivo</span>
           <span style={iconStyle}>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#334e68" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#334e68"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <polyline points="6 9 12 15 18 9" />
             </svg>
           </span>
+
           {showMenu && (
-            <div style={dropdownStyle}>
-              <div onClick={() => fileInputRef.current.click()} onMouseEnter={dropdownItemHover} onMouseLeave={dropdownItemLeave} style={dropdownItemStyle}>Importar JSON</div>
-              <div onClick={onExportJSON} onMouseEnter={dropdownItemHover} onMouseLeave={dropdownItemLeave} style={dropdownItemStyle}>Exportar JSON</div>
-              <div onClick={onExportCSV} onMouseEnter={dropdownItemHover} onMouseLeave={dropdownItemLeave} style={dropdownItemStyle}>Exportar CSV</div>
-              <div onClick={onExportPNG} onMouseEnter={dropdownItemHover} onMouseLeave={dropdownItemLeave} style={dropdownItemStyle}>Exportar PNG</div>
-              <div onClick={onExportJPG} onMouseEnter={dropdownItemHover} onMouseLeave={dropdownItemLeave} style={dropdownItemStyle}>Exportar JPG</div>
+            <div ref={menuRef} style={dropdownStyle}>
+              {/* Importar JSON */}
+              <div
+                style={dropdownItemStyle}
+                onMouseEnter={dropdownItemHover}
+                onMouseLeave={dropdownItemLeave}
+                onClick={() => {
+                  // cerramos antes de abrir el diálogo
+                  setShowMenu(false);
+                  // y lanzamos el click en el input tras un tick
+                  setTimeout(() => fileInputRef.current.click(), 0);
+                }}
+              >
+                Importar JSON
+              </div>
+
+              {/* Exportar JSON */}
+              <div
+                style={dropdownItemStyle}
+                onMouseEnter={dropdownItemHover}
+                onMouseLeave={dropdownItemLeave}
+                onClick={() => {
+                  setShowMenu(false);
+                  onExportJSON();
+                }}
+              >
+                Exportar JSON
+              </div>
+
+              {/* Exportar CSV */}
+              <div
+                style={dropdownItemStyle}
+                onMouseEnter={dropdownItemHover}
+                onMouseLeave={dropdownItemLeave}
+                onClick={() => {
+                  setShowMenu(false);
+                  onExportCSV();
+                }}
+              >
+                Exportar CSV
+              </div>
+
+              {/* Exportar PNG */}
+              <div
+                style={dropdownItemStyle}
+                onMouseEnter={dropdownItemHover}
+                onMouseLeave={dropdownItemLeave}
+                onClick={() => {
+                  setShowMenu(false);
+                  onExportPNG();
+                }}
+              >
+                Exportar PNG
+              </div>
+
+              {/* Exportar JPG */}
+              <div
+                style={dropdownItemStyle}
+                onMouseEnter={dropdownItemHover}
+                onMouseLeave={dropdownItemLeave}
+                onClick={() => {
+                  setShowMenu(false);
+                  onExportJPG();
+                }}
+              >
+                Exportar JPG
+              </div>
             </div>
           )}
         </div>
