@@ -2,8 +2,6 @@ import React, { useCallback, useState, useEffect } from "react";
 import ReactFlow, {
   Background,
   Controls,
-  MiniMap,
-  addEdge,
   Panel
 } from "reactflow";
 import "reactflow/dist/style.css";
@@ -13,6 +11,10 @@ import edgeTypes from "../../edgeTypes";
 import Sidebar from "../sidebar/Sidebar";
 import FreeDrawOverlay from "../drawing/FreeDrawOverlay";
 import SmartGuidesOverlay from "../guides/SmartGuidesOverlay";
+import EnhancedMinimap from "../navigation/EnhancedMinimap";
+import ThemeVisualizer from "../visualization/ThemeVisualizer";
+import SessionNotesPanel from "../notes/SessionNotesPanel";
+import ClinicalHistoryPanel from "../clinicalHistory/ClinicalHistoryPanel";
 import html2canvas from 'html2canvas';
 import useGenogramaState from "../../hooks/useGenogramaState";
 import useSmartGuides from "../../hooks/useSmartGuides";
@@ -36,20 +38,17 @@ const FIXED_CONTROL_STYLES = {
   boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)'
 };
 
-const FIXED_MINIMAP_STYLES = {
-  position: 'absolute', // Cambiado de 'fixed' a 'absolute' para que se posicione respecto al contenedor del canvas
-  bottom: '20px',
-  right: '20px',
-  zIndex: 100,
-  background: 'rgba(255, 255, 255, 0.7)',
-  borderRadius: '4px',
-  padding: '5px',
-  boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)'
-};
-
 function GenogramaEditorWrapper() {
   // Estado para la conexión seleccionada
   const [selectedEdge, setSelectedEdge] = useState(null);
+  const [selectedNode, setSelectedNode] = useState(null);
+  
+  // Estados para los paneles laterales
+  const [isClinicalHistoryOpen, setIsClinicalHistoryOpen] = useState(false);
+  const [isSessionNotesOpen, setIsSessionNotesOpen] = useState(false);
+  
+  // Estado para los modos de visualización
+  const [currentTheme, setCurrentTheme] = useState('default');
   
   // Configuración de Smart Guides
   const [enableSmartGuides, setEnableSmartGuides] = useState(true);
@@ -79,7 +78,8 @@ function GenogramaEditorWrapper() {
     onExportJPG,
     setEdges,
     setNodes,
-    updateEdgeRelation
+    updateEdgeRelation,
+    updateNodeData
   } = useGenogramaState();
   
   // Hook para Smart Guides con opciones configurables
@@ -213,10 +213,32 @@ function GenogramaEditorWrapper() {
     event.stopPropagation();
     setSelectedEdge(edge);
   }, []);
+  
+  // Manejador para la selección de Node (nodo)
+  const handleNodeClick = useCallback((event, node) => {
+    event.stopPropagation();
+    setSelectedNode(node);
+  }, []);
 
   // Manejador para limpiar la selección al hacer clic en el fondo
   const handlePaneClick = useCallback(() => {
     setSelectedEdge(null);
+    setSelectedNode(null);
+  }, []);
+  
+  // Manejador para actualizar datos del nodo
+  const handleUpdateNode = useCallback((nodeId, data) => {
+    updateNodeData(nodeId, data);
+  }, [updateNodeData]);
+
+  // Toggle para el panel de historia clínica
+  const toggleClinicalHistoryPanel = useCallback(() => {
+    setIsClinicalHistoryOpen(prev => !prev);
+  }, []);
+  
+  // Toggle para el panel de notas de sesión
+  const toggleSessionNotesPanel = useCallback(() => {
+    setIsSessionNotesOpen(prev => !prev);
   }, []);
 
   return (
@@ -233,6 +255,15 @@ function GenogramaEditorWrapper() {
         height: "100vh",
         paddingTop: `${MENU_BAR_HEIGHT}px` // Añadir espacio para el menú fijo
       }}>
+        {/* Panel de Historia Clínica */}
+        <ClinicalHistoryPanel
+          selectedNode={selectedNode}
+          onUpdateNode={handleUpdateNode}
+          isOpen={isClinicalHistoryOpen}
+          onToggle={toggleClinicalHistoryPanel}
+          patientName={patientName}
+        />
+        
         <div
           id="flowWrapper"
           style={{ 
@@ -264,6 +295,7 @@ function GenogramaEditorWrapper() {
             connectionMode="loose"
             connectionLineType="straight"
             onEdgeClick={handleEdgeClick}
+            onNodeClick={handleNodeClick}
             onPaneClick={handlePaneClick}
           >
             <Background gap={12} size={1} />
@@ -273,14 +305,15 @@ function GenogramaEditorWrapper() {
               <Controls showInteractive={false} />
             </Panel>
             
-            {/* Panel fijo para el minimap en la esquina inferior derecha */}
-            <Panel position="bottom-right" style={FIXED_MINIMAP_STYLES}>
-              <MiniMap 
-                nodeStrokeWidth={3}
-                zoomable 
-                pannable
-              />
-            </Panel>
+            {/* Visualizador de Temas */}
+            <ThemeVisualizer
+              onThemeChange={setCurrentTheme}
+              currentTheme={currentTheme}
+              nodes={nodes}
+              edges={edges}
+              setNodes={setNodes}
+              setEdges={setEdges}
+            />
             
             {/* Overlay para dibujo libre */}
             <FreeDrawOverlay 
@@ -368,8 +401,21 @@ function GenogramaEditorWrapper() {
                 )}
               </div>
             </Panel>
+            
+            {/* Mini-mapa mejorado */}
+            <EnhancedMinimap nodes={nodes} />
           </ReactFlow>
         </div>
+        
+        {/* Panel de Notas de Sesión */}
+        <SessionNotesPanel
+          isOpen={isSessionNotesOpen}
+          onToggle={toggleSessionNotesPanel}
+          selectedNode={selectedNode}
+          nodes={nodes}
+          edges={edges}
+          patientName={patientName}
+        />
         
         <Sidebar
           onRelate={onRelate}
@@ -395,6 +441,11 @@ function GenogramaEditorWrapper() {
           onToggleSmartGuides={toggleSmartGuides}
           guideOptions={guideOptions}
           updateGuideOptions={updateGuideOptions}
+          // Añadir togglers para los paneles laterales
+          toggleClinicalHistory={toggleClinicalHistoryPanel}
+          isClinicalHistoryOpen={isClinicalHistoryOpen}
+          toggleSessionNotes={toggleSessionNotesPanel}
+          isSessionNotesOpen={isSessionNotesOpen}
         />
       </div>
     </>
