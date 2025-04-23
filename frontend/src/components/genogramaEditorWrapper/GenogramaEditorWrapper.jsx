@@ -12,8 +12,10 @@ import nodeTypes from "../../nodeTypes";
 import edgeTypes from "../../edgeTypes";
 import Sidebar from "../sidebar/Sidebar";
 import FreeDrawOverlay from "../drawing/FreeDrawOverlay";
+import SmartGuidesOverlay from "../guides/SmartGuidesOverlay";
 import html2canvas from 'html2canvas';
 import useGenogramaState from "../../hooks/useGenogramaState";
+import useSmartGuides from "../../hooks/useSmartGuides";
 import MenuBar from "../menuBar/MenuBar";
 import { transformToReactFlow } from "../../utils/transformToReactFlow";
 import useRecorder from "../../hooks/useRecorder";
@@ -49,6 +51,16 @@ function GenogramaEditorWrapper() {
   // Estado para la conexión seleccionada
   const [selectedEdge, setSelectedEdge] = useState(null);
   
+  // Configuración de Smart Guides
+  const [enableSmartGuides, setEnableSmartGuides] = useState(true);
+  const [guideOptions, setGuideOptions] = useState({
+    threshold: 8,              // Distancia para activar las guías
+    showDistances: true,       // Mostrar etiquetas de distancia
+    enableSnapping: true,      // Activar ajuste automático
+    snapThreshold: 5,          // Distancia para activar el snap
+    detectDistribution: true   // Detectar distribución equidistante
+  });
+  
   // Usar nuestro hook personalizado para gestión del genograma
   const {
     nodes,
@@ -69,6 +81,14 @@ function GenogramaEditorWrapper() {
     setNodes,
     updateEdgeRelation
   } = useGenogramaState();
+  
+  // Hook para Smart Guides con opciones configurables
+  const {
+    guides,
+    onNodeDrag,
+    onNodeDragStop,
+    showDistances
+  } = useSmartGuides(guideOptions);
 
   const [patientName, setPatientName] = useState("");
 
@@ -94,6 +114,25 @@ function GenogramaEditorWrapper() {
   const toggleTool = useCallback(tool => {
     setActiveTool(current => current === tool ? null : tool);
   }, []);
+  
+  // Función para alternar las guías inteligentes
+  const toggleSmartGuides = useCallback(() => {
+    setEnableSmartGuides(prev => !prev);
+  }, []);
+  
+  // Función para actualizar opciones de guías
+  const updateGuideOptions = useCallback((key, value) => {
+    setGuideOptions(prev => ({
+      ...prev,
+      [key]: value
+    }));
+  }, []);
+
+  // Manejador personalizado para cambios en nodos que integra Smart Guides
+  const handleNodesChange = useCallback((changes) => {
+    // Aplicar cambios normales de nodos a través del hook de estado de genograma
+    onNodesChange(changes);
+  }, [onNodesChange]);
 
   // Añadir un event listener para la tecla Escape y +/- para grosor
   useEffect(() => {
@@ -110,6 +149,14 @@ function GenogramaEditorWrapper() {
       if (event.key === '-') {
         setStrokeWidth(prev => Math.max(MIN_STROKE_WIDTH, prev - 1));
       }
+      // Toggle Smart Guides with 'g'
+      if (event.key === 'g') {
+        toggleSmartGuides();
+      }
+      // Toggle distribution detection with 'd'
+      if (event.key === 'd') {
+        updateGuideOptions('detectDistribution', !guideOptions.detectDistribution);
+      }
     };
 
     // Agregar el event listener
@@ -119,7 +166,7 @@ function GenogramaEditorWrapper() {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [activeTool]); // Dependencia: activeTool
+  }, [activeTool, toggleSmartGuides, guideOptions.detectDistribution, updateGuideOptions]); 
 
   const handleExportImage = useCallback(() => {
     const container = document.getElementById('flowWrapper');
@@ -202,11 +249,13 @@ function GenogramaEditorWrapper() {
               data: { ...node.data, onEdit: handleEditLabel },
             }))}
             edges={edges}
-            onNodesChange={onNodesChange}
+            onNodesChange={handleNodesChange}
             onEdgesChange={onEdgesChange}
             onConnect={handleConnect}
             nodeTypes={nodeTypes}
             edgeTypes={edgeTypes}
+            onNodeDrag={enableSmartGuides ? onNodeDrag : undefined}
+            onNodeDragStop={enableSmartGuides ? onNodeDragStop : undefined}
             fitView
             snapToGrid
             deleteKeyCode={['Delete', 'Backspace']}
@@ -243,6 +292,82 @@ function GenogramaEditorWrapper() {
               edges={edges}
               setEdges={setEdges}
             />
+            
+            {/* Overlay para guías inteligentes */}
+            {enableSmartGuides && (
+              <SmartGuidesOverlay guides={guides} showDistances={showDistances} />
+            )}
+            
+            {/* Panel para control de Smart Guides */}
+            <Panel position="top-right">
+              <div style={{
+                padding: '6px 10px',
+                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                borderRadius: '4px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '8px',
+                fontSize: '12px',
+                boxShadow: '0 2px 5px rgba(0,0,0,0.15)'
+              }}>
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'space-between',
+                  borderBottom: '1px solid #e0e0e0',
+                  paddingBottom: '6px'
+                }}>
+                  <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={enableSmartGuides}
+                      onChange={toggleSmartGuides}
+                      style={{ marginRight: '5px' }}
+                    />
+                    Smart Guides {enableSmartGuides ? 'ON' : 'OFF'}
+                  </label>
+                  <div style={{ fontSize: '11px', color: '#666' }}>
+                    (Press 'G')
+                  </div>
+                </div>
+                
+                {enableSmartGuides && (
+                  <>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+                        <input
+                          type="checkbox"
+                          checked={guideOptions.detectDistribution}
+                          onChange={(e) => updateGuideOptions('detectDistribution', e.target.checked)}
+                          style={{ marginRight: '5px' }}
+                        />
+                        Distribución equidistante
+                      </label>
+                      <div style={{ fontSize: '11px', color: '#666' }}>
+                        (Press 'D')
+                      </div>
+                    </div>
+                    
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <label style={{ fontSize: '11px', marginRight: '5px' }}>
+                        Sensibilidad:
+                      </label>
+                      <input
+                        type="range"
+                        min="2"
+                        max="15"
+                        value={guideOptions.threshold}
+                        onChange={(e) => updateGuideOptions('threshold', parseInt(e.target.value))}
+                        style={{ width: '80px', height: '6px' }}
+                      />
+                      <span style={{ fontSize: '10px', color: '#666', marginLeft: '5px' }}>
+                        {guideOptions.threshold}px
+                      </span>
+                    </div>
+                  </>
+                )}
+              </div>
+            </Panel>
           </ReactFlow>
         </div>
         
@@ -266,6 +391,10 @@ function GenogramaEditorWrapper() {
           strokeWidth={strokeWidth}
           setStrokeWidth={setStrokeWidth}
           onExportDrawing={handleExportImage}
+          enableSmartGuides={enableSmartGuides}
+          onToggleSmartGuides={toggleSmartGuides}
+          guideOptions={guideOptions}
+          updateGuideOptions={updateGuideOptions}
         />
       </div>
     </>
