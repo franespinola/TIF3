@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import BaseNodeComponent from './BaseNodeComponent';
-import useCircleNode from '../../hooks/useCircleNode';
-import useNodeEditor from '../../hooks/useNodeEditor';
+import useNodeSize from '../../hooks/useNodeSize';
 
 const FemeninoNode = ({ data, id, selected }) => {
   // Estado para campos editables
@@ -16,12 +15,13 @@ const FemeninoNode = ({ data, id, selected }) => {
   // Tamaño del nodo
   const defaultSize = data?.size || 60;
   
-  // Usar el hook especializado para nodos circulares
-  const [radius, size, resizeHandleRef, isResizing] = useCircleNode(
+  // Usar el hook para gestionar el tamaño
+  const [size, resizeHandleRef, isResizing] = useNodeSize(
     id,
-    { radius: defaultSize / 2 },
-    defaultSize / 2,
-    25 // min radius
+    data,
+    { width: defaultSize, height: defaultSize },
+    40, // min width
+    40  // min height
   );
   
   // Determinar si los handles son conectables
@@ -69,28 +69,31 @@ const FemeninoNode = ({ data, id, selected }) => {
         nodeStyles={{
           width: size.width,
           height: size.height,
+          background: "#fce7f3",
+          border: "2px solid #db2777",
           borderRadius: "50%",
-          background: "#fecdd3",
-          border: "2px solid #be185d",
           position: "relative",
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
+          cursor: "pointer", // Añadir cursor pointer para indicar interactividad
         }}
+        data={data} // Pasar datos para el tooltip
+        nodeType="femenino" // Indicar el tipo de nodo para estilo adecuado
       >
         {/* Mostrar edad dentro del nodo si está disponible */}
         {age !== '' && (
           <div style={{ 
             fontSize: Math.max(14, size.width * 0.2),
             fontWeight: 'bold',
-            color: '#be185d',
+            color: '#db2777',
           }}>
             {age}
           </div>
         )}
       </BaseNodeComponent>
       
-      {/* Información del nodo debajo */}
+      {/* Información del nodo debajo - ahora solo mostramos el nombre */}
       <div style={{ marginTop: 4, width: Math.max(120, size.width + 20) }}>
         {/* Nombre */}
         {editingField === 'name' ? (
@@ -111,8 +114,8 @@ const FemeninoNode = ({ data, id, selected }) => {
           </div>
         )}
         
-        {/* Edad */}
-        {editingField === 'age' ? (
+        {/* Campos de edición ocultos para mantener la funcionalidad de edición */}
+        {editingField === 'age' && (
           <input
             value={age}
             onChange={(e) => handleSave('age', e.target.value)}
@@ -121,17 +124,9 @@ const FemeninoNode = ({ data, id, selected }) => {
             autoFocus
             style={{ width: "100%", textAlign: "center", fontSize: 12 }}
           />
-        ) : (
-          <div 
-            onDoubleClick={() => handleEdit('age')}
-            style={{ textAlign: "center", fontSize: 12, cursor: "text" }}
-          >
-            {age !== '' ? `Edad: ${age}` : "Edad: --"}
-          </div>
         )}
         
-        {/* Profesión */}
-        {editingField === 'profession' ? (
+        {editingField === 'profession' && (
           <input
             value={profession}
             onChange={(e) => handleSave('profession', e.target.value)}
@@ -140,17 +135,9 @@ const FemeninoNode = ({ data, id, selected }) => {
             autoFocus
             style={{ width: "100%", textAlign: "center", fontSize: 12 }}
           />
-        ) : (
-          <div 
-            onDoubleClick={() => handleEdit('profession')}
-            style={{ textAlign: "center", fontSize: 12, cursor: "text" }}
-          >
-            {profession || "Profesión: --"}
-          </div>
         )}
         
-        {/* Información adicional */}
-        {editingField === 'info' ? (
+        {editingField === 'info' && (
           <textarea
             value={info}
             onChange={(e) => handleSave('info', e.target.value)}
@@ -158,17 +145,31 @@ const FemeninoNode = ({ data, id, selected }) => {
             autoFocus
             style={{ width: "100%", fontSize: 11, minHeight: 40 }}
           />
-        ) : (
+        )}
+        
+        {/* Pequeño indicador visual de info adicional como pequeño icono */}
+        {(profession || info) && (
           <div 
-            onDoubleClick={() => handleEdit('info')}
-            style={{ fontSize: 11, marginTop: 2, cursor: "text" }}
+            style={{ 
+              fontSize: 10, 
+              color: '#db2777', 
+              textAlign: 'center',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: '2px'
+            }}
           >
-            {info ? info : "Información adicional..."}
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 16v-4M12 8h.01" />
+            </svg>
+            <span>Info adicional</span>
           </div>
         )}
         
         {/* Identificador del nodo */}
-        <div style={{ fontSize: 10, marginTop: 2, textAlign: "center" }}>
+        <div style={{ fontSize: 10, marginTop: 2, textAlign: "center", color: '#718096' }}>
           ID: {id}
         </div>
       </div>

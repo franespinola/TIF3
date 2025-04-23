@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import NodeHandles from './NodeHandles';
 import ResizeHandle from './ResizeHandle';
+import NodeTooltip from './NodeTooltip';
 
 /**
  * @typedef {Object} BaseNodeComponentProps
@@ -10,6 +11,9 @@ import ResizeHandle from './ResizeHandle';
  * @property {boolean} [isConnectable=true] - Si el nodo permite conexiones
  * @property {Object} [nodeStyles={}] - Estilos adicionales para el nodo
  * @property {boolean} [showResizeHandle=true] - Si se muestra el control de redimensionamiento
+ * @property {Object} [data={}] - Datos del nodo para el tooltip
+ * @property {string} [nodeType='default'] - Tipo de nodo
+ * @property {boolean} [showTooltip=true] - Si se debe mostrar el tooltip al pasar el cursor
  */
 
 /**
@@ -45,15 +49,66 @@ function BaseNodeComponent({
   isConnectable = true,
   nodeStyles = {},
   showResizeHandle = true,
+  data = {},
+  nodeType = 'default',
+  showTooltip = true,
 }) {
+  // Estado para controlar cuándo mostrar el tooltip
+  const [isTooltipVisible, setIsTooltipVisible] = useState(false);
+  
+  // Delay para mostrar/ocultar el tooltip para evitar parpadeos
+  let tooltipTimer = null;
+  
+  const handleMouseEnter = () => {
+    if (tooltipTimer) clearTimeout(tooltipTimer);
+    tooltipTimer = setTimeout(() => setIsTooltipVisible(true), 300);
+  };
+  
+  const handleMouseLeave = () => {
+    if (tooltipTimer) clearTimeout(tooltipTimer);
+    tooltipTimer = setTimeout(() => setIsTooltipVisible(false), 100);
+  };
+  
+  // Limpiar temporizador al desmontar
+  React.useEffect(() => {
+    return () => {
+      if (tooltipTimer) clearTimeout(tooltipTimer);
+    };
+  }, []);
+  
   const baseStyle = {
     position: 'relative',
     ...nodeStyles
   };
   
+  // Añadir indicador de información adicional si hay datos
+  const hasAdditionalInfo = data?.profession || data?.info || data?.age;
+  
   return (
-    <div style={baseStyle}>
+    <div 
+      style={baseStyle}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
       {children}
+      
+      {/* Indicador visual de que hay información adicional */}
+      {hasAdditionalInfo && showTooltip && (
+        <div style={{
+          position: 'absolute',
+          top: -5,
+          right: -5,
+          width: 12,
+          height: 12,
+          borderRadius: '50%',
+          backgroundColor: '#3b82f6',
+          border: '2px solid white',
+          zIndex: 5,
+        }} />
+      )}
+      
+      {/* Tooltip con información detallada */}
+      {showTooltip && <NodeTooltip show={isTooltipVisible} data={data} nodeType={nodeType} />}
       
       {/* Handles reutilizables para conexiones */}
       <NodeHandles isConnectable={isConnectable} />
