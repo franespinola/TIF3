@@ -5,7 +5,7 @@ import ReactFlow, {
   Panel
 } from "reactflow";
 import "reactflow/dist/style.css";
-
+import { addEdge } from "reactflow";
 import nodeTypes from "../../nodeTypes";
 import edgeTypes from "../../edgeTypes";
 import Sidebar from "../sidebar/Sidebar";
@@ -13,8 +13,8 @@ import FreeDrawOverlay from "../drawing/FreeDrawOverlay";
 import SmartGuidesOverlay from "../guides/SmartGuidesOverlay";
 import EnhancedMinimap from "../navigation/EnhancedMinimap";
 import ThemeVisualizer from "../visualization/ThemeVisualizer";
-import SessionNotesPanel from "../notes/SessionNotesPanel";
-import ClinicalHistoryPanel from "../clinicalHistory/ClinicalHistoryPanel";
+import SessionNotesPanel from "../sessionNotesPanel/SessionNotesPanel";
+import ClinicalHistoryPanel from "../clinicalHistoryPanel/ClinicalHistoryPanel";
 import html2canvas from 'html2canvas';
 import useGenogramaState from "../../hooks/useGenogramaState";
 import useSmartGuides from "../../hooks/useSmartGuides";

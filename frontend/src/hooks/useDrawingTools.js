@@ -1,6 +1,5 @@
 import { useState, useCallback } from 'react';
 import { nanoid } from 'nanoid';
-import { Position } from 'reactflow';
 
 // Tipos de formas que podemos dibujar
 const SHAPE_TYPES = {
