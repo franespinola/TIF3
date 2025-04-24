@@ -3,7 +3,7 @@ import dagre from "dagre";
 /**
  * @typedef {Object} LayoutOptions
  * @property {string} [rankdir="TB"] - Dirección del layout ("TB", "LR", "BT", "RL").
- * @property {number} [ranksep=120] - Separación entre niveles (usado para calcular la posición vertical según generation).
+ * @property {number} [ranksep=120] - Separación entre niveles.
  * @property {number} [nodesep=80] - Separación entre nodos.
  * @property {number} [defaultWidth=100] - Ancho por defecto de un nodo si no se especifica.
  * @property {number} [defaultHeight=100] - Alto por defecto de un nodo si no se especifica.
@@ -11,12 +11,12 @@ import dagre from "dagre";
 
 /**
  * Calcula el layout de un grafo usando Dagre y actualiza la posición de cada nodo.
+ * 
+ * Esta versión utiliza automáticamente el valor de `generation` asociado a cada nodo
+ * para asignar el `rank` en Dagre, asegurando que las generaciones se visualicen
+ * correctamente en niveles horizontales distintos.
  *
- * En esta versión se respeta la estructura en capas definida por el atributo "generation":
- *   - generation = 1 se ubicará en la primera capa (y = 0 o ajustado con defaultHeight)
- *   - generation = 2 en la segunda, etc.
- *
- * @param {Array<Object>} nodes - Array de nodos, donde cada uno debe tener la propiedad `id` y opcionalmente `data` con `width`, `height` y `generation`.
+ * @param {Array<Object>} nodes - Array de nodos, donde cada uno debe tener la propiedad `id` y `data.generation`.
  * @param {Array<Object>} edges - Array de aristas, cada una con propiedades `source` y `target`.
  * @param {LayoutOptions} [options={}] - Opciones de configuración para personalizar el layout.
  * @returns {Array<Object>} - Los nodos actualizados con una propiedad `position` que indica su posición calculada.
@@ -41,16 +41,25 @@ export default function layoutWithDagre(nodes, edges, options = {}) {
   g.setGraph({ rankdir, ranksep, nodesep });
   g.setDefaultEdgeLabel(() => ({}));
 
-  // Se agregan los nodos sin forzar un 'rank' en Dagre,
-  // ya que se va a recalcular la posición vertical según "generation"
+  // Agregar los nodos al grafo con su rank basado en generation
   nodes.forEach((node) => {
     if (!node.id) {
       console.warn("Nodo sin id detectado:", node);
       return;
     }
+    
     const width = node.data?.width ?? defaultWidth;
     const height = node.data?.height ?? defaultHeight;
-    g.setNode(node.id, { width, height });
+    
+    // Configuración básica del nodo para Dagre
+    const nodeConfig = { 
+      width, 
+      height,
+      // Usar explícitamente generation como rank para Dagre
+      rank: node.data?.generation
+    };
+    
+    g.setNode(node.id, nodeConfig);
   });
 
   // Agregar edges (relaciones) al grafo
@@ -65,32 +74,24 @@ export default function layoutWithDagre(nodes, edges, options = {}) {
   // Ejecutar el layout de Dagre
   dagre.layout(g);
 
-  // Ajustar la posición de cada nodo según su valor "generation"
-  // Se mantiene la posición horizontal calculada (x) y se asigna la y según la capa
+  // Actualizar la posición de cada nodo con lo calculado por Dagre
   const updatedNodes = nodes.map((node) => {
     const nodeWithPos = g.node(node.id);
     if (!nodeWithPos) {
       console.warn(`No se encontró posición para el nodo con id: ${node.id}`);
       return node;
     }
-    // Se extrae la generación; si no está definida se usa 1 por defecto.
-    const generation = node.data?.generation ?? 1;
-
+    
     // Conservar el ancho y alto (se usan para centrar la posición del nodo)
     const width = node.data?.width ?? defaultWidth;
     const height = node.data?.height ?? defaultHeight;
 
-    // Forzamos la posición vertical en función de la capa (generation)
-    // Ajustamos sumando la mitad de la altura para centrar verticalmente
-    const newY = (generation - 1) * ranksep + defaultHeight / 2;
-
     return {
       ...node,
       position: {
-        // Se conserva la posición horizontal (x) calculada por Dagre y se centra
+        // Centrar el nodo en la posición calculada por Dagre
         x: nodeWithPos.x - width / 2,
-        // Se usa el valor forzado basado en la generación para la coordenada y
-        y: newY - height / 2,
+        y: nodeWithPos.y - height / 2,
       },
     };
   });

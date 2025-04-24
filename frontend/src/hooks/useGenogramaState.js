@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 import { useNodesState, useEdgesState, addEdge, useReactFlow } from 'reactflow'; // Importar useReactFlow
 import layoutWithDagre from '../utils/layoutWithDagre';
 import { transformToReactFlow } from '../utils/transformToReactFlow';
+import { normalizeGenogram } from '../utils/normalizeGenogram';  // Importación corregida
 
 /**
  * Hook personalizado para manejar el estado del genograma
@@ -219,12 +220,12 @@ export default function useGenogramaState() {
   
         // 1) Ver si es "nuevo" o "viejo" formato
         if (rawData.people && rawData.relationships) {
-          // Es el nuevo formato universal
-          const { nodes, edges } = transformToReactFlow(rawData);
+          // Es el nuevo formato universal - Usar la nueva estrategia de nodo-familia
+          const { nodes, edges } = normalizeGenogram(rawData);
           finalNodes = nodes;
           finalEdges = edges;
         } else if (rawData.nodes && rawData.edges) {
-          // Es el antiguo
+          // Es el formato antiguo (ya procesado)
           finalNodes = rawData.nodes;
           finalEdges = rawData.edges;
         } else {
@@ -232,7 +233,7 @@ export default function useGenogramaState() {
           return;
         }
   
-        // 2) Aplico dagre layout
+        // 2) Aplico dagre layout (ahora sin forzar posición Y por generación)
         const laidOutNodes = layoutWithDagre(finalNodes, finalEdges);
         setNodes(laidOutNodes);
         setEdges(finalEdges);

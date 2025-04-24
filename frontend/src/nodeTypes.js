@@ -12,6 +12,7 @@ import RectangleNode from "./components/nodes/RectangleNode";
 import CircleNode from "./components/nodes/CircleNode";
 import TextNode from "./components/nodes/TextNode";
 import NoteNode from "./components/nodes/NoteNode";
+import FamilyNode from "./components/nodes/FamilyNode";
 
 const nodeTypes = {
   // Nodos de genograma
@@ -26,6 +27,7 @@ const nodeTypes = {
   fetoMuerto: FetoMuertoNode,
   fetoMuertoMujer: FetoMuertoMujer,
   adopcion: AdopcionNode,
+  familyNode: FamilyNode, // Nuevo nodo para estrategia nodo-familia
   
   // Nodos de anotación
   rectangle: RectangleNode,
