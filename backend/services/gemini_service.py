@@ -8,7 +8,7 @@ import sys # Para salir del script en caso de errores críticos
 
 API_KEY = "AIzaSyAvAF1YlyjWPPBCZMb5Af64pAbK8AxTybA"
 
-MODEL = "gemini-2.5-flash-preview-04-17" #gemini-1.5-pro
+MODEL = "gemini-2.5-pro-exp-03-25" #gemini-1.5-pro gemini-2.5-flash-preview-04-17
 
 # También podés probar con "gemini-1.5-flash"
 
@@ -221,7 +221,7 @@ def call_gemini_api(prompt: str) -> str:
 def generate_initial_prompt(transcripcion: str) -> str:
     """
     Genera el prompt inicial para extraer el genograma en formato JSON.
-    *** VERSIÓN MODIFICADA PARA INCLUIR CAMPO 'age' Y TIPOS DE PÉRDIDAS GESTACIONALES ***
+    *** VERSIÓN MODIFICADA PARA INCLUIR CAMPO 'age', TIPOS DE PÉRDIDAS GESTACIONALES Y POSICIONAMIENTO DE PAREJAS ***
     """
     current_year = datetime.now().year
     prompt = f"""
@@ -259,6 +259,23 @@ Cuando se mencione cualquier tipo de pérdida gestacional:
 - En el campo `name`, utiliza un formato descriptivo según el tipo (ej: "Aborto espontáneo de María", "Mortinato de Ana y Pedro")
 ###########################################################################
 
+####################  REGLAS DE AGRUPACIÓN DE PAREJAS  ####################
+Para garantizar una visualización adecuada del genograma, asigna información de posicionamiento especial:
+
+1. Para cada relación conyugal (matrimonio, cohabitación, separación, etc.):
+   - Identifica los dos miembros de la pareja
+   - Asigna a cada uno de ellos un metadato adicional:
+     * Añade en cada persona un campo `"displayGroup": "nombre_de_grupo"` donde "nombre_de_grupo" es un identificador de la pareja
+     * Utiliza el mismo valor de "displayGroup" para ambos miembros de la pareja
+     * Puedes usar formatos como "pareja_juan_maria", "matrimonio_perez_lopez" o simplemente "p1", "p2", etc.
+
+2. Para parejas separadas o divorciadas:
+   - Si quieres que aparezcan separadas visualmente, NO les asignes el mismo "displayGroup"
+   - Si prefieres que se visualicen juntas pese a estar separadas, asígnales el mismo "displayGroup"
+
+Esto permitirá que el sistema de visualización mantenga juntas las parejas en el genograma.
+###########################################################################
+
 **Instrucciones Críticas:**
 
 1.  **Formato de Salida Exclusivo:** Tu respuesta DEBE ser **únicamente** un objeto JSON válido. No incluyas NINGÚN texto antes o después del JSON. Esto incluye:
@@ -281,6 +298,7 @@ Cuando se mencione cualquier tipo de pérdida gestacional:
     * `"deathDate"`: (String | null) Fecha de fallecimiento "YYYY-MM-DD". Usa `null` si está viva o no aplica.
     * `"role"`: (String) Rol específico relativo al paciente (ej: "paciente", "padre", "madre", "hermana", "tia_materna", "tio_paterno_mellizo", "primo_materno", "aborto_materno"). Sé lo más específico posible.
     * `"notes"`: (String) Otras observaciones relevantes extraídas DIRECTAMENTE de la transcripción (ej: "Separado hace 1.5 años", "Mayor de 5 hermanos", "Mellizo de Francisco"). **No incluyas la edad aquí si ya está en el campo 'age'**. Si no hay notas adicionales, usa "".
+    * `"displayGroup"`: (String | null) Identificador de grupo para posicionamiento visual. Usa el mismo valor para ambos miembros de una pareja. Usa `null` si no aplica.
     * `"attributes"`: (Object) Objeto con banderas booleanas. **Todas** deben estar presentes:
         * `"isPatient"`: (Boolean) `true` solo para el nodo del paciente principal (identifica quién es en la transcripción), `false` para todos los demás.
         * `"isDeceased"`: (Boolean) `true` si ha fallecido, `false` en caso contrario.
@@ -312,6 +330,7 @@ Cuando se mencione cualquier tipo de pérdida gestacional:
     * Calcula y rellena `"birthDate"` de forma aproximada si es posible (basado en edad o contexto).
     * Modela cualquier aborto mencionado (`isAbortion: true`) y su relación `parentChild`.
     * Modela TODAS las relaciones de pareja (actuales y pasadas) usando `type: "conyugal"` y el `legalStatus` adecuado.
+    * **Asigna el mismo `"displayGroup"` a cada miembro de una pareja** para que se visualicen juntos.
     * Identifica a **TODOS** los tíos/tías, primos, hermanos, etc. mencionados. Crea nodos para ellos.
     * Establece las relaciones `parentChild` y de hermandad (`hermanos`, `mellizos`) correspondientes.
     * Asegúrate de que **todos** los `id` referenciados en `relationships` (`source`, `target`) existan en la lista `people`.
