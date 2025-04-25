@@ -1,0 +1,1353 @@
+Eres un asistente experto en psicología familiar y organización visual de genogramas. Necesito mejorar la visualización de mi genograma, ya que actualmente las relaciones se cruzan entre sí y no se respetan las jerarquías generacionales (abuelos arriba, padres en el medio, hijos abajo, etc.).
+
+Te voy a proporcionar el código completo de mi proyecto, pero necesito que trabajes **de forma modular**:
+
+- Si detectas que se deben modificar varios componentes, debes solicitármelos **uno por uno**.
+- Cada vez que me proporciones un cambio, debes darme **el archivo completo** listo para copiar y pegar, sin fragmentos ni código parcial.
+- **No modifiques los estilos personalizados de los nodos ni las relaciones**, ya están definidos correctamente.
+- Tu foco debe estar en mejorar el **layout jerárquico automático** para que el genograma sea más claro y sin cruces visuales.
+
+Cuando estés listo, te pasaré el primer archivo o bloque relevante. Tu tarea inicial será detectar si el problema está en el layout, en la forma de cargar los datos, o en la lógica que posiciona los nodos.
+
+El json que recibe mi front para generar el genograma visual es el siguiente:
+{
+  "people": [
+    {
+      "id": "g1_jose",
+      "name": "José",
+      "gender": "M",
+      "generation": 1,
+      "birthDate": null,
+      "age": null,
+      "deathDate": null,
+      "role": "abuelo_materno",
+      "notes": "",
+      "attributes": {
+        "isPatient": false,
+        "isDeceased": false,
+        "isPregnancy": false,
+        "isAbortion": false,
+        "isAdopted": false,
+        "abortionType": null,
+        "gestationalAge": null
+      }
+    },
+    {
+      "id": "g1_silvia",
+      "name": "Silvia",
+      "gender": "F",
+      "generation": 1,
+      "birthDate": null,
+      "age": null,
+      "deathDate": null,
+      "role": "abuela_materna",
+      "notes": "",
+      "attributes": {
+        "isPatient": false,
+        "isDeceased": false,
+        "isPregnancy": false,
+        "isAbortion": false,
+        "isAdopted": false,
+        "abortionType": null,
+        "gestationalAge": null
+      }
+    },
+    {
+      "id": "g1_carlos",
+      "name": "Carlos",
+      "gender": "M",
+      "generation": 1,
+      "birthDate": null,
+      "age": null,
+      "deathDate": "2022",
+      "role": "abuelo_paterno",
+      "notes": "Fallecido hace 3 años. Tuvo cáncer de próstata y piel.",
+      "attributes": {
+        "isPatient": false,
+        "isDeceased": true,
+        "isPregnancy": false,
+        "isAbortion": false,
+        "isAdopted": false,
+        "abortionType": null,
+        "gestationalAge": null
+      }
+    },
+    {
+      "id": "g1_liliana",
+      "name": "Liliana",
+      "gender": "F",
+      "generation": 1,
+      "birthDate": null,
+      "age": null,
+      "deathDate": null,
+      "role": "abuela_paterna",
+      "notes": "Tiene hipertensión.",
+      "attributes": {
+        "isPatient": false,
+        "isDeceased": false,
+        "isPregnancy": false,
+        "isAbortion": false,
+        "isAdopted": false,
+        "abortionType": null,
+        "gestationalAge": null
+      }
+    },
+    {
+      "id": "g2_lucas",
+      "name": "Lucas de la Rosa",
+      "gender": "M",
+      "generation": 2,
+      "birthDate": "1972",
+      "age": 53,
+      "deathDate": null,
+      "role": "padre",
+      "notes": "El mayor de 4 hermanos. Mellizo de Julián.",
+      "attributes": {
+        "isPatient": false,
+        "isDeceased": false,
+        "isPregnancy": false,
+        "isAbortion": false,
+        "isAdopted": false,
+        "abortionType": null,
+        "gestationalAge": null
+      }
+    },
+    {
+      "id": "g2_fernanda",
+      "name": "Fernanda Espínola",
+      "gender": "F",
+      "generation": 2,
+      "birthDate": "1973",
+      "age": 52,
+      "deathDate": null,
+      "role": "madre",
+      "notes": "La mayor de 5 hermanos.",
+      "attributes": {
+        "isPatient": false,
+        "isDeceased": false,
+        "isPregnancy": false,
+        "isAbortion": false,
+        "isAdopted": false,
+        "abortionType": null,
+        "gestationalAge": null
+      }
+    },
+    {
+      "id": "g2_francisco",
+      "name": "Francisco",
+      "gender": "M",
+      "generation": 2,
+      "birthDate": null,
+      "age": null,
+      "deathDate": null,
+      "role": "tio_materno_mellizo",
+      "notes": "Mellizo de María. No tiene hijos.",
+      "attributes": {
+        "isPatient": false,
+        "isDeceased": false,
+        "isPregnancy": false,
+        "isAbortion": false,
+        "isAdopted": false,
+        "abortionType": null,
+        "gestationalAge": null
+      }
+    },
+    {
+      "id": "g2_paula",
+      "name": "Paula",
+      "gender": "F",
+      "generation": 2,
+      "birthDate": "1975",
+      "age": 50,
+      "deathDate": null,
+      "role": "tia_materna",
+      "notes": "Separada. Tiene una hija.",
+      "attributes": {
+        "isPatient": false,
+        "isDeceased": false,
+        "isPregnancy": false,
+        "isAbortion": false,
+        "isAdopted": false,
+        "abortionType": null,
+        "gestationalAge": null
+      }
+    },
+    {
+      "id": "g2_mariano",
+      "name": "Mariano",
+      "gender": "M",
+      "generation": 2,
+      "birthDate": null,
+      "age": null,
+      "deathDate": null,
+      "role": "tio_materno",
+      "notes": "Tiene un hijo.",
+      "attributes": {
+        "isPatient": false,
+        "isDeceased": false,
+        "isPregnancy": false,
+        "isAbortion": false,
+        "isAdopted": false,
+        "abortionType": null,
+        "gestationalAge": null
+      }
+    },
+    {
+      "id": "g2_nicolas",
+      "name": "Nicolás",
+      "gender": "M",
+      "generation": 2,
+      "birthDate": null,
+      "age": null,
+      "deathDate": null,
+      "role": "tio_materno",
+      "notes": "Casado con Verónica. Tiene tres hijos. Padrino de Igna.",
+      "attributes": {
+        "isPatient": false,
+        "isDeceased": false,
+        "isPregnancy": false,
+        "isAbortion": false,
+        "isAdopted": false,
+        "abortionType": null,
+        "gestationalAge": null
+      }
+    },
+    {
+      "id": "g2_maria",
+      "name": "María",
+      "gender": "F",
+      "generation": 2,
+      "birthDate": null,
+      "age": null,
+      "deathDate": null,
+      "role": "tia_materna_melliza",
+      "notes": "Melliza de Francisco. No tiene hijos.",
+      "attributes": {
+        "isPatient": false,
+        "isDeceased": false,
+        "isPregnancy": false,
+        "isAbortion": false,
+        "isAdopted": false,
+        "abortionType": null,
+        "gestationalAge": null
+      }
+    },
+    {
+      "id": "g2_julian",
+      "name": "Julián",
+      "gender": "M",
+      "generation": 2,
+      "birthDate": null,
+      "age": null,
+      "deathDate": null,
+      "role": "tio_paterno_mellizo",
+      "notes": "Mellizo de Lucas. Separado. Tiene una hija.",
+      "attributes": {
+        "isPatient": false,
+        "isDeceased": false,
+        "isPregnancy": false,
+        "isAbortion": false,
+        "isAdopted": false,
+        "abortionType": null,
+        "gestationalAge": null
+      }
+    },
+    {
+      "id": "g2_facundo",
+      "name": "Facundo",
+      "gender": "M",
+      "generation": 2,
+      "birthDate": null,
+      "age": null,
+      "deathDate": null,
+      "role": "tio_paterno",
+      "notes": "Separado. Tiene dos hijas.",
+      "attributes": {
+        "isPatient": false,
+        "isDeceased": false,
+        "isPregnancy": false,
+        "isAbortion": false,
+        "isAdopted": false,
+        "abortionType": null,
+        "gestationalAge": null
+      }
+    },
+    {
+      "id": "g2_lucia",
+      "name": "Lucía",
+      "gender": "F",
+      "generation": 2,
+      "birthDate": null,
+      "age": null,
+      "deathDate": null,
+      "role": "tia_paterna",
+      "notes": "Separada. Tiene dos hijas. Madrina de Igna.",
+      "attributes": {
+        "isPatient": false,
+        "isDeceased": false,
+        "isPregnancy": false,
+        "isAbortion": false,
+        "isAdopted": false,
+        "abortionType": null,
+        "gestationalAge": null
+      }
+    },
+    {
+      "id": "g2_veronica",
+      "name": "Verónica",
+      "gender": "F",
+      "generation": 2,
+      "birthDate": null,
+      "age": null,
+      "deathDate": null,
+      "role": "pareja_tio_materno",
+      "notes": "Pareja de Nicolás.",
+      "attributes": {
+        "isPatient": false,
+        "isDeceased": false,
+        "isPregnancy": false,
+        "isAbortion": false,
+        "isAdopted": false,
+        "abortionType": null,
+        "gestationalAge": null
+      }
+    },
+    {
+      "id": "g2_jimena",
+      "name": "Jimena",
+      "gender": "F",
+      "generation": 2,
+      "birthDate": null,
+      "age": null,
+      "deathDate": null,
+      "role": "pareja_tio_materno",
+      "notes": "Pareja de Mariano.",
+      "attributes": {
+        "isPatient": false,
+        "isDeceased": false,
+        "isPregnancy": false,
+        "isAbortion": false,
+        "isAdopted": false,
+        "abortionType": null,
+        "gestationalAge": null
+      }
+    },
+    {
+      "id": "g3_igna",
+      "name": "Igna (Paciente)",
+      "gender": "F",
+      "generation": 3,
+      "birthDate": "2005",
+      "age": null,
+      "deathDate": null,
+      "role": "paciente",
+      "notes": "Vínculos cercanos con tía Lucía, tíos mellizos María y Francisco. Vínculo distante con tío Nicolás.",
+      "attributes": {
+        "isPatient": true,
+        "isDeceased": false,
+        "isPregnancy": false,
+        "isAbortion": false,
+        "isAdopted": false,
+        "abortionType": null,
+        "gestationalAge": null
+      }
+    },
+    {
+      "id": "g3_lourdes",
+      "name": "Lourdes",
+      "gender": "F",
+      "generation": 3,
+      "birthDate": "2003",
+      "age": 22,
+      "deathDate": null,
+      "role": "hermana",
+      "notes": "Hermana mayor de Igna.",
+      "attributes": {
+        "isPatient": false,
+        "isDeceased": false,
+        "isPregnancy": false,
+        "isAbortion": false,
+        "isAdopted": false,
+        "abortionType": null,
+        "gestationalAge": null
+      }
+    },
+    {
+      "id": "g3_aborto_fernanda_lucas",
+      "name": "Aborto espontáneo de Fernanda y Lucas",
+      "gender": "F",
+      "generation": 3,
+      "birthDate": null,
+      "age": null,
+      "deathDate": null,
+      "role": "aborto_materno",
+      "notes": "Perdida a los cinco meses de gestación.",
+      "attributes": {
+        "isPatient": false,
+        "isDeceased": true,
+        "isPregnancy": true,
+        "isAbortion": true,
+        "isAdopted": false,
+        "abortionType": "spontaneous",
+        "gestationalAge": 22
+      }
+    },
+    {
+      "id": "g3_paulina",
+      "name": "Paulina",
+      "gender": "F",
+      "generation": 3,
+      "birthDate": null,
+      "age": null,
+      "deathDate": null,
+      "role": "prima_materna",
+      "notes": "",
+      "attributes": {
+        "isPatient": false,
+        "isDeceased": false,
+        "isPregnancy": false,
+        "isAbortion": false,
+        "isAdopted": false,
+        "abortionType": null,
+        "gestationalAge": null
+      }
+    },
+    {
+      "id": "g3_sofia",
+      "name": "Sofía",
+      "gender": "F",
+      "generation": 3,
+      "birthDate": null,
+      "age": null,
+      "deathDate": null,
+      "role": "prima_materna",
+      "notes": "",
+      "attributes": {
+        "isPatient": false,
+        "isDeceased": false,
+        "isPregnancy": false,
+        "isAbortion": false,
+        "isAdopted": false,
+        "abortionType": null,
+        "gestationalAge": null
+      }
+    },
+    {
+      "id": "g3_faustino",
+      "name": "Faustino",
+      "gender": "M",
+      "generation": 3,
+      "birthDate": null,
+      "age": null,
+      "deathDate": null,
+      "role": "primo_materno",
+      "notes": "",
+      "attributes": {
+        "isPatient": false,
+        "isDeceased": false,
+        "isPregnancy": false,
+        "isAbortion": false,
+        "isAdopted": false,
+        "abortionType": null,
+        "gestationalAge": null
+      }
+    },
+    {
+      "id": "g3_agustin",
+      "name": "Agustín",
+      "gender": "M",
+      "generation": 3,
+      "birthDate": null,
+      "age": null,
+      "deathDate": null,
+      "role": "primo_materno",
+      "notes": "",
+      "attributes": {
+        "isPatient": false,
+        "isDeceased": false,
+        "isPregnancy": false,
+        "isAbortion": false,
+        "isAdopted": false,
+        "abortionType": null,
+        "gestationalAge": null
+      }
+    },
+    {
+      "id": "g3_eusebio",
+      "name": "Eusebio",
+      "gender": "M",
+      "generation": 3,
+      "birthDate": null,
+      "age": null,
+      "deathDate": null,
+      "role": "primo_materno",
+      "notes": "",
+      "attributes": {
+        "isPatient": false,
+        "isDeceased": false,
+        "isPregnancy": false,
+        "isAbortion": false,
+        "isAdopted": false,
+        "abortionType": null,
+        "gestationalAge": null
+      }
+    },
+    {
+      "id": "g3_camila",
+      "name": "Camila",
+      "gender": "F",
+      "generation": 3,
+      "birthDate": null,
+      "age": null,
+      "deathDate": null,
+      "role": "prima_paterna",
+      "notes": "",
+      "attributes": {
+        "isPatient": false,
+        "isDeceased": false,
+        "isPregnancy": false,
+        "isAbortion": false,
+        "isAdopted": false,
+        "abortionType": null,
+        "gestationalAge": null
+      }
+    },
+    {
+      "id": "g3_catalina",
+      "name": "Catalina",
+      "gender": "F",
+      "generation": 3,
+      "birthDate": null,
+      "age": null,
+      "deathDate": null,
+      "role": "prima_paterna",
+      "notes": "",
+      "attributes": {
+        "isPatient": false,
+        "isDeceased": false,
+        "isPregnancy": false,
+        "isAbortion": false,
+        "isAdopted": false,
+        "abortionType": null,
+        "gestationalAge": null
+      }
+    },
+    {
+      "id": "g3_paloma",
+      "name": "Paloma",
+      "gender": "F",
+      "generation": 3,
+      "birthDate": null,
+      "age": null,
+      "deathDate": null,
+      "role": "prima_paterna",
+      "notes": "",
+      "attributes": {
+        "isPatient": false,
+        "isDeceased": false,
+        "isPregnancy": false,
+        "isAbortion": false,
+        "isAdopted": false,
+        "abortionType": null,
+        "gestationalAge": null
+      }
+    },
+    {
+      "id": "g3_ambar",
+      "name": "Ámbar",
+      "gender": "F",
+      "generation": 3,
+      "birthDate": null,
+      "age": null,
+      "deathDate": null,
+      "role": "prima_paterna",
+      "notes": "",
+      "attributes": {
+        "isPatient": false,
+        "isDeceased": false,
+        "isPregnancy": false,
+        "isAbortion": false,
+        "isAdopted": false,
+        "abortionType": null,
+        "gestationalAge": null
+      }
+    },
+    {
+      "id": "g3_micaela",
+      "name": "Micaela",
+      "gender": "F",
+      "generation": 3,
+      "birthDate": null,
+      "age": null,
+      "deathDate": null,
+      "role": "prima_paterna",
+      "notes": "",
+      "attributes": {
+        "isPatient": false,
+        "isDeceased": false,
+        "isPregnancy": false,
+        "isAbortion": false,
+        "isAdopted": false,
+        "abortionType": null,
+        "gestationalAge": null
+      }
+    }
+  ],
+  "relationships": [
+    {
+      "id": "r_conyugal_lucas_fernanda",
+      "source": "g2_lucas",
+      "target": "g2_fernanda",
+      "type": "conyugal",
+      "legalStatus": "separacion",
+      "startDate": null,
+      "endDate": "2023",
+      "notes": "Separados hace 1 año y medio."
+    },
+    {
+      "id": "r_conyugal_jose_silvia",
+      "source": "g1_jose",
+      "target": "g1_silvia",
+      "type": "conyugal",
+      "legalStatus": "matrimonio",
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_conyugal_carlos_liliana",
+      "source": "g1_carlos",
+      "target": "g1_liliana",
+      "type": "conyugal",
+      "legalStatus": "matrimonio",
+      "startDate": null,
+      "endDate": "2022",
+      "notes": ""
+    },
+    {
+      "id": "r_conyugal_nicolas_veronica",
+      "source": "g2_nicolas",
+      "target": "g2_veronica",
+      "type": "conyugal",
+      "legalStatus": "matrimonio",
+      "startDate": null,
+      "endDate": null,
+      "notes": "Casados."
+    },
+    {
+      "id": "r_conyugal_mariano_jimena",
+      "source": "g2_mariano",
+      "target": "g2_jimena",
+      "type": "conyugal",
+      "legalStatus": "cohabitacion",
+      "startDate": null,
+      "endDate": null,
+      "notes": "Pareja."
+    },
+    {
+      "id": "r_parentchild_lucas_carlos",
+      "source": "g2_lucas",
+      "target": "g1_carlos",
+      "type": "parentChild",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_parentchild_lucas_liliana",
+      "source": "g2_lucas",
+      "target": "g1_liliana",
+      "type": "parentChild",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_parentchild_julian_carlos",
+      "source": "g2_julian",
+      "target": "g1_carlos",
+      "type": "parentChild",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_parentchild_julian_liliana",
+      "source": "g2_julian",
+      "target": "g1_liliana",
+      "type": "parentChild",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_parentchild_facundo_carlos",
+      "source": "g2_facundo",
+      "target": "g1_carlos",
+      "type": "parentChild",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_parentchild_facundo_liliana",
+      "source": "g2_facundo",
+      "target": "g1_liliana",
+      "type": "parentChild",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_parentchild_lucia_carlos",
+      "source": "g2_lucia",
+      "target": "g1_carlos",
+      "type": "parentChild",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_parentchild_lucia_liliana",
+      "source": "g2_lucia",
+      "target": "g1_liliana",
+      "type": "parentChild",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_parentchild_fernanda_jose",
+      "source": "g2_fernanda",
+      "target": "g1_jose",
+      "type": "parentChild",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_parentchild_fernanda_silvia",
+      "source": "g2_fernanda",
+      "target": "g1_silvia",
+      "type": "parentChild",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_parentchild_francisco_jose",
+      "source": "g2_francisco",
+      "target": "g1_jose",
+      "type": "parentChild",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_parentchild_francisco_silvia",
+      "source": "g2_francisco",
+      "target": "g1_silvia",
+      "type": "parentChild",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_parentchild_paula_jose",
+      "source": "g2_paula",
+      "target": "g1_jose",
+      "type": "parentChild",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_parentchild_paula_silvia",
+      "source": "g2_paula",
+      "target": "g1_silvia",
+      "type": "parentChild",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_parentchild_mariano_jose",
+      "source": "g2_mariano",
+      "target": "g1_jose",
+      "type": "parentChild",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_parentchild_mariano_silvia",
+      "source": "g2_mariano",
+      "target": "g1_silvia",
+      "type": "parentChild",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_parentchild_nicolas_jose",
+      "source": "g2_nicolas",
+      "target": "g1_jose",
+      "type": "parentChild",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_parentchild_nicolas_silvia",
+      "source": "g2_nicolas",
+      "target": "g1_silvia",
+      "type": "parentChild",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_parentchild_maria_jose",
+      "source": "g2_maria",
+      "target": "g1_jose",
+      "type": "parentChild",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_parentchild_maria_silvia",
+      "source": "g2_maria",
+      "target": "g1_silvia",
+      "type": "parentChild",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_parentchild_igna_lucas",
+      "source": "g3_igna",
+      "target": "g2_lucas",
+      "type": "parentChild",
+      "legalStatus": null,
+      "emotionalBond": "cercana",
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_parentchild_igna_fernanda",
+      "source": "g3_igna",
+      "target": "g2_fernanda",
+      "type": "parentChild",
+      "legalStatus": null,
+      "emotionalBond": "cercana",
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_parentchild_lourdes_lucas",
+      "source": "g3_lourdes",
+      "target": "g2_lucas",
+      "type": "parentChild",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_parentchild_lourdes_fernanda",
+      "source": "g3_lourdes",
+      "target": "g2_fernanda",
+      "type": "parentChild",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_parentchild_aborto_lucas",
+      "source": "g3_aborto_fernanda_lucas",
+      "target": "g2_lucas",
+      "type": "parentChild",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_parentchild_aborto_fernanda",
+      "source": "g3_aborto_fernanda_lucas",
+      "target": "g2_fernanda",
+      "type": "parentChild",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_parentchild_paulina_paula",
+      "source": "g3_paulina",
+      "target": "g2_paula",
+      "type": "parentChild",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_parentchild_sofia_nicolas",
+      "source": "g3_sofia",
+      "target": "g2_nicolas",
+      "type": "parentChild",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_parentchild_sofia_veronica",
+      "source": "g3_sofia",
+      "target": "g2_veronica",
+      "type": "parentChild",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_parentchild_faustino_nicolas",
+      "source": "g3_faustino",
+      "target": "g2_nicolas",
+      "type": "parentChild",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_parentchild_faustino_veronica",
+      "source": "g3_faustino",
+      "target": "g2_veronica",
+      "type": "parentChild",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_parentchild_agustin_nicolas",
+      "source": "g3_agustin",
+      "target": "g2_nicolas",
+      "type": "parentChild",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_parentchild_agustin_veronica",
+      "source": "g3_agustin",
+      "target": "g2_veronica",
+      "type": "parentChild",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_parentchild_eusebio_mariano",
+      "source": "g3_eusebio",
+      "target": "g2_mariano",
+      "type": "parentChild",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_parentchild_eusebio_jimena",
+      "source": "g3_eusebio",
+      "target": "g2_jimena",
+      "type": "parentChild",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_parentchild_camila_lucia",
+      "source": "g3_camila",
+      "target": "g2_lucia",
+      "type": "parentChild",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_parentchild_catalina_lucia",
+      "source": "g3_catalina",
+      "target": "g2_lucia",
+      "type": "parentChild",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_parentchild_paloma_facundo",
+      "source": "g3_paloma",
+      "target": "g2_facundo",
+      "type": "parentChild",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_parentchild_ambar_facundo",
+      "source": "g3_ambar",
+      "target": "g2_facundo",
+      "type": "parentChild",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_parentchild_micaela_julian",
+      "source": "g3_micaela",
+      "target": "g2_julian",
+      "type": "parentChild",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_hermanos_igna_lourdes",
+      "source": "g3_igna",
+      "target": "g3_lourdes",
+      "type": "hermanos",
+      "legalStatus": null,
+      "emotionalBond": "conflicto",
+      "startDate": null,
+      "endDate": null,
+      "notes": "Se llevan bastante mal."
+    },
+    {
+      "id": "r_hermanos_lucas_julian",
+      "source": "g2_lucas",
+      "target": "g2_julian",
+      "type": "hermanos",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_hermanos_lucas_facundo",
+      "source": "g2_lucas",
+      "target": "g2_facundo",
+      "type": "hermanos",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_hermanos_lucas_lucia",
+      "source": "g2_lucas",
+      "target": "g2_lucia",
+      "type": "hermanos",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_hermanos_julian_facundo",
+      "source": "g2_julian",
+      "target": "g2_facundo",
+      "type": "hermanos",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_hermanos_julian_lucia",
+      "source": "g2_julian",
+      "target": "g2_lucia",
+      "type": "hermanos",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_hermanos_facundo_lucia",
+      "source": "g2_facundo",
+      "target": "g2_lucia",
+      "type": "hermanos",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_hermanos_fernanda_francisco",
+      "source": "g2_fernanda",
+      "target": "g2_francisco",
+      "type": "hermanos",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_hermanos_fernanda_paula",
+      "source": "g2_fernanda",
+      "target": "g2_paula",
+      "type": "hermanos",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_hermanos_fernanda_mariano",
+      "source": "g2_fernanda",
+      "target": "g2_mariano",
+      "type": "hermanos",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_hermanos_fernanda_nicolas",
+      "source": "g2_fernanda",
+      "target": "g2_nicolas",
+      "type": "hermanos",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_hermanos_fernanda_maria",
+      "source": "g2_fernanda",
+      "target": "g2_maria",
+      "type": "hermanos",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_hermanos_francisco_paula",
+      "source": "g2_francisco",
+      "target": "g2_paula",
+      "type": "hermanos",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_hermanos_francisco_mariano",
+      "source": "g2_francisco",
+      "target": "g2_mariano",
+      "type": "hermanos",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_hermanos_francisco_nicolas",
+      "source": "g2_francisco",
+      "target": "g2_nicolas",
+      "type": "hermanos",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_hermanos_francisco_maria",
+      "source": "g2_francisco",
+      "target": "g2_maria",
+      "type": "hermanos",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_hermanos_paula_mariano",
+      "source": "g2_paula",
+      "target": "g2_mariano",
+      "type": "hermanos",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_hermanos_paula_nicolas",
+      "source": "g2_paula",
+      "target": "g2_nicolas",
+      "type": "hermanos",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_hermanos_paula_maria",
+      "source": "g2_paula",
+      "target": "g2_maria",
+      "type": "hermanos",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_hermanos_mariano_nicolas",
+      "source": "g2_mariano",
+      "target": "g2_nicolas",
+      "type": "hermanos",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_hermanos_mariano_maria",
+      "source": "g2_mariano",
+      "target": "g2_maria",
+      "type": "hermanos",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_hermanos_nicolas_maria",
+      "source": "g2_nicolas",
+      "target": "g2_maria",
+      "type": "hermanos",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_mellizos_lucas_julian",
+      "source": "g2_lucas",
+      "target": "g2_julian",
+      "type": "mellizos",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    },
+    {
+      "id": "r_mellizos_francisco_maria",
+      "source": "g2_francisco",
+      "target": "g2_maria",
+      "type": "mellizos",
+      "legalStatus": null,
+      "emotionalBond": null,
+      "startDate": null,
+      "endDate": null,
+      "notes": ""
+    }
+  ]
+}
+Tambien fijate si hay que modificar el json para lograr las jerarquias correctamente.

@@ -1,355 +1,301 @@
+// --- START OF FILE normalizeGenogram.js ---
 /**
  * normalizeGenogram.js
- * 
- * Implementa la estrategia de "nodo-familia" para mejorar el layout del genograma.
- * En lugar de conectar hijos directamente a padres, crea nodos intermedios
- * que representan a la unidad familiar, lo que permite a Dagre alinear
- * correctamente las relaciones sin necesidad de forzar posiciones por generación.
- * 
- * Además, calcula y valida las generaciones para asegurar que el layout respete
- * la jerarquía familiar, asignando ranks apropiados en Dagre.
+ *
+ * Implementa la estrategia de "nodo-familia" y calcula generaciones.
+ * MODIFICADO: Omite relaciones 'hermanos' y 'mellizos' para simplificar el grafo
+ * pasado al algoritmo de layout.
  */
 
 import { getNodeType } from './transformToReactFlow';
 
-/**
- * Calcula las generaciones de cada persona en el genograma.
- * 
- * Reglas:
- * - Paciente: generación 3
- * - Padres: generación 2
- * - Abuelos: generación 1
- * - Bisabuelos: generación 0, -1, ...
- * - Hijos: generación 4
- * - Nietos: generación 5, ...
- * 
- * @param {Array} people - Array de personas del genograma
- * @param {Array} relationships - Array de relaciones del genograma
- * @returns {Map} Un Map con clave personId y valor generation
- */
+// La función computeGenerations se mantiene igual que en la versión anterior
+// (asumiendo que es correcta según los logs)
 function computeGenerations(people, relationships) {
-  const generations = new Map();
-  
-  // Paso 1: Construir mapas de padres e hijos para búsqueda eficiente
-  const parentsMap = new Map(); // hijo -> [padres]
-  const childrenMap = new Map(); // padre -> [hijos]
-  
-  // Inicializar los mapas
-  people.forEach(person => {
-    parentsMap.set(person.id, []);
-    childrenMap.set(person.id, []);
-  });
-  
-  // Poblar los mapas con relaciones parentChild
-  relationships.forEach(rel => {
-    if (rel.type === 'parentChild') {
-      const child = rel.source;
-      const parent = rel.target;
-      
-      // Nota: parentChild viene como hijo -> padre
-      if (parentsMap.has(child)) {
-        parentsMap.get(child).push(parent);
-      }
-      
-      if (childrenMap.has(parent)) {
-        childrenMap.get(parent).push(child);
-      }
+    const generations = new Map();
+    const parentsMap = new Map(); // hijo -> [padres]
+    const childrenMap = new Map(); // padre -> [hijos]
+    const adj = new Map(); // Grafo de adyacencia (bidireccional para BFS/DFS)
+
+    // Validar entrada
+    if (!Array.isArray(people) || !Array.isArray(relationships)) {
+        console.error("Entrada inválida para computeGenerations");
+        return generations;
     }
-  });
-  
-  // Paso 2: Inicializar generaciones existentes como semilla
-  people.forEach(person => {
-    if (typeof person.generation === 'number') {
-      generations.set(person.id, person.generation);
-    }
-  });
-  
-  // Paso 3: Identificar pacientes o raíces
-  const pacientes = people.filter(p => p.attributes?.isPatient === true);
-  const startNodes = pacientes.length > 0 ? pacientes : [];
-  
-  // Si no hay pacientes marcados, buscar otras raíces potenciales
-  if (startNodes.length === 0) {
-    // Buscar nodos con generación explícita más baja
-    let lowestGen = Infinity;
-    let lowestGenNode = null;
-    
+
+    // Inicializar mapas y grafo de adyacencia
     people.forEach(person => {
-      if (typeof person.generation === 'number' && person.generation < lowestGen) {
-        lowestGen = person.generation;
-        lowestGenNode = person;
-      }
+        if (!person || !person.id) {
+            console.warn("Persona inválida o sin ID encontrada:", person);
+            return;
+        }
+        parentsMap.set(person.id, []);
+        childrenMap.set(person.id, []);
+        adj.set(person.id, new Set());
+        // Usar generación del JSON como punto de partida si es válida
+        if (typeof person.generation === 'number' && isFinite(person.generation)) {
+            generations.set(person.id, person.generation);
+        }
     });
-    
-    if (lowestGenNode) {
-      startNodes.push(lowestGenNode);
-    } else {
-      // Si aún no hay raíces, usar nodos sin padres
-      people.forEach(person => {
-        if (parentsMap.get(person.id).length === 0) {
-          startNodes.push(person);
+
+    // Poblar mapas y grafo de adyacencia
+    relationships.forEach(rel => {
+        if (!rel || !rel.source || !rel.target) {
+            console.warn("Relación inválida omitida:", rel);
+            return;
         }
-      });
-    }
-  }
-  
-  // Paso 4: Asignar generación 3 a los pacientes por defecto
-  startNodes.forEach(node => {
-    if (node.attributes?.isPatient === true) {
-      generations.set(node.id, 3);
-    }
-  });
-  
-  // Paso 5: BFS para propagar generaciones
-  const queue = [...startNodes];
-  const visited = new Set();
-  
-  while (queue.length > 0) {
-    const current = queue.shift();
-    const currentId = current.id;
-    
-    if (visited.has(currentId)) continue;
-    visited.add(currentId);
-    
-    // Obtener la generación actual (podría no estar definida aún)
-    const currentGen = generations.get(currentId);
-    
-    // Si no tiene generación asignada y no es paciente, continuar al siguiente
-    if (currentGen === undefined) {
-      continue;
-    }
-    
-    // Propagar hacia arriba (padres: generación - 1)
-    for (const parentId of parentsMap.get(currentId) || []) {
-      const parentGen = generations.get(parentId);
-      const newParentGen = currentGen - 1;
-      
-      // Si el padre no tiene generación o la nueva es menor (más ancestral)
-      if (parentGen === undefined || newParentGen < parentGen) {
-        generations.set(parentId, newParentGen);
-        
-        // Añadir al padre a la cola para seguir propagando
-        const parentNode = people.find(p => p.id === parentId);
-        if (parentNode && !visited.has(parentId)) {
-          queue.push(parentNode);
+        // Añadir conexiones bidireccionales al grafo de adyacencia
+        if (adj.has(rel.source) && adj.has(rel.target)) {
+             adj.get(rel.source).add(rel.target);
+             adj.get(rel.target).add(rel.source);
         }
-      }
-    }
-    
-    // Propagar hacia abajo (hijos: generación + 1)
-    for (const childId of childrenMap.get(currentId) || []) {
-      const childGen = generations.get(childId);
-      const newChildGen = currentGen + 1;
-      
-      // Si el hijo no tiene generación o la nueva es mayor
-      if (childGen === undefined || newChildGen > childGen) {
-        generations.set(childId, newChildGen);
-        
-        // Añadir al hijo a la cola para seguir propagando
-        const childNode = people.find(p => p.id === childId);
-        if (childNode && !visited.has(childId)) {
-          queue.push(childNode);
+
+        if (rel.type === 'parentChild') {
+            const childId = rel.source; // Hijo
+            const parentId = rel.target; // Padre
+
+            if (parentsMap.has(childId)) parentsMap.get(childId).push(parentId);
+            if (childrenMap.has(parentId)) childrenMap.get(parentId).push(childId);
         }
-      }
+    });
+
+    // --- Estrategia de asignación de generación ---
+    let potentialRoots = people.filter(p => p && p.id && (parentsMap.get(p.id)?.length === 0));
+    let minExplicitGen = Infinity;
+    people.forEach(p => {
+        if (p && p.id && generations.has(p.id)) {
+            minExplicitGen = Math.min(minExplicitGen, generations.get(p.id));
+        }
+    });
+
+    if (minExplicitGen !== Infinity) {
+        potentialRoots = people.filter(p => p && p.id && generations.get(p.id) === minExplicitGen);
     }
-  }
-  
-  // Paso 6: Asignar generaciones por defecto a nodos sin generación
-  let defaultGen = 3; // Generación por defecto si no se pudo calcular
-  people.forEach(person => {
-    if (!generations.has(person.id)) {
-      generations.set(person.id, defaultGen);
+
+     if (potentialRoots.length === 0) {
+         const patient = people.find(p => p?.attributes?.isPatient);
+         if (patient) {
+             potentialRoots = [patient];
+             if (!generations.has(patient.id)) {
+                 generations.set(patient.id, 3);
+             }
+         } else if (people.length > 0) {
+             const firstValidPerson = people.find(p => p && p.id);
+             if(firstValidPerson){
+                 potentialRoots = [firstValidPerson];
+                 if (!generations.has(firstValidPerson.id)) {
+                      generations.set(firstValidPerson.id, 1);
+                 }
+             }
+         }
+     }
+
+    const queue = potentialRoots.filter(p => p && p.id && generations.has(p.id)).map(p => p.id);
+    const visited = new Set(queue);
+
+    while (queue.length > 0) {
+        const currentId = queue.shift();
+        if (!generations.has(currentId)) continue; // Skip if no generation somehow
+        const currentGen = generations.get(currentId);
+
+        // Propagar a padres
+        for (const parentId of parentsMap.get(currentId) || []) {
+             const expectedParentGen = currentGen - 1;
+            if (!visited.has(parentId)) {
+                generations.set(parentId, expectedParentGen);
+                visited.add(parentId);
+                queue.push(parentId);
+            } else {
+                 if (generations.has(parentId)) {
+                    if(expectedParentGen < generations.get(parentId)){
+                        generations.set(parentId, expectedParentGen);
+                    }
+                 } else {
+                    generations.set(parentId, expectedParentGen);
+                 }
+            }
+        }
+
+        // Propagar a hijos
+        for (const childId of childrenMap.get(currentId) || []) {
+             const expectedChildGen = currentGen + 1;
+            if (!visited.has(childId)) {
+                generations.set(childId, expectedChildGen);
+                visited.add(childId);
+                queue.push(childId);
+            } else {
+                 if (generations.has(childId)) {
+                      if (expectedChildGen > generations.get(childId)) {
+                           generations.set(childId, expectedChildGen);
+                      }
+                 } else {
+                    generations.set(childId, expectedChildGen);
+                 }
+            }
+        }
     }
-  });
-  
-  return generations;
+
+    // Asignar generación a nodos no conectados
+    people.forEach(person => {
+         if (person && person.id && !visited.has(person.id)) {
+             console.warn(`Nodo ${person.id} no fue alcanzado por la propagación de generación.`);
+             if (!generations.has(person.id)) {
+                  generations.set(person.id, 1); // Asignar un default
+             }
+         }
+     });
+
+    return generations;
 }
+
 
 /**
  * Normaliza los datos del genograma aplicando la estrategia de nodo-familia.
- * 
- * @param {Object} genoData - Datos del genograma con personas y relaciones
- * @returns {Object} Un objeto con nodos y aristas listos para React Flow
+ * OMITE aristas de tipo 'hermanos' y 'mellizos' para el layout.
+ *
+ * @param {Object} genoData - Datos del genograma con `people` y `relationships`.
+ * @returns {{nodes: Array, edges: Array}} Objeto con nodos y aristas para React Flow (sin hermanos/mellizos).
  */
 export function normalizeGenogram(genoData) {
-  // Verificar que los datos de entrada sean válidos
   if (!genoData || !Array.isArray(genoData.people) || !Array.isArray(genoData.relationships)) {
-    console.error("Datos de entrada inválidos para normalizeGenogram:", genoData);
+    console.error("Datos inválidos para normalizeGenogram:", genoData);
     return { nodes: [], edges: [] };
   }
 
   const { people = [], relationships = [] } = genoData;
-  
-  // Calcular las generaciones para todas las personas
+
   const generations = computeGenerations(people, relationships);
-  
-  // Mapeo inicial de personas a nodos
-  const nodes = people.map((person) => {
-    if (!person || !person.id) {
-      console.warn("Omitiendo persona inválida:", person);
-      return null;
-    }
-    
-    // Determinar el tipo de nodo basado en las características de la persona
+  // console.log("Generaciones Calculadas:", Array.from(generations.entries()));
+
+  const personNodes = people.map((person) => {
+    if (!person || !person.id) return null;
     const nodeType = getNodeType(person);
-    
-    // Usar la generación calculada
-    const generation = generations.get(person.id);
-    
+    let generation = generations.get(person.id);
+    if (typeof generation !== 'number' || !isFinite(generation)) {
+      console.warn(`Nodo ${person.id} sin generación válida. Asignando 1.`);
+      generation = 1;
+    }
     return {
-      id: person.id,
-      type: nodeType,
-      position: { x: 0, y: 0 }, // La posición se calculará después con Dagre
-      data: {
-        label: person.name || person.id,
-        generation: generation, // Asignar la generación calculada
-        age: person.age,
-        notes: person.notes || "",
-        attributes: person.attributes || {},
-        gender: person.gender
-      }
+      id: person.id, type: nodeType, position: { x: 0, y: 0 },
+      data: { label: person.name || person.id, generation, age: person.age, notes: person.notes || "", attributes: person.attributes || {}, gender: person.gender },
     };
   }).filter(Boolean);
-  
-  // Relaciones convertidas a aristas
-  const edges = [];
-  
-  // Mapeo para guardar nodos familiares ya creados (para parejas)
-  const familyNodes = {};
-  const familyNodeParents = {};
-  
-  // Paso 1: Procesar relaciones conyugales primero y crear nodos de familia
+
+  const finalNodes = [...personNodes];
+  const finalEdges = []; // Edges que SÍ irán al layout
+  const familyNodeMap = new Map();
+  const familyNodeParents = new Map();
+  const childrenOfFamily = new Map(); // No estrictamente necesario ahora, pero mantenido por si acaso
+
+  // Paso 3: Procesar relaciones conyugales y crear nodos de familia
   relationships.forEach((rel) => {
-    if (!rel || !rel.id || !rel.source || !rel.target) {
-      console.warn("Omitiendo relación inválida:", rel);
+    if (!rel || !rel.id || !rel.source || !rel.target || rel.type !== 'conyugal') return;
+
+    const sourceNode = finalNodes.find(n => n.id === rel.source);
+    const targetNode = finalNodes.find(n => n.id === rel.target);
+    if (!sourceNode || !targetNode) return;
+
+    const partnerIds = [rel.source, rel.target].sort();
+    const famNodeKey = partnerIds.join('-');
+    const famNodeId = `fam-${famNodeKey}`;
+
+    if (familyNodeMap.has(famNodeKey)) return;
+
+    const gen1 = generations.get(rel.source);
+    const gen2 = generations.get(rel.target);
+
+    if (typeof gen1 !== 'number' || typeof gen2 !== 'number') {
+        console.error(`Generación inválida para padres ${rel.source}/${rel.target}. Omitiendo famNode ${famNodeId}.`);
+        return;
+    }
+     if (gen1 !== gen2) {
+         // console.warn(`Padres ${rel.source}/${rel.target} con gens ${gen1}/${gen2}. Usando ${Math.min(gen1, gen2)}.`); // Opcional
+     }
+     const parentGeneration = Math.min(gen1, gen2);
+     const familyNodeGeneration = parentGeneration; // FamilyNode en la misma gen que los padres
+
+    finalNodes.push({
+      id: famNodeId, type: 'familyNode', position: { x: 0, y: 0 },
+      data: { label: '', width: 10, height: 10, generation: familyNodeGeneration },
+      width: 10, height: 10,
+    });
+
+    familyNodeMap.set(famNodeKey, famNodeId);
+    familyNodeParents.set(famNodeId, new Set(partnerIds));
+    childrenOfFamily.set(famNodeId, new Set());
+
+    finalEdges.push({
+      id: `p-${rel.source}-${famNodeId}`, source: rel.source, target: famNodeId, type: 'partnerEdge',
+      data: { relType: rel.legalStatus || 'conyugal', notes: rel.notes }
+    });
+    finalEdges.push({
+      id: `p-${rel.target}-${famNodeId}`, source: rel.target, target: famNodeId, type: 'partnerEdge',
+      data: { relType: rel.legalStatus || 'conyugal', notes: rel.notes }
+    });
+  });
+
+  // Paso 4: Procesar relaciones padre-hijo (parentChild)
+  relationships.forEach((rel) => {
+    if (!rel || !rel.id || !rel.source || !rel.target || rel.type !== 'parentChild') return;
+
+    const childId = rel.source;
+    const parentId = rel.target;
+
+    const childNode = finalNodes.find(n => n.id === childId);
+    const parentNode = finalNodes.find(n => n.id === parentId);
+    if (!childNode || !parentNode) return;
+
+    let associatedFamNodeId = null;
+    for (const [famId, parentsSet] of familyNodeParents.entries()) {
+      if (parentsSet.has(parentId)) {
+        associatedFamNodeId = famId;
+        break;
+      }
+    }
+
+    if (associatedFamNodeId) {
+      const edgeExists = finalEdges.some(edge => edge.source === associatedFamNodeId && edge.target === childId && edge.type === 'childEdge');
+      if (!edgeExists) {
+          finalEdges.push({
+            id: `c-${associatedFamNodeId}-${childId}`, source: associatedFamNodeId, target: childId, type: 'childEdge',
+            data: { notes: rel.notes }
+          });
+          if (childrenOfFamily.has(associatedFamNodeId)) {
+             childrenOfFamily.get(associatedFamNodeId).add(childId);
+          }
+      }
+    } else {
+      finalEdges.push({
+        id: `d-${parentId}-${childId}`, source: parentId, target: childId, type: 'childEdge',
+        data: { notes: rel.notes }
+      });
+    }
+  });
+
+  // Paso 5: Procesar OTRAS relaciones (emocionales, etc.) - EXCLUYENDO hermanos/mellizos
+  relationships.forEach((rel) => {
+    // Ignorar las ya procesadas y las estructurales horizontales que queremos omitir para el layout
+    const typesToIgnore = ['conyugal', 'parentChild', 'hermanos', 'mellizos'];
+    if (!rel || !rel.id || !rel.source || !rel.target || typesToIgnore.includes(rel.type)) {
       return;
     }
-    
-    if (rel.type === 'conyugal') {
-      // Crear un nodo familia para esta pareja
-      const famNodeId = `fam-${rel.source}-${rel.target}`;
-      
-      // Obtener generaciones de los padres para el rank del nodo familia
-      const gen1 = generations.get(rel.source);
-      const gen2 = generations.get(rel.target);
-      
-      // El nodo familia debe estar en el mismo nivel que el de menor generación de los padres
-      const familyNodeGeneration = Math.min(gen1, gen2);
-      
-      // Agregar el nodo familia
-      nodes.push({
-        id: famNodeId,
-        type: 'familyNode', // Tipo especial para nodos de familia
-        position: { x: 0, y: 0 }, // Se calculará después
-        data: {
-          label: '', // Nodo invisible o mínimo
-          width: 20,
-          height: 20,
-          generation: familyNodeGeneration // Asignar la generación para el rank
-        }
-      });
-      
-      // Registrar el nodo familia y sus padres
-      familyNodes[`${rel.source}-${rel.target}`] = famNodeId;
-      familyNodes[`${rel.target}-${rel.source}`] = famNodeId; // También en orden inverso
-      
-      if (!familyNodeParents[famNodeId]) {
-        familyNodeParents[famNodeId] = new Set();
-      }
-      familyNodeParents[famNodeId].add(rel.source);
-      familyNodeParents[famNodeId].add(rel.target);
-      
-      // Crear aristas desde los padres al nodo familia
-      edges.push({
-        id: `partner-${rel.source}-${famNodeId}`,
-        source: rel.source,
-        target: famNodeId,
-        type: 'partnerEdge',
-        data: {
-          relType: rel.emotionalBond || rel.legalStatus || 'matrimonio',
-          notes: rel.notes || '',
-          startDate: rel.startDate || '',
-          endDate: rel.endDate || ''
-        }
-      });
-      
-      edges.push({
-        id: `partner-${rel.target}-${famNodeId}`,
-        source: rel.target,
-        target: famNodeId,
-        type: 'partnerEdge',
-        data: {
-          relType: rel.emotionalBond || rel.legalStatus || 'matrimonio',
-          notes: rel.notes || '',
-          startDate: rel.startDate || '',
-          endDate: rel.endDate || ''
-        }
-      });
-    }
+
+     const sourceNode = finalNodes.find(n => n.id === rel.source);
+     const targetNode = finalNodes.find(n => n.id === rel.target);
+     if (!sourceNode || !targetNode) return;
+
+    // Añadir arista usando relationshipEdge (para vínculos emocionales, etc.)
+    finalEdges.push({
+      id: rel.id, source: rel.source, target: rel.target, type: 'relationshipEdge',
+      data: { relType: rel.emotionalBond || rel.legalStatus || rel.type || 'default', notes: rel.notes || '' }
+    });
   });
-  
-  // Paso 2: Procesar relaciones padre-hijo
-  relationships.forEach((rel) => {
-    if (!rel || !rel.id || !rel.source || !rel.target) {
-      return; // Ya se advirtió antes
-    }
-    
-    if (rel.type === 'parentChild') {
-      const parent = rel.target; // Nota: en parentChild, source es el hijo y target es el padre
-      const child = rel.source;
-      
-      // Buscar si el padre está en algún nodo familia
-      let familyNodeFound = false;
-      
-      // Revisar todos los nodos familia para ver si el padre es parte de alguno
-      for (const famNodeId in familyNodeParents) {
-        if (familyNodeParents[famNodeId].has(parent)) {
-          // Si encontramos un nodo familia que contiene al padre, conectamos el hijo a ese nodo
-          edges.push({
-            id: `child-${famNodeId}-${child}`,
-            source: famNodeId,
-            target: child,
-            type: 'childEdge',
-            data: {
-              relType: 'parentChild',
-              notes: rel.notes || ''
-            }
-          });
-          familyNodeFound = true;
-          break;
-        }
-      }
-      
-      // Si el padre no está en ningún nodo familia (familia monoparental),
-      // conectamos directamente padre e hijo
-      if (!familyNodeFound) {
-        edges.push({
-          id: `direct-${parent}-${child}`,
-          source: parent,
-          target: child,
-          type: 'childEdge',
-          data: {
-            relType: 'parentChild',
-            notes: rel.notes || ''
-          }
-        });
-      }
-    } else if (rel.type !== 'conyugal') {
-      // Para otras relaciones (hermanos, mellizos, etc.)
-      edges.push({
-        id: rel.id,
-        source: rel.source,
-        target: rel.target,
-        type: 'relationshipEdge',
-        data: {
-          relType: rel.emotionalBond || rel.type || 'default',
-          notes: rel.notes || '',
-          startDate: rel.startDate || '',
-          endDate: rel.endDate || ''
-        }
-      });
-    }
-  });
-  
-  return { nodes, edges };
+
+  // console.log("Nodos Finales (para Layout):", finalNodes);
+  // console.log("Aristas Finales (para Layout - SIN hermanos/mellizos):", finalEdges);
+
+
+  // Devolver la estructura normalizada para React Flow y Dagre
+  return { nodes: finalNodes, edges: finalEdges };
 }
+// --- END OF FILE normalizeGenogram.js ---
