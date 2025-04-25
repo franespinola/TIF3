@@ -8,7 +8,7 @@ import sys # Para salir del script en caso de errores críticos
 
 API_KEY = "AIzaSyAvAF1YlyjWPPBCZMb5Af64pAbK8AxTybA"
 
-MODEL = "gemini-1.5-pro"
+MODEL = "gemini-2.5-flash-preview-04-17" #gemini-1.5-pro
 
 # También podés probar con "gemini-1.5-flash"
 
@@ -145,7 +145,7 @@ def call_gemini_api(prompt: str) -> str:
             "temperature": 0.6,          # 0.0-1.0: Más bajo = más determinista, más alto = más creativo
             "topP": 0.95,                # Controla diversidad vía nucleo de probabilidad
             "topK": 40,                  # Controla diversidad vía número de opciones
-            "maxOutputTokens": 8192,     # Máximo de tokens en la respuesta (ajusta según necesidad)
+            "maxOutputTokens": 20000,     # Máximo de tokens en la respuesta (ajusta según necesidad)
             # "stopSequences": ["\n\n"] # Opcional: secuencias para detener la generación
         },
         # --- Configuración Opcional de Seguridad ---
@@ -304,7 +304,7 @@ Cuando se mencione cualquier tipo de pérdida gestacional:
     * `"emotionalBond"`: (String | null) Calidad del vínculo si se menciona explícitamente. Valores permitidos: `"conflicto"`, `"cercana"`, `"distante"`, `"violencia"`, `"rota"`. Usa `null` si no hay información en la transcripción.
     * `"startDate"`: (String | null) Fecha inicio "YYYY-MM-DD". Usa `null` si no se sabe.
     * `"endDate"`: (String | null) Fecha fin "YYYY-MM-DD" (ej: para separación, divorcio). Usa `null` si no se sabe o sigue activa.
-    * `"notes"`: (String) Notas sobre la relación directamente de la transcripción (ej: "Separados hace 1 año y medio"). Usa "" si no hay notas.
+    * `"notes"`: (String) Notas sobre la relación directamente de la transcripción (ej: "Separados hace 1 año y medio"). Usa "" si no hay notas. Establece SIEMPRE la relación "parentChild" entre cada tío/tía del paciente y sus respectivos padres (los abuelos del paciente).
 
 5.  **Datos Específicos a Extraer (Revisión Detallada):**
     * Identifica al paciente principal (`"isPatient": true`).
@@ -356,7 +356,7 @@ Sin embargo, la respuesta que proporcionaste contenía errores y no pudo ser pro
     * Los valores deben tener los tipos de datos correctos (String, Number, Boolean, null, Lista, Objeto).
     * Los `id` en `relationships` deben coincidir con `id` existentes en `people`.
 3.  **Corrige el JSON:** Reescribe el JSON completo desde cero si es necesario, asegurándote de que sea sintácticamente válido y cumpla todas las reglas estructurales y de contenido basadas en la transcripción original.
-4.  **No Expliques:** No añadas explicaciones sobre la corrección ni ningún otro texto. Tu respuesta debe ser **exclusivamente el JSON corregido**.
+4.  **No Expliques:** No añadas explicaciones sobre la corrección ni ningún otro texto. Tu respuesta debe ser **exclusivamente el JSON corregido**. Verifica que existan relaciones "parentChild" entre todos los tíos/tías del paciente y sus padres (abuelos).
 
 **Transcripción Original (para referencia):**
 ```text
