@@ -4,7 +4,7 @@ import dagre from "dagre";
  * @typedef {Object} LayoutOptions
  * @property {string} [rankdir="TB"] - Dirección del layout ("TB", "LR", "BT", "RL").
  * @property {number} [ranksep=120] - Separación entre niveles.
- * @property {number} [nodesep=80] - Separación entre nodos.
+ * @property {number} [nodesep=120] - Separación entre nodos (aumentado para mayor espacio horizontal).
  * @property {number} [defaultWidth=100] - Ancho por defecto de un nodo si no se especifica.
  * @property {number} [defaultHeight=100] - Alto por defecto de un nodo si no se especifica.
  */
@@ -25,7 +25,7 @@ export default function layoutWithDagre(nodes, edges, options = {}) {
   const {
     rankdir = "TB",
     ranksep = 120,
-    nodesep = 80,
+    nodesep = 120, // Aumentado a 120 para mayor separación horizontal
     defaultWidth = 100,
     defaultHeight = 100,
   } = options;

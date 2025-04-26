@@ -20,14 +20,14 @@ const AbortoEspontaneoNode = ({ data, id, selected }) => {
     handleKeyDown 
   } = useNodeEditor(data?.label || "AE", onSave);
   
-  // Tamaño inicial del nodo - aumentando tamaño a 40
-  const defaultSize = data?.size || 40;
+  // Tamaño inicial del nodo - aumentando tamaño a 55 (antes era 40)
+  const defaultSize = data?.size || 55;
   
   // Usar el hook especializado para nodos circulares
   const [size, resizeHandleRef] = useCircleNode(
     id,
     defaultSize,
-    20 // min size
+    35 // min size aumentado a 25 (antes era 20)
   );
   
   // Determinar si los handles son conectables
@@ -70,7 +70,7 @@ const AbortoEspontaneoNode = ({ data, id, selected }) => {
             style={{ 
               textAlign: "center", 
               fontSize: 10, 
-              width: Math.max(size, 40) 
+              width: Math.max(size, 50) // Ajustado para acomodar el tamaño mayor
             }}
           />
         ) : (

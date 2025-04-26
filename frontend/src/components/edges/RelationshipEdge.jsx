@@ -34,7 +34,7 @@ function RelationshipEdge(props) {
   });
 
   // Ruta Bézier (solo la ruta, sin los labels)
-  const [bezierPath] = getBezierPath({
+  const [bezierPath, bezierLabelX, bezierLabelY] = getBezierPath({
     sourceX,
     sourceY,
     targetX,
@@ -43,12 +43,13 @@ function RelationshipEdge(props) {
     targetPosition,
   });
 
-  const midX = labelX;
-  const midY = labelY;
+  // Usar el punto medio de la curva Bézier para posicionar elementos adicionales
+  const midX = bezierLabelX || labelX;
+  const midY = bezierLabelY || labelY;
 
   switch (relType) {
     case "matrimonio":
-      edgePath = defaultSmooth;
+      edgePath = bezierPath;
       break;
 
     case "bezier":
@@ -56,7 +57,7 @@ function RelationshipEdge(props) {
       break;
 
     case "divorcio":
-      edgePath = defaultSmooth;
+      edgePath = bezierPath;
       extraElements = (
         <>
           <line
@@ -81,7 +82,7 @@ function RelationshipEdge(props) {
 
     case "cohabitacion":
       pathProps.strokeDasharray = "4 4";
-      edgePath = defaultSmooth;
+      edgePath = bezierPath;
       extraElements = (
         <path
           d={`M ${midX - 8},${midY} L ${midX},${midY - 8} L ${midX + 8},${midY}
@@ -95,10 +96,13 @@ function RelationshipEdge(props) {
 
     case "compromiso":
       pathProps.strokeDasharray = "6 3";
-      edgePath = defaultSmooth;
+      edgePath = bezierPath;
       break;
 
     case "violencia":
+      edgePath = bezierPath;
+      strokeColor = "#ff0000";
+      pathProps.strokeDasharray = "0";
       extraElements = (
         <path
           d={createRoundedWavePath(sourceX, sourceY, targetX, targetY, 30, 30)}
@@ -110,6 +114,9 @@ function RelationshipEdge(props) {
       break;
 
     case "conflicto":
+      edgePath = bezierPath;
+      strokeColor = "#800000";
+      pathProps.strokeDasharray = "0";
       extraElements = (
         <path
           d={createZigZagPath(sourceX, sourceY, targetX, targetY, 12, 10)}
@@ -123,7 +130,11 @@ function RelationshipEdge(props) {
     case "cercana": {
       const aquaColor = "#20c997";
       const offset = 8;
-      const [path1] = getSmoothStepPath({
+      edgePath = bezierPath;
+      strokeColor = aquaColor;
+      
+      // Crear dos paths Bézier paralelas para relación cercana
+      const [path1] = getBezierPath({
         sourceX,
         sourceY: sourceY - offset,
         targetX,
@@ -131,7 +142,7 @@ function RelationshipEdge(props) {
         sourcePosition,
         targetPosition,
       });
-      const [path2] = getSmoothStepPath({
+      const [path2] = getBezierPath({
         sourceX,
         sourceY: sourceY + offset,
         targetX,
@@ -150,29 +161,15 @@ function RelationshipEdge(props) {
 
     case "distante":{
       const redColor = "#ff0000";
-      const [distantePath] = getSmoothStepPath({
-        sourceX,
-        sourceY,
-        targetX,
-        targetY,
-        sourcePosition,
-        targetPosition,
-      });
-      extraElements = (
-        <path
-          d={distantePath}
-          stroke={redColor}
-          strokeWidth="2"
-          fill="none"
-          strokeDasharray="6 6"
-        />
-      );
+      edgePath = bezierPath;
+      strokeColor = redColor;
+      pathProps.strokeDasharray = "6 6";
       break;
     }
 
     case "rota":
       strokeColor = "gray";
-      edgePath = defaultSmooth;
+      edgePath = bezierPath;
       extraElements = (
         <>
           <line
@@ -196,7 +193,7 @@ function RelationshipEdge(props) {
       break;
 
     default:
-      edgePath = defaultSmooth;
+      edgePath = bezierPath;
   }
 
   // Zona "hit" invisible para mejorar la selección
@@ -238,7 +235,7 @@ function RelationshipEdge(props) {
               : relType === "conflicto" 
                 ? createZigZagPath(sourceX, sourceY, targetX, targetY, 12, 10)
                 : relType === "cercana" || relType === "distante"
-                  ? defaultSmooth
+                  ? bezierPath
                   : ""}
           stroke="transparent"
           strokeWidth={hitStrokeWidth}
