@@ -269,24 +269,83 @@ export default function useGenogramaState() {
     const link = document.createElement("a");
     link.href = url; link.download = "genograma.csv"; link.click();
     showToast("✔ CSV exportado correctamente");
-     // --- Fin lógica onExportCSV ---
+     // --- Fin de lógica onExportCSV ---
   }, [nodes, edges, showToast]);
 
   const exportImage = useCallback(async (format = "png") => {
-     // --- Lógica de exportImage sin cambios ---
-    const flowArea = document.querySelector(".react-flow");
-    if (!flowArea) return;
-    try {
-      const html2canvas = await import('html2canvas').then(module => module.default);
-      const canvas = await html2canvas(flowArea, { useCORS: true, backgroundColor: '#ffffff' });
-      const dataUrl = canvas.toDataURL(`image/${format}`);
-      const link = document.createElement("a");
-      link.href = dataUrl; link.download = `genograma.${format}`; link.click();
-      showToast(`✔ Imagen ${format.toUpperCase()} exportada`);
-    } catch (err) {
-      showToast("❌ Error al exportar imagen", false); console.error("Error exportando imagen:", err);
+    // Buscar el contenedor del flujo principal (excluye los controles, minimapa, etc.)
+    const flowPane = document.querySelector(".react-flow__renderer");
+    if (!flowPane) {
+      showToast("❌ No se pudo encontrar el área del diagrama", false);
+      return;
     }
-     // --- Fin lógica exportImage ---
+    
+    try {
+      // Guardar el estado original de visibilidad de elementos que queremos ocultar
+      const minimapElement = document.querySelector(".react-flow__minimap");
+      const controlsElement = document.querySelector(".react-flow__controls");
+      const smartGuidesElement = document.querySelector(".react-flow-smart-edge__guide");
+      const attributionElement = document.querySelector(".react-flow__attribution");
+      const backgroundElement = document.querySelector(".react-flow__background");
+      
+      // Guardar visibilidad original
+      const originalStates = [];
+      [minimapElement, controlsElement, smartGuidesElement, attributionElement].forEach(el => {
+        if (el) {
+          originalStates.push({
+            element: el,
+            display: el.style.display
+          });
+          el.style.display = 'none'; // Ocultar temporalmente
+        }
+      });
+      
+      // Capturar el diagrama completo, incluso las partes fuera de la vista
+      const reactFlowInstance = document.querySelector(".react-flow");
+      const nodesBounds = flowPane.getBoundingClientRect();
+      
+      // Asegurar que capture todo el diagrama completo
+      const options = { 
+        useCORS: true, 
+        backgroundColor: '#ffffff',
+        scale: 2, // Mayor resolución
+        logging: false,
+        allowTaint: true,
+        foreignObjectRendering: true,
+        // Asegurar capturar todo el contenido, incluso lo que está fuera de la vista
+        width: nodesBounds.width,
+        height: nodesBounds.height,
+        // Mantener el fondo del canvas pero no los controles y minimapa
+        ignoreElements: (element) => {
+          return element.classList && (
+            element.classList.contains('react-flow__minimap') ||
+            element.classList.contains('react-flow__controls') ||
+            element.classList.contains('react-flow-smart-edge__guide') ||
+            element.classList.contains('react-flow__attribution')
+          );
+        }
+      };
+      
+      const html2canvas = await import('html2canvas').then(module => module.default);
+      const canvas = await html2canvas(flowPane, options);
+      
+      // Restaurar visibilidad original
+      originalStates.forEach(state => {
+        state.element.style.display = state.display;
+      });
+      
+      // Exportar la imagen
+      const dataUrl = canvas.toDataURL(`image/${format}`, format === 'jpeg' ? 0.95 : undefined);
+      const link = document.createElement("a");
+      link.href = dataUrl;
+      link.download = `genograma.${format}`;
+      link.click();
+      
+      showToast(`✔ Imagen ${format.toUpperCase()} exportada (solo diagrama)`);
+    } catch (err) {
+      showToast("❌ Error al exportar imagen", false);
+      console.error("Error exportando imagen:", err);
+    }
   }, [showToast]);
 
   const onExportPNG = useCallback(() => exportImage("png"), [exportImage]);
