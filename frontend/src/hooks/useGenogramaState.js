@@ -250,13 +250,108 @@ export default function useGenogramaState() {
   }, [setNodes, setEdges, showToast]); // Dependencias
 
   const onExportJSON = useCallback(() => {
-     // --- Lógica de onExportJSON sin cambios ---
-    const dataToExport = { nodes, edges }; // Exporta nodos con posición y todas las aristas visibles
+    // Transformar de formato React Flow (nodes, edges) a formato de genograma (people, relationships)
+    const people = nodes.map(node => {
+      // Filtrar los nodos de tipo "familyNode" que son nodos auxiliares
+      if (node.type === "familyNode") return null;
+      
+      // Extraer información básica del nodo
+      const { id, type, data } = node;
+      
+      // Determinar género basado en el tipo de nodo
+      let gender = null;
+      if (type.includes('F') || type.includes('f')) {
+        gender = 'F';
+      } else if (type.includes('M') || type.includes('m')) {
+        gender = 'M';
+      }
+      
+      // Determinar si es fallecido
+      const isDeceased = type.includes('fallecido') || type.includes('Fallecido');
+      
+      // Determinar si es paciente
+      const isPatient = type === 'paciente';
+      
+      // Construir objeto de persona
+      return {
+        id,
+        name: data.label || "",
+        gender,
+        generation: data.generation || 0,
+        birthDate: data.birthDate || null,
+        age: data.age || null,
+        deathDate: data.deathDate || null,
+        role: type,
+        notes: data.notes || "",
+        displayGroup: null,
+        attributes: {
+          isPatient,
+          isDeceased,
+          isPregnancy: type.includes('embarazo') || type.includes('pregnancy'),
+          isAbortion: type.includes('aborto') || type.includes('abortion'),
+          isAdopted: type.includes('adoptado') || type.includes('adopted'),
+          abortionType: null,
+          gestationalAge: null,
+          ...(data.attributes || {})
+        }
+      };
+    }).filter(Boolean); // Eliminar valores null
+    
+    // Transformar edges a relationships
+    const relationships = edges.map(edge => {
+      const { id, source, target, data = {} } = edge;
+      
+      // Determinar tipo de relación basado en el tipo de edge o en data.relType
+      let type = "parentChild"; // Tipo por defecto
+      let emotionalBond = null;
+      let legalStatus = null;
+      
+      // Mapeo de relTypes a tipos de relaciones
+      if (data.relType) {
+        if (['matrimonio', 'cohabitacion', 'divorcio', 'separacion', 'compromiso'].includes(data.relType)) {
+          type = "conyugal";
+          legalStatus = data.relType;
+        } else if (['conflicto', 'cercana', 'distante', 'rota', 'violencia'].includes(data.relType)) {
+          emotionalBond = data.relType;
+        } else if (data.relType === 'hermanos') {
+          type = "hermanos";
+        } else if (data.relType === 'mellizos') {
+          type = "mellizos";
+        }
+      }
+      
+      // Si el ID contiene "parentChild" o edge.type es "childEdge", es una relación padre-hijo
+      if (id.includes('parentChild') || edge.type === 'childEdge') {
+        type = "parentChild";
+      }
+      
+      return {
+        id: id || `rel-${source}-${target}-${type}`,
+        source,
+        target,
+        type,
+        legalStatus,
+        emotionalBond,
+        startDate: data.startDate || null,
+        endDate: data.endDate || null,
+        notes: data.notes || ""
+      };
+    });
+    
+    // Crear objeto final para exportar
+    const dataToExport = { 
+      people, 
+      relationships 
+    };
+    
+    // Exportar como archivo JSON
     const jsonString = `data:text/json;charset=utf-8,${encodeURIComponent(JSON.stringify(dataToExport, null, 2))}`;
     const link = document.createElement("a");
-    link.href = jsonString; link.download = "genograma_layout.json"; link.click();
-    showToast("✔ JSON (con layout) exportado");
-     // --- Fin lógica onExportJSON ---
+    link.href = jsonString; 
+    link.download = "genograma.json"; 
+    link.click();
+    
+    showToast("✅ Genograma exportado con formato correcto (people/relationships)");
   }, [nodes, edges, showToast]);
 
   const onExportCSV = useCallback(() => {
