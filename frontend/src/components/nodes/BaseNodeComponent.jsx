@@ -76,8 +76,11 @@ function BaseNodeComponent({
     };
   }, []);
   
+  // Estilos base mejorados con sombras y transiciones
   const baseStyle = {
     position: 'relative',
+    boxShadow: selected ? '0 4px 12px rgba(0, 0, 0, 0.15)' : '0 2px 6px rgba(0, 0, 0, 0.08)',
+    transition: 'all 0.2s ease',
     ...nodeStyles
   };
   
@@ -89,22 +92,36 @@ function BaseNodeComponent({
       style={baseStyle}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
+      className={`node-component ${selected ? 'node-selected' : ''}`}
     >
       {children}
       
-      {/* Indicador visual de que hay información adicional */}
+      {/* Indicador visual mejorado para información adicional */}
       {hasAdditionalInfo && showTooltip && (
         <div style={{
           position: 'absolute',
           top: -5,
           right: -5,
-          width: 12,
-          height: 12,
+          width: 14,
+          height: 14,
           borderRadius: '50%',
-          backgroundColor: '#3b82f6',
+          backgroundColor: nodeType === 'masculino' ? '#2563eb' : 
+                          nodeType === 'femenino' ? '#db2777' : 
+                          nodeType === 'paciente' ? '#047857' : '#3b82f6',
           border: '2px solid white',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
           zIndex: 5,
-        }} />
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}>
+          <span style={{ 
+            color: 'white', 
+            fontSize: '9px', 
+            fontWeight: 'bold',
+            lineHeight: 1 
+          }}>i</span>
+        </div>
       )}
       
       {/* Tooltip con información detallada */}

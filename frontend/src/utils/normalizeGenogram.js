@@ -165,7 +165,28 @@ export function normalizeGenogram(genoData) {
   const { people = [], relationships = [] } = genoData;
 
   const generations = computeGenerations(people, relationships);
-  // console.log("Generaciones Calculadas:", Array.from(generations.entries()));
+
+  // --- Crear un mapa de hijos a sus padres y un mapa de padres a sus hijos ---
+  const childToParents = new Map(); // hijo -> [padres]
+  const parentToChildren = new Map(); // padre -> [hijos]
+  
+  // Construir relaciones entre padres e hijos
+  relationships.forEach((rel) => {
+    if (rel.type === 'parentChild' && rel.source && rel.target) {
+      const childId = rel.source;
+      const parentId = rel.target;
+      
+      if (!childToParents.has(childId)) {
+        childToParents.set(childId, []);
+      }
+      childToParents.get(childId).push(parentId);
+      
+      if (!parentToChildren.has(parentId)) {
+        parentToChildren.set(parentId, []);
+      }
+      parentToChildren.get(parentId).push(childId);
+    }
+  });
 
   const personNodes = people.map((person) => {
     if (!person || !person.id) return null;
@@ -182,37 +203,43 @@ export function normalizeGenogram(genoData) {
   }).filter(Boolean);
 
   const finalNodes = [...personNodes];
-  const finalEdges = []; // Edges que SÍ irán al layout
+  const finalEdges = [];
   const familyNodeMap = new Map();
   const familyNodeParents = new Map();
-  const childrenOfFamily = new Map(); // No estrictamente necesario ahora, pero mantenido por si acaso
+  const childrenOfFamily = new Map();
+  const processedChildren = new Set(); // Para rastrear hijos ya procesados
 
-  // Paso 3: Procesar relaciones conyugales y crear nodos de familia
-  relationships.forEach((rel) => {
-    if (!rel || !rel.id || !rel.source || !rel.target || rel.type !== 'conyugal') return;
+  // --- Detectar todos los pares de padres que comparten hijos ---
+  // Mapeo: string "padre1-padre2" (ordenado) -> Set de hijos
+  const parentPairsToChildren = new Map();
+  
+  for (const [childId, parentIds] of childToParents.entries()) {
+    if (parentIds.length >= 2) {
+      // Para cada par de padres (normalmente solo 2)
+      const sortedPair = [...parentIds].sort().join('-');
+      if (!parentPairsToChildren.has(sortedPair)) {
+        parentPairsToChildren.set(sortedPair, new Set());
+      }
+      parentPairsToChildren.get(sortedPair).add(childId);
+    }
+  }
 
-    const sourceNode = finalNodes.find(n => n.id === rel.source);
-    const targetNode = finalNodes.find(n => n.id === rel.target);
-    if (!sourceNode || !targetNode) return;
+  // --- Crear familyNode para cada par de padres con hijos en común (aunque no haya relación conyugal) ---
+  for (const [parentPairKey, childrenSet] of parentPairsToChildren.entries()) {
+    const parentIds = parentPairKey.split('-');
+    const famNodeId = `fam-${parentPairKey}`;
 
-    const partnerIds = [rel.source, rel.target].sort();
-    const famNodeKey = partnerIds.join('-');
-    const famNodeId = `fam-${famNodeKey}`;
+    if (familyNodeMap.has(parentPairKey)) continue;
 
-    if (familyNodeMap.has(famNodeKey)) return;
-
-    const gen1 = generations.get(rel.source);
-    const gen2 = generations.get(rel.target);
+    const gen1 = generations.get(parentIds[0]);
+    const gen2 = generations.get(parentIds[1]);
 
     if (typeof gen1 !== 'number' || typeof gen2 !== 'number') {
-        console.error(`Generación inválida para padres ${rel.source}/${rel.target}. Omitiendo famNode ${famNodeId}.`);
-        return;
+        console.error(`Generación inválida para padres ${parentIds[0]}/${parentIds[1]}. Omitiendo famNode ${famNodeId}.`);
+        continue;
     }
-     if (gen1 !== gen2) {
-         // console.warn(`Padres ${rel.source}/${rel.target} con gens ${gen1}/${gen2}. Usando ${Math.min(gen1, gen2)}.`); // Opcional
-     }
-     const parentGeneration = Math.min(gen1, gen2);
-     const familyNodeGeneration = parentGeneration; // FamilyNode en la misma gen que los padres
+    const parentGeneration = Math.min(gen1, gen2);
+    const familyNodeGeneration = parentGeneration;
 
     finalNodes.push({
       id: famNodeId, type: 'familyNode', position: { x: 0, y: 0 },
@@ -220,57 +247,88 @@ export function normalizeGenogram(genoData) {
       width: 10, height: 10,
     });
 
-    familyNodeMap.set(famNodeKey, famNodeId);
-    familyNodeParents.set(famNodeId, new Set(partnerIds));
-    childrenOfFamily.set(famNodeId, new Set());
+    familyNodeMap.set(parentPairKey, famNodeId);
+    familyNodeParents.set(famNodeId, new Set(parentIds));
+    childrenOfFamily.set(famNodeId, childrenSet);
 
-    finalEdges.push({
-      id: `p-${rel.source}-${famNodeId}`, source: rel.source, target: famNodeId, type: 'partnerEdge',
-      data: { relType: rel.legalStatus || 'conyugal', notes: rel.notes }
-    });
-    finalEdges.push({
-      id: `p-${rel.target}-${famNodeId}`, source: rel.target, target: famNodeId, type: 'partnerEdge',
-      data: { relType: rel.legalStatus || 'conyugal', notes: rel.notes }
-    });
-  });
-
-  // Paso 4: Procesar relaciones padre-hijo (parentChild)
-  relationships.forEach((rel) => {
-    if (!rel || !rel.id || !rel.source || !rel.target || rel.type !== 'parentChild') return;
-
-    const childId = rel.source;
-    const parentId = rel.target;
-
-    const childNode = finalNodes.find(n => n.id === childId);
-    const parentNode = finalNodes.find(n => n.id === parentId);
-    if (!childNode || !parentNode) return;
-
-    let associatedFamNodeId = null;
-    for (const [famId, parentsSet] of familyNodeParents.entries()) {
-      if (parentsSet.has(parentId)) {
-        associatedFamNodeId = famId;
-        break;
-      }
-    }
-
-    if (associatedFamNodeId) {
-      const edgeExists = finalEdges.some(edge => edge.source === associatedFamNodeId && edge.target === childId && edge.type === 'childEdge');
-      if (!edgeExists) {
-          finalEdges.push({
-            id: `c-${associatedFamNodeId}-${childId}`, source: associatedFamNodeId, target: childId, type: 'childEdge',
-            data: { notes: rel.notes }
-          });
-          if (childrenOfFamily.has(associatedFamNodeId)) {
-             childrenOfFamily.get(associatedFamNodeId).add(childId);
-          }
-      }
-    } else {
+    for (const parentId of parentIds) {
       finalEdges.push({
-        id: `d-${parentId}-${childId}`, source: parentId, target: childId, type: 'childEdge',
-        data: { notes: rel.notes }
+        id: `p-${parentId}-${famNodeId}`, source: parentId, target: famNodeId, type: 'partnerEdge',
+        data: { relType: 'conyugal', notes: '' }
       });
     }
-  });
+
+    for (const childId of childrenSet) {
+      finalEdges.push({
+        id: `c-${famNodeId}-${childId}`, source: famNodeId, target: childId, type: 'childEdge',
+        data: { notes: '' }
+      });
+      processedChildren.add(childId);
+    }
+  }
+
+  // --- NUEVO: Manejar padres solteros (con hijos sin otro padre registrado) ---
+  for (const [parentId, childrenIds] of parentToChildren.entries()) {
+    if (childrenIds.length > 0) {
+      // Comprobar cuáles de estos hijos tienen un solo padre (o no tienen familyNode)
+      const singleParentChildren = childrenIds.filter(childId => {
+        const parentsOfChild = childToParents.get(childId) || [];
+        return !processedChildren.has(childId) && 
+               (parentsOfChild.length === 1 || 
+                !parentPairsToChildren.has(parentsOfChild.sort().join('-')));
+      });
+      
+      // Si hay al menos un hijo con este padre como único padre
+      if (singleParentChildren.length > 0) {
+        // Crear un nodo familia para este padre soltero
+        const famNodeId = `fam-${parentId}-solo`;
+        
+        // Calcular generación usando la del padre
+        const parentGen = generations.get(parentId);
+        const familyNodeGeneration = typeof parentGen === 'number' ? parentGen : 2;
+        
+        // Crear nodo familia
+        finalNodes.push({
+          id: famNodeId, 
+          type: 'familyNode', 
+          position: { x: 0, y: 0 },
+          data: { 
+            label: '', 
+            width: 10, 
+            height: 10, 
+            generation: familyNodeGeneration 
+          },
+          width: 10, 
+          height: 10,
+        });
+        
+        // Registrar info
+        familyNodeParents.set(famNodeId, new Set([parentId]));
+        childrenOfFamily.set(famNodeId, new Set(singleParentChildren));
+        
+        // Crear conexión del padre al nodo familia
+        finalEdges.push({
+          id: `p-${parentId}-${famNodeId}`, 
+          source: parentId, 
+          target: famNodeId, 
+          type: 'partnerEdge',
+          data: { relType: 'conyugal', notes: '' }
+        });
+        
+        // Crear conexiones del nodo familia a los hijos
+        for (const childId of singleParentChildren) {
+          finalEdges.push({
+            id: `c-${famNodeId}-${childId}`, 
+            source: famNodeId, 
+            target: childId, 
+            type: 'childEdge',
+            data: { notes: '' }
+          });
+          processedChildren.add(childId);
+        }
+      }
+    }
+  }
 
   // Paso 5: Procesar OTRAS relaciones (emocionales, etc.) - EXCLUYENDO hermanos/mellizos
   relationships.forEach((rel) => {
@@ -290,10 +348,6 @@ export function normalizeGenogram(genoData) {
       data: { relType: rel.emotionalBond || rel.legalStatus || rel.type || 'default', notes: rel.notes || '' }
     });
   });
-
-  // console.log("Nodos Finales (para Layout):", finalNodes);
-  // console.log("Aristas Finales (para Layout - SIN hermanos/mellizos):", finalEdges);
-
 
   // Devolver la estructura normalizada para React Flow y Dagre
   return { nodes: finalNodes, edges: finalEdges };

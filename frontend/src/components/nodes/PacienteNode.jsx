@@ -12,16 +12,16 @@ const PacienteNode = ({ data, id, selected }) => {
   const profession = data?.profession || '';
   const info = data?.info || '';
   
-  // Tamaño del nodo
-  const defaultSize = data?.size || 70; // Un poco más grande por defecto
+  // Tamaño del nodo un poco más grande para destacar al paciente principal
+  const defaultSize = data?.size || 75;
   
   // Usar el hook para gestionar el tamaño
   const [size, resizeHandleRef, isResizing] = useNodeSize(
     id,
     data,
     { width: defaultSize, height: defaultSize },
-    50, // min width
-    50  // min height
+    55, // min width aumentado
+    55  // min height aumentado
   );
   
   // Determinar si los handles son conectables
@@ -60,6 +60,9 @@ const PacienteNode = ({ data, id, selected }) => {
     }
   };
 
+  // Gradiente para el nodo del paciente con efecto más pronunciado
+  const bgGradient = 'linear-gradient(135deg, #dcfce7 0%, #a7f3d0 100%)';
+
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
       <BaseNodeComponent
@@ -69,15 +72,18 @@ const PacienteNode = ({ data, id, selected }) => {
         nodeStyles={{
           width: size.width,
           height: size.height,
-          background: "#dcfce7",
+          background: bgGradient,
           border: "3px solid #047857",
-          borderRadius: "10px",
+          borderRadius: "12px",
           position: "relative",
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          cursor: "pointer",
-          boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
+          cursor: "move",
+          boxShadow: selected ? 
+            "0 4px 12px rgba(4, 120, 87, 0.25), inset 0 0 6px rgba(255, 255, 255, 0.5)" : 
+            "0 3px 8px rgba(4, 120, 87, 0.15), inset 0 0 4px rgba(255, 255, 255, 0.5)",
+          transition: "all 0.2s ease"
         }}
         data={data}
         nodeType="paciente"
@@ -85,41 +91,47 @@ const PacienteNode = ({ data, id, selected }) => {
         {/* Mostrar edad dentro del nodo si está disponible */}
         {age !== '' && (
           <div style={{ 
-            fontSize: Math.max(14, size.width * 0.2),
+            fontSize: Math.max(16, size.width * 0.25),
             fontWeight: 'bold',
-            color: '#047857',
+            color: '#065f46',
+            textShadow: '0 1px 1px rgba(255,255,255,0.75)',
           }}>
             {age}
           </div>
         )}
         
-        {/* Pequeño indicador visual de que es el paciente principal */}
+        {/* Indicador visual mejorado de que es el paciente principal */}
         <div style={{
           position: 'absolute',
-          bottom: -5,
-          right: -5,
-          width: 16,
-          height: 16,
+          bottom: -6,
+          right: -6,
+          width: 20,
+          height: 20,
           borderRadius: '50%',
           backgroundColor: '#047857',
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
           border: '2px solid white',
+          boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
         }}>
-          <span style={{ color: 'white', fontSize: 10, fontWeight: 'bold' }}>P</span>
+          <span style={{ color: 'white', fontSize: 12, fontWeight: 'bold' }}>P</span>
         </div>
       </BaseNodeComponent>
       
-      {/* Información del nodo debajo - ahora solo mostramos el nombre */}
+      {/* Información del nodo debajo con estilo mejorado */}
       <div style={{ 
-        marginTop: 4, 
-        width: Math.max(120, size.width + 20),
+        marginTop: 8, 
+        width: Math.max(130, size.width + 20),
         display: 'flex',
         flexDirection: 'column',
-        alignItems: 'center'
+        alignItems: 'center',
+        padding: "4px 8px",
+        backgroundColor: "rgba(255,255,255,0.8)",
+        borderRadius: "6px",
+        backdropFilter: "blur(2px)",
       }}>
-        {/* Nombre con etiqueta de "Paciente" */}
+        {/* Nombre del paciente */}
         {editingField === 'name' ? (
           <input
             value={name}
@@ -127,7 +139,15 @@ const PacienteNode = ({ data, id, selected }) => {
             onBlur={() => handleSave('name', name)}
             onKeyDown={(e) => handleKeyDown(e, 'name', name)}
             autoFocus
-            style={{ width: "100%", fontWeight: "bold", textAlign: "center" }}
+            style={{ 
+              width: "100%", 
+              fontWeight: "bold", 
+              textAlign: "center",
+              padding: "3px 5px",
+              borderRadius: "4px",
+              border: "1px solid #047857",
+              fontSize: 14
+            }}
           />
         ) : (
           <div 
@@ -136,24 +156,34 @@ const PacienteNode = ({ data, id, selected }) => {
               fontWeight: "bold", 
               textAlign: "center", 
               cursor: "text",
-              fontSize: 14,
-              color: '#047857'
+              fontSize: 15,
+              color: '#065f46',
+              padding: "2px 0"
             }}
           >
             {name}
           </div>
         )}
         
-        {/* Indicador de paciente principal */}
+        {/* Etiqueta de paciente principal con diseño mejorado */}
         <div style={{
-          fontSize: 10,
-          color: '#047857',
-          backgroundColor: '#dcfce7',
-          padding: '2px 8px',
-          borderRadius: '10px',
-          marginTop: 2,
-          fontWeight: 'bold'
+          fontSize: 11,
+          color: '#065f46',
+          backgroundColor: '#ecfdf5',
+          padding: '3px 10px',
+          borderRadius: '12px',
+          marginTop: 3,
+          fontWeight: 'bold',
+          border: '1px solid #10b981',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '4px',
+          boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
         }}>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+            <polyline points="22 4 12 14.01 9 11.01" />
+          </svg>
           Paciente Principal
         </div>
         
@@ -190,7 +220,7 @@ const PacienteNode = ({ data, id, selected }) => {
           />
         )}
         
-        {/* Pequeño indicador visual de info adicional como pequeño icono */}
+        {/* Indicador visual de información adicional */}
         {(profession || info) && (
           <div 
             style={{ 
@@ -201,7 +231,11 @@ const PacienteNode = ({ data, id, selected }) => {
               justifyContent: 'center',
               alignItems: 'center',
               gap: '2px',
-              marginTop: 2
+              marginTop: 3,
+              backgroundColor: "rgba(209,250,229,0.5)",
+              padding: "2px 5px",
+              borderRadius: "3px",
+              width: "fit-content"
             }}
           >
             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -212,8 +246,15 @@ const PacienteNode = ({ data, id, selected }) => {
           </div>
         )}
         
-        {/* Identificador del nodo */}
-        <div style={{ fontSize: 10, marginTop: 2, textAlign: "center", color: '#718096' }}>
+        {/* Identificador del nodo con estilo sutil */}
+        <div style={{ 
+          fontSize: 9, 
+          marginTop: 2, 
+          textAlign: "center", 
+          color: '#64748b',
+          fontFamily: 'monospace',
+          opacity: 0.7
+        }}>
           ID: {id}
         </div>
       </div>

@@ -5,6 +5,8 @@ import { useNodesState, useEdgesState, addEdge, useReactFlow } from 'reactflow';
 import layoutWithDagre from '../utils/layoutWithDagre';
 // Importar normalizeGenogram que omite hermanos/mellizos para el layout inicial
 import { normalizeGenogram } from '../utils/normalizeGenogram';
+// Importar denormalizeGenogram para transformar la representación de ReactFlow a JSON estándar
+import { denormalizeGenogram } from './denormalizeGenogram';
 
 /**
  * Hook personalizado para manejar el estado del genograma.
@@ -179,11 +181,43 @@ export default function useGenogramaState() {
           return;
         }
 
+        // Verificar si los nodos tienen posiciones explícitas en el JSON
+        const nodesWithPositions = rawData.people.filter(p => p.position && typeof p.position.x === 'number' && typeof p.position.y === 'number');
+        const hasPreservedPositions = nodesWithPositions.length > 0;
+
+        console.log(`Importando genograma: ${nodesWithPositions.length}/${rawData.people.length} nodos con posiciones explícitas.`);
+
         // --- PASO 1: Normalización y Layout Estructural para el genograma básico ---
         const { nodes: structuralNodes, edges: structuralEdges } = normalizeGenogram(rawData);
-        const laidOutNodes = layoutWithDagre(structuralNodes, structuralEdges);
 
-        // --- PASO 2: Procesar anotaciones y dibujos ---
+        // Si hay posiciones explícitas en el JSON, preservarlas durante el layout
+        const laidOutNodes = layoutWithDagre(structuralNodes, structuralEdges, { 
+          respectExistingPositions: true
+        });
+
+        // --- PASO 2: Restaurar posiciones explícitas del JSON original
+        const updatedNodes = laidOutNodes.map(node => {
+          // Buscar si este nodo tiene posición explícita en el JSON original
+          const originalPerson = rawData.people.find(p => p.id === node.id);
+          
+          if (originalPerson && originalPerson.position && 
+              typeof originalPerson.position.x === 'number' && 
+              typeof originalPerson.position.y === 'number') {
+            // Si tiene posición explícita, usarla (override del layout automático)
+            return {
+              ...node,
+              position: {
+                x: originalPerson.position.x,
+                y: originalPerson.position.y
+              }
+            };
+          }
+          
+          // En caso contrario, mantener la posición calculada por el layout
+          return node;
+        });
+
+        // --- PASO 3: Procesar anotaciones y dibujos ---
         // Nodos adicionales para anotaciones (desde people con role=annotation)
         const annotationNodes = rawData.people
           .filter(person => person.role === "annotation" || person.attributes?.isAnnotation)
@@ -192,6 +226,7 @@ export default function useGenogramaState() {
             return {
               id: person.id,
               type: person.annotationType || 'text', // Tipo por defecto: text
+              // Preservar la posición exacta
               position: person.position || { x: 0, y: 0 },
               style: person.style || {}, // Mantener todos los estilos originales
               data: {
@@ -212,6 +247,7 @@ export default function useGenogramaState() {
           rawData.drawings.map(drawing => ({
             id: drawing.id,
             type: drawing.type || 'drawing',
+            // Preservar la posición exacta
             position: drawing.position || { x: 0, y: 0 },
             style: drawing.style || {},
             data: drawing.data || {},
@@ -228,6 +264,7 @@ export default function useGenogramaState() {
           rawData.annotations.map(ann => ({
             id: ann.id,
             type: ann.type || 'text',
+            // Preservar la posición exacta
             position: ann.position || { x: 0, y: 0 },
             style: ann.style || {},
             data: ann.data || {},
@@ -239,10 +276,10 @@ export default function useGenogramaState() {
           })) : 
           [];
 
-        // --- PASO 3: Crear Aristas Visuales para relaciones emocionales ---
+        // --- PASO 4: Crear Aristas Visuales para relaciones emocionales ---
         const visualRelationshipEdges = [];
         const originalRelationships = rawData.relationships;
-        const laidOutNodeIds = new Set(laidOutNodes.map(n => n.id));
+        const laidOutNodeIds = new Set(updatedNodes.map(n => n.id));
 
         originalRelationships.forEach(rel => {
           if (!rel || !rel.id || !rel.source || !rel.target) return;
@@ -286,9 +323,9 @@ export default function useGenogramaState() {
           }
         });
 
-        // --- PASO 4: Combinar todos los nodos y aristas y actualizar estado ---
+        // --- PASO 5: Combinar todos los nodos y aristas y actualizar estado ---
         const allNodes = [
-          ...laidOutNodes,
+          ...updatedNodes,
           ...annotationNodes,
           ...drawingNodes,
           ...annotationsFromSection
@@ -324,190 +361,11 @@ export default function useGenogramaState() {
   }, [setNodes, setEdges, showToast, setIdCounter]);
 
   const onExportJSON = useCallback(() => {
-    // Transformar de formato React Flow (nodes, edges) a formato de genograma (people, relationships)
-    const people = nodes.map(node => {
-      // Filtrar los nodos de tipo "familyNode" que son nodos auxiliares
-      if (node.type === "familyNode") return null;
-      
-      // Extraer información básica del nodo
-      const { id, type, data, style, width, height, selected, draggable, selectable, position } = node;
-      
-      // Si es un nodo de anotación o dibujo, incluirlo con un formato compatible
-      if (["text", "note", "rectangle", "circle", "drawing", "freeDrawing"].includes(type)) {
-        return {
-          id,
-          name: data?.label || "",
-          gender: null,
-          generation: data?.generation || 0,
-          role: "annotation",
-          notes: data?.notes || "",
-          position: position, // Guardar la posición exacta
-          annotationType: type,    // Tipo de anotación
-          style: style || {}, // Guardar TODOS los estilos aplicados
-          width: width || 150, // Ancho predeterminado si no está definido
-          height: height || 50, // Alto predeterminado si no está definido
-          selected: selected || false,
-          draggable: draggable !== false, // Por defecto true si no se especifica
-          selectable: selectable !== false, // Por defecto true si no se especifica
-          data: data || {}, // Guardar todos los datos del nodo
-          attributes: {
-            isAnnotation: true,
-            visualProperties: {
-              backgroundColor: style?.backgroundColor || '',
-              borderColor: style?.borderColor || style?.border || '',
-              borderWidth: style?.borderWidth || '',
-              borderStyle: style?.borderStyle || '',
-              fontSize: style?.fontSize || '',
-              fontFamily: style?.fontFamily || '',
-              fontWeight: style?.fontWeight || '',
-              color: style?.color || '',
-              textAlign: style?.textAlign || '',
-              padding: style?.padding || ''
-            }
-          }
-        };
-      }
-      
-      // Para nodos normales del genograma
-      // Determinar género basado en el tipo de nodo
-      let gender = null;
-      if (type.includes('F') || type.includes('f')) {
-        gender = 'F';
-      } else if (type.includes('M') || type.includes('m')) {
-        gender = 'M';
-      }
-      
-      // Determinar si es fallecido
-      const isDeceased = type.includes('fallecido') || type.includes('Fallecido');
-      
-      // Determinar si es paciente
-      const isPatient = type === 'paciente';
-      
-      // Construir objeto de persona
-      return {
-        id,
-        name: data?.label || "",
-        gender,
-        generation: data?.generation || 0,
-        birthDate: data?.birthDate || null,
-        age: data?.age || null,
-        deathDate: data?.deathDate || null,
-        role: type,
-        notes: data?.notes || "",
-        displayGroup: data?.displayGroup || null,
-        position: position, // Guardar la posición exacta
-        attributes: {
-          isPatient,
-          isDeceased,
-          isPregnancy: type.includes('embarazo') || type.includes('pregnancy'),
-          isAbortion: type.includes('aborto') || type.includes('abortion'),
-          isAdopted: type.includes('adoptado') || type.includes('adopted'),
-          abortionType: data?.attributes?.abortionType || null,
-          gestationalAge: data?.attributes?.gestationalAge || null,
-          ...(data?.attributes || {})
-        }
-      };
-    }).filter(Boolean); // Eliminar valores null
-    
-    // Transformar edges a relationships
-    const relationships = edges.map(edge => {
-      const { id, source, target, data = {}, style = {}, type: edgeType } = edge;
-      
-      // Si es una conexión de dibujo libre, incluirla con un formato compatible
-      if (edgeType === 'free-draw-connection' || edgeType === 'drawingEdge' || data?.isAnnotation) {
-        return {
-          id: id || `annotation-${source}-${target}`,
-          source,
-          target,
-          type: "annotation",
-          annotationType: edgeType,
-          style: style, // Mantener todos los estilos
-          data: data || {},
-          strokeWidth: style?.strokeWidth || data?.strokeWidth || 2,
-          stroke: style?.stroke || data?.stroke || '#000000',
-          strokeDasharray: style?.strokeDasharray || data?.strokeDasharray || null
-        };
-      }
-      
-      // Determinar tipo de relación basado en el tipo de edge o en data.relType
-      let type = "parentChild"; // Tipo por defecto
-      let emotionalBond = null;
-      let legalStatus = null;
-      
-      // Mapeo de relTypes a tipos de relaciones
-      if (data.relType) {
-        if (['matrimonio', 'cohabitacion', 'divorcio', 'separacion', 'compromiso'].includes(data.relType)) {
-          type = "conyugal";
-          legalStatus = data.relType;
-        } else if (['conflicto', 'cercana', 'distante', 'rota', 'violencia'].includes(data.relType)) {
-          emotionalBond = data.relType;
-        } else if (data.relType === 'hermanos') {
-          type = "hermanos";
-        } else if (data.relType === 'mellizos') {
-          type = "mellizos";
-        }
-      }
-      
-      // Si el ID contiene "parentChild" o edge.type es "childEdge", es una relación padre-hijo
-      if (id?.includes('parentChild') || edgeType === 'childEdge') {
-        type = "parentChild";
-      }
-      
-      return {
-        id: id || `rel-${source}-${target}-${type}`,
-        source,
-        target,
-        type,
-        legalStatus,
-        emotionalBond,
-        startDate: data.startDate || null,
-        endDate: data.endDate || null,
-        notes: data.notes || ""
-      };
-    });
-    
-    // Recopilar los dibujos libres como una sección separada
-    const drawings = nodes
-      .filter(node => node.type === 'drawing' || node.type === 'freeDrawing')
-      .map(node => ({
-        id: node.id,
-        type: node.type,
-        position: node.position,
-        data: node.data || {},
-        style: node.style || {},
-        width: node.width,
-        height: node.height,
-        selected: node.selected,
-        draggable: node.draggable,
-        selectable: node.selectable
-      }));
-    
-    // Recopilar las anotaciones (notas, textos, etc.)
-    const annotations = nodes
-      .filter(node => ["text", "note", "rectangle", "circle"].includes(node.type))
-      .map(node => ({
-        id: node.id,
-        type: node.type,
-        position: node.position,
-        style: node.style || {},
-        data: node.data || {},
-        width: node.width,
-        height: node.height,
-        selected: node.selected,
-        draggable: node.draggable,
-        selectable: node.selectable
-      }));
-    
-    // Crear objeto final para exportar
-    const dataToExport = { 
-      people, 
-      relationships,
-      annotations: annotations.length > 0 ? annotations : undefined,
-      drawings: drawings.length > 0 ? drawings : undefined
-    };
+    // Utilizar denormalizeGenogram para transformar los nodos y aristas a formato estándar de genograma
+    const genogramData = denormalizeGenogram(nodes, edges);
     
     // Exportar como archivo JSON
-    const blob = new Blob([JSON.stringify(dataToExport, null, 2)], { type: 'application/json' });
+    const blob = new Blob([JSON.stringify(genogramData, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url; 

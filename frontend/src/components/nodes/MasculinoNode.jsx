@@ -13,16 +13,16 @@ const MasculinoNode = ({ data, id, selected }) => {
   const profession = data?.profession || '';
   const info = data?.info || '';
   
-  // Tamaño del nodo
-  const defaultSize = data?.size || 60;
+  // Tamaño del nodo con un valor por defecto ligeramente más grande
+  const defaultSize = data?.size || 65;
   
   // Usar el hook para gestionar el tamaño
   const [size, resizeHandleRef, isResizing] = useNodeSize(
     id,
     data,
     { width: defaultSize, height: defaultSize },
-    40, // min width
-    40  // min height
+    45, // min width aumentado
+    45  // min height aumentado
   );
   
   // Determinar si los handles son conectables
@@ -61,6 +61,9 @@ const MasculinoNode = ({ data, id, selected }) => {
     }
   };
 
+  // Calcular un gradiente sutil para el fondo del nodo 
+  const bgGradient = 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)';
+
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
       <BaseNodeComponent
@@ -70,13 +73,14 @@ const MasculinoNode = ({ data, id, selected }) => {
         nodeStyles={{
           width: size.width,
           height: size.height,
-          background: "#dbeafe",
+          background: bgGradient,
           border: "2px solid #2563eb",
           position: "relative",
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          cursor: "pointer", // Añadir cursor pointer para indicar interactividad
+          cursor: "move",
+          borderRadius: "0px", // Forma cuadrada para masculino
         }}
         data={data} // Pasar datos para el tooltip
         nodeType="masculino" // Indicar el tipo de nodo para estilo adecuado
@@ -84,17 +88,25 @@ const MasculinoNode = ({ data, id, selected }) => {
         {/* Mostrar edad dentro del nodo si está disponible */}
         {age !== '' && (
           <div style={{ 
-            fontSize: Math.max(14, size.width * 0.2),
+            fontSize: Math.max(16, size.width * 0.25),
             fontWeight: 'bold',
-            color: '#2563eb',
+            color: '#1e40af',
+            textShadow: '0 1px 1px rgba(255,255,255,0.5)',
           }}>
             {age}
           </div>
         )}
       </BaseNodeComponent>
       
-      {/* Información del nodo debajo - ahora solo mostramos el nombre */}
-      <div style={{ marginTop: 4, width: Math.max(120, size.width + 20) }}>
+      {/* Información del nodo debajo con estilo mejorado */}
+      <div style={{ 
+        marginTop: 6, 
+        width: Math.max(120, size.width + 20),
+        padding: "3px 6px",
+        backgroundColor: "rgba(255,255,255,0.7)",
+        borderRadius: "4px",
+        backdropFilter: "blur(2px)",
+      }}>
         {/* Nombre */}
         {editingField === 'name' ? (
           <input
@@ -103,12 +115,25 @@ const MasculinoNode = ({ data, id, selected }) => {
             onBlur={() => handleSave('name', name)}
             onKeyDown={(e) => handleKeyDown(e, 'name', name)}
             autoFocus
-            style={{ width: "100%", fontWeight: "bold", textAlign: "center" }}
+            style={{ 
+              width: "100%", 
+              fontWeight: "bold", 
+              textAlign: "center",
+              padding: "2px 4px",
+              borderRadius: "3px",
+              border: "1px solid #2563eb"
+            }}
           />
         ) : (
           <div 
             onDoubleClick={() => handleEdit('name')}
-            style={{ fontWeight: "bold", textAlign: "center", cursor: "text" }}
+            style={{ 
+              fontWeight: "bold", 
+              textAlign: "center", 
+              cursor: "text",
+              color: "#1e3a8a", 
+              padding: "2px 0"
+            }}
           >
             {name}
           </div>
@@ -157,7 +182,12 @@ const MasculinoNode = ({ data, id, selected }) => {
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
-              gap: '2px'
+              gap: '2px',
+              backgroundColor: "rgba(219,234,254,0.5)",
+              padding: "2px 5px",
+              borderRadius: "3px",
+              margin: "2px auto",
+              width: "fit-content"
             }}
           >
             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -168,8 +198,15 @@ const MasculinoNode = ({ data, id, selected }) => {
           </div>
         )}
         
-        {/* Identificador del nodo */}
-        <div style={{ fontSize: 10, marginTop: 2, textAlign: "center", color: '#718096' }}>
+        {/* Identificador del nodo con estilo mejorado */}
+        <div style={{ 
+          fontSize: 9, 
+          marginTop: 2, 
+          textAlign: "center", 
+          color: '#64748b',
+          fontFamily: 'monospace',
+          opacity: 0.7
+        }}>
           ID: {id}
         </div>
       </div>
