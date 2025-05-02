@@ -11,6 +11,7 @@ const ReactFlowMinimap = ({
   maskColor = 'rgba(240, 240, 240, 0.6)', 
   showPatientHighlight = true,
   height = 150,
+  isVisible = true
 }) => {
   // Estado para la posición del minimapa
   const [position, setPosition] = useState({
@@ -62,6 +63,9 @@ const ReactFlowMinimap = ({
     if (['rectangle', 'circle', 'text', 'note'].includes(node.type)) return '#f59e0b';
     return '#555';
   };
+  
+  // Si el componente no debe mostrarse, retornamos null después de llamar a todos los hooks
+  if (!isVisible) return null;
 
   return (
     <MiniMap

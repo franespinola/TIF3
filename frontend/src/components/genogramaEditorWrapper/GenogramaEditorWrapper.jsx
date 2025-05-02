@@ -47,6 +47,12 @@ function GenogramaEditorWrapper() {
   const [isClinicalHistoryOpen, setIsClinicalHistoryOpen] = useState(false);
   const [isSessionNotesOpen, setIsSessionNotesOpen] = useState(false);
   
+  // Estados para la visibilidad de los paneles de visualización
+  const [showNavigationPanel, setShowNavigationPanel] = useState(true);
+  const [showSmartGuidesConfigPanel, setShowSmartGuidesConfigPanel] = useState(true);
+  const [showThemeVisualizer, setShowThemeVisualizer] = useState(true);
+  const [showMinimap, setShowMinimap] = useState(true);
+  
   // Estado para los modos de visualización
   const [currentTheme, setCurrentTheme] = useState('default');
   
@@ -249,6 +255,15 @@ function GenogramaEditorWrapper() {
         onExportCSV={onExportCSV}
         onExportPNG={onExportPNG}
         onExportJPG={onExportJPG}
+        // Propiedades para controlar la visibilidad de los paneles
+        showNavigationPanel={showNavigationPanel}
+        setShowNavigationPanel={setShowNavigationPanel}
+        showSmartGuidesConfigPanel={showSmartGuidesConfigPanel}
+        setShowSmartGuidesConfigPanel={setShowSmartGuidesConfigPanel}
+        showThemeVisualizer={showThemeVisualizer}
+        setShowThemeVisualizer={setShowThemeVisualizer}
+        showMinimap={showMinimap}
+        setShowMinimap={setShowMinimap}
       />
       <div style={{ 
         display: "flex", 
@@ -313,6 +328,7 @@ function GenogramaEditorWrapper() {
               edges={edges}
               setNodes={setNodes}
               setEdges={setEdges}
+              isVisible={showThemeVisualizer}
             />
             
             {/* Overlay para dibujo libre */}
@@ -328,7 +344,7 @@ function GenogramaEditorWrapper() {
             
             {/* Overlay para guías inteligentes */}
             {enableSmartGuides && (
-              <SmartGuidesOverlay guides={guides} showDistances={showDistances} />
+              <SmartGuidesOverlay guides={guides} showDistances={showDistances} isVisible={showSmartGuidesConfigPanel} />
             )}
             
             {/* Panel para control de Smart Guides */}
@@ -337,7 +353,7 @@ function GenogramaEditorWrapper() {
                 padding: '6px 10px',
                 backgroundColor: 'rgba(255, 255, 255, 0.9)',
                 borderRadius: '4px',
-                display: 'flex',
+                display: showSmartGuidesConfigPanel ? 'flex' : 'none',
                 flexDirection: 'column',
                 gap: '8px',
                 fontSize: '12px',
@@ -403,7 +419,11 @@ function GenogramaEditorWrapper() {
             </Panel>
             
             {/* Mini-mapa mejorado */}
-            <EnhancedMinimap nodes={nodes} />
+            <EnhancedMinimap 
+              nodes={nodes} 
+              isVisible={showMinimap}
+              showNavigationPanel={showNavigationPanel}
+            />
           </ReactFlow>
         </div>
         

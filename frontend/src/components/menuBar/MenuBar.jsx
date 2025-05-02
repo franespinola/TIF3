@@ -1,41 +1,65 @@
 import React, { useState, useRef, useEffect } from 'react';
 
 /**
- * MenuBar component renders the top "Archivo" menu with import/export options
+ * MenuBar component renders the top menu with import/export options
  */
 export default function MenuBar({
   onImportJSON,
   onExportJSON,
   onExportCSV,
   onExportPNG,
-  onExportJPG
+  onExportJPG,
+  // Propiedades para controlar la visibilidad de los paneles
+  showNavigationPanel,
+  setShowNavigationPanel,
+  showSmartGuidesConfigPanel,
+  setShowSmartGuidesConfigPanel,
+  showThemeVisualizer,
+  setShowThemeVisualizer,
+  showMinimap,
+  setShowMinimap
 }) {
-  const [showMenu, setShowMenu] = useState(false);
+  const [showFileMenu, setShowFileMenu] = useState(false);
+  const [showViewMenu, setShowViewMenu] = useState(false);
   const fileInputRef = useRef(null);
-  const menuRef = useRef(null);
-  const menuButtonRef = useRef(null);
+  const fileMenuRef = useRef(null);
+  const fileMenuButtonRef = useRef(null);
+  const viewMenuRef = useRef(null);
+  const viewMenuButtonRef = useRef(null);
 
-  // Cierra el menú si clicás fuera del botón o del dropdown
+  // Cierra los menús si clicás fuera del botón o del dropdown
   useEffect(() => {
     const handleClickOutside = (event) => {
+      // Para menú Archivo
       if (
-        showMenu &&
-        menuRef.current &&
-        !menuRef.current.contains(event.target) &&
-        menuButtonRef.current &&
-        !menuButtonRef.current.contains(event.target)
+        showFileMenu &&
+        fileMenuRef.current &&
+        !fileMenuRef.current.contains(event.target) &&
+        fileMenuButtonRef.current &&
+        !fileMenuButtonRef.current.contains(event.target)
       ) {
-        setShowMenu(false);
+        setShowFileMenu(false);
+      }
+      
+      // Para menú Visualizar
+      if (
+        showViewMenu &&
+        viewMenuRef.current &&
+        !viewMenuRef.current.contains(event.target) &&
+        viewMenuButtonRef.current &&
+        !viewMenuButtonRef.current.contains(event.target)
+      ) {
+        setShowViewMenu(false);
       }
     };
 
-    if (showMenu) {
+    if (showFileMenu || showViewMenu) {
       document.addEventListener('click', handleClickOutside, true);
     }
     return () => {
       document.removeEventListener('click', handleClickOutside, true);
     };
-  }, [showMenu]);
+  }, [showFileMenu, showViewMenu]);
 
   // Estilos
   const menuBarStyle = {
@@ -68,17 +92,17 @@ export default function MenuBar({
     color: '#334e68',
     fontWeight: 600,
     transition: 'background 0.2s',
+    marginRight: '10px', // Espacio entre elementos del menú
   };
   const iconStyle = {
     display: 'inline-block',
     marginLeft: '6px',
     transition: 'transform 0.3s ease',
-    transform: showMenu ? 'rotate(180deg)' : 'rotate(0deg)',
   };
   const dropdownStyle = {
     position: 'absolute',
     top: '100%',
-    left: '12px',
+    left: '0px',
     background: '#ffffff',
     border: '1px solid #e2e8f0',
     boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
@@ -86,6 +110,7 @@ export default function MenuBar({
     overflow: 'hidden',
     marginTop: '4px',
     zIndex: 1000,
+    minWidth: '200px',
   };
   const dropdownItemStyle = {
     padding: '10px 16px',
@@ -94,6 +119,22 @@ export default function MenuBar({
     cursor: 'pointer',
     transition: 'background 0.2s, color 0.2s',
     borderBottom: '1px solid #f1f5f9',
+  };
+  const checkboxItemStyle = {
+    ...dropdownItemStyle,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingRight: '16px',
+  };
+  const checkboxLabelStyle = {
+    display: 'flex',
+    alignItems: 'center',
+    cursor: 'pointer',
+    width: '100%',
+  }
+  const checkboxStyle = {
+    marginRight: '8px',
   };
   const dropdownItemHover = e => e.currentTarget.style.background = '#f0f4f8';
   const dropdownItemLeave = e => e.currentTarget.style.background = 'transparent';
@@ -109,7 +150,7 @@ export default function MenuBar({
         onChange={(e) => {
           onImportJSON(e);
           // (por si acaso) cerramos aquí también tras elegir archivo
-          setShowMenu(false);
+          setShowFileMenu(false);
         }}
       />
 
@@ -117,13 +158,23 @@ export default function MenuBar({
       <div style={menuBarStyle}>
         <img src="/logo192.png" alt="App Logo" style={logoStyle} />
 
+        {/* Menú Archivo */}
         <div
-          ref={menuButtonRef}
-          style={menuLabelStyle}
-          onClick={() => setShowMenu(prev => !prev)}
+          ref={fileMenuButtonRef}
+          style={{
+            ...menuLabelStyle,
+            background: showFileMenu ? '#e2e8f0' : 'transparent',
+          }}
+          onClick={() => {
+            setShowFileMenu(prev => !prev);
+            setShowViewMenu(false); // Cerrar el otro menú
+          }}
         >
           <span>Archivo</span>
-          <span style={iconStyle}>
+          <span style={{
+            ...iconStyle,
+            transform: showFileMenu ? 'rotate(180deg)' : 'rotate(0deg)',
+          }}>
             <svg
               width="12"
               height="12"
@@ -138,8 +189,8 @@ export default function MenuBar({
             </svg>
           </span>
 
-          {showMenu && (
-            <div ref={menuRef} style={dropdownStyle}>
+          {showFileMenu && (
+            <div ref={fileMenuRef} style={dropdownStyle}>
               {/* Importar JSON */}
               <div
                 style={dropdownItemStyle}
@@ -147,7 +198,7 @@ export default function MenuBar({
                 onMouseLeave={dropdownItemLeave}
                 onClick={() => {
                   // cerramos antes de abrir el diálogo
-                  setShowMenu(false);
+                  setShowFileMenu(false);
                   // y lanzamos el click en el input tras un tick
                   setTimeout(() => fileInputRef.current.click(), 0);
                 }}
@@ -161,7 +212,7 @@ export default function MenuBar({
                 onMouseEnter={dropdownItemHover}
                 onMouseLeave={dropdownItemLeave}
                 onClick={() => {
-                  setShowMenu(false);
+                  setShowFileMenu(false);
                   onExportJSON();
                 }}
               >
@@ -174,7 +225,7 @@ export default function MenuBar({
                 onMouseEnter={dropdownItemHover}
                 onMouseLeave={dropdownItemLeave}
                 onClick={() => {
-                  setShowMenu(false);
+                  setShowFileMenu(false);
                   onExportCSV();
                 }}
               >
@@ -187,7 +238,7 @@ export default function MenuBar({
                 onMouseEnter={dropdownItemHover}
                 onMouseLeave={dropdownItemLeave}
                 onClick={() => {
-                  setShowMenu(false);
+                  setShowFileMenu(false);
                   onExportPNG();
                 }}
               >
@@ -200,11 +251,115 @@ export default function MenuBar({
                 onMouseEnter={dropdownItemHover}
                 onMouseLeave={dropdownItemLeave}
                 onClick={() => {
-                  setShowMenu(false);
+                  setShowFileMenu(false);
                   onExportJPG();
                 }}
               >
                 Exportar JPG
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Menú Visualizar */}
+        <div
+          ref={viewMenuButtonRef}
+          style={{
+            ...menuLabelStyle,
+            background: showViewMenu ? '#e2e8f0' : 'transparent',
+          }}
+          onClick={() => {
+            setShowViewMenu(prev => !prev);
+            setShowFileMenu(false); // Cerrar el otro menú
+          }}
+        >
+          <span>Visualizar</span>
+          <span style={{
+            ...iconStyle,
+            transform: showViewMenu ? 'rotate(180deg)' : 'rotate(0deg)',
+          }}>
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#334e68"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </span>
+
+          {showViewMenu && (
+            <div ref={viewMenuRef} style={dropdownStyle}>
+              {/* Opción Panel de Navegación */}
+              <div
+                style={checkboxItemStyle}
+                onMouseEnter={dropdownItemHover}
+                onMouseLeave={dropdownItemLeave}
+              >
+                <label style={checkboxLabelStyle}>
+                  <input
+                    type="checkbox"
+                    style={checkboxStyle}
+                    checked={showNavigationPanel}
+                    onChange={() => setShowNavigationPanel(!showNavigationPanel)}
+                  />
+                  Panel de Navegación
+                </label>
+              </div>
+
+              {/* Opción Panel de Configuración de Guías */}
+              <div
+                style={checkboxItemStyle}
+                onMouseEnter={dropdownItemHover}
+                onMouseLeave={dropdownItemLeave}
+              >
+                <label style={checkboxLabelStyle}>
+                  <input
+                    type="checkbox"
+                    style={checkboxStyle}
+                    checked={showSmartGuidesConfigPanel}
+                    onChange={() => setShowSmartGuidesConfigPanel(!showSmartGuidesConfigPanel)}
+                  />
+                  Smart Guides
+                </label>
+              </div>
+
+              {/* Opción Modos de Visualización */}
+              <div
+                style={checkboxItemStyle}
+                onMouseEnter={dropdownItemHover}
+                onMouseLeave={dropdownItemLeave}
+              >
+                <label style={checkboxLabelStyle}>
+                  <input
+                    type="checkbox"
+                    style={checkboxStyle}
+                    checked={showThemeVisualizer}
+                    onChange={() => setShowThemeVisualizer(!showThemeVisualizer)}
+                  />
+                  Modos de Visualización
+                </label>
+              </div>
+
+              {/* Opción Minimapa */}
+              <div
+                style={checkboxItemStyle}
+                onMouseEnter={dropdownItemHover}
+                onMouseLeave={dropdownItemLeave}
+              >
+                <label style={checkboxLabelStyle}>
+                  <input
+                    type="checkbox"
+                    style={checkboxStyle}
+                    checked={showMinimap}
+                    onChange={() => setShowMinimap(!showMinimap)}
+                  />
+                  Minimapa
+                </label>
               </div>
             </div>
           )}

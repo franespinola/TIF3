@@ -9,11 +9,17 @@ import ReactFlowMinimap from './ReactFlowMinimap';
  * Nota: Se recomienda usar NavigationPanel y ReactFlowMinimap directamente
  * en lugar de este componente que es solo para compatibilidad.
  */
-const EnhancedMinimap = ({ nodes }) => {
+const EnhancedMinimap = ({ nodes, isVisible = true, showNavigationPanel = true }) => {
   return (
     <>
-      <NavigationPanel nodes={nodes} />
-      <ReactFlowMinimap nodes={nodes} />
+      <NavigationPanel 
+        nodes={nodes} 
+        isVisible={showNavigationPanel} 
+      />
+      <ReactFlowMinimap 
+        nodes={nodes} 
+        isVisible={isVisible} 
+      />
     </>
   );
 };

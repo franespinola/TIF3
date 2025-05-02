@@ -1,5 +1,6 @@
 import React from 'react';
 
+//para manejar el error del resize observer loop
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);

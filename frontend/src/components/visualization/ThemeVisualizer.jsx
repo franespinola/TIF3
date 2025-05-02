@@ -10,9 +10,13 @@ const ThemeVisualizer = ({
   nodes, 
   edges, 
   setNodes, 
-  setEdges 
+  setEdges,
+  isVisible = true
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  
+  // Si el panel no está visible, no renderizamos nada
+  if (!isVisible) return null;
   
   // Definición de los temas disponibles
   const themes = [
@@ -76,9 +80,6 @@ const ThemeVisualizer = ({
   
   // Función para aplicar un tema
   const applyTheme = (themeId) => {
-    // Guardar el tema actual
-    const prevTheme = currentTheme;
-    
     // Si seleccionamos el mismo tema, volver al predeterminado
     const newTheme = themeId === currentTheme ? 'default' : themeId;
     

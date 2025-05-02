@@ -4,7 +4,7 @@ import { useViewport } from 'reactflow';
 /**
  * Componente para visualizar las guías inteligentes al estilo LucidChart mientras se arrastran nodos
  */
-function SmartGuidesOverlay({ guides, showDistances }) {
+function SmartGuidesOverlay({ guides, showDistances, isVisible = true }) {
   // Obtener información del viewport de ReactFlow
   const { x: offsetX, y: offsetY, zoom } = useViewport();
   
@@ -26,6 +26,9 @@ function SmartGuidesOverlay({ guides, showDistances }) {
       distances: guides.distances || [] // Guía de distribución equidistante (opcional)
     };
   }, [guides, offsetX, offsetY, zoom]);
+  
+  // Si el panel no está visible, no renderizamos el contenido
+  if (!isVisible) return null;
   
   // Estilo para las líneas guía
   const guidesStyle = {

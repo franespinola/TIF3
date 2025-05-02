@@ -6,11 +6,14 @@ import { useReactFlow } from 'reactflow';
  * Panel de navegación que contiene controles para facilitar la navegación
  * por el genograma - Ahora centrado en la parte inferior
  */
-const NavigationPanel = ({ nodes }) => {
+const NavigationPanel = ({ nodes, isVisible = true }) => {
   const [expanded, setExpanded] = useState(false);
   const [showPatientHighlight, setShowPatientHighlight] = useState(true);
   
   const { fitView, setCenter, getZoom } = useReactFlow();
+  
+  // Si el panel no está visible, no renderizamos nada
+  if (!isVisible) return null;
   
   // Función para centrar en áreas de interés
   const centerOnArea = (areaType) => {
