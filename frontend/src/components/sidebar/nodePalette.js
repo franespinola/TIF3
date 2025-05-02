@@ -43,6 +43,11 @@ const nodePalette = [
     type: "adopcion",
     label: "Adopción",
   },
+  {
+    type: "familyNode",
+    label: "Nodo Familiar",
+    data: { size: 32, color: "#2563eb", secondaryColor: "#f8fafc" }
+  },
   // Herramientas de anotación
   {
     type: "rectangle",

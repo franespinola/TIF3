@@ -361,6 +361,100 @@ function MiniIcon({ type, isActive }) {
           }}
         />
       );
+    case "familyNode":
+      return (
+        <div
+          {...iconProps}
+          style={{
+            width: 24,
+            height: 24,
+            position: "relative",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            marginRight: 6,
+            transform: scaleEffect,
+            transition: "all 0.2s ease-in-out"
+          }}
+        >
+          {/* Círculo principal */}
+          <div
+            style={{
+              position: "absolute",
+              width: "100%",
+              height: "100%",
+              borderRadius: "50%",
+              background: `radial-gradient(circle, #f8fafc 0%, #f8fafc 60%, #2563eb80 100%)`,
+              boxShadow: `0 0 0 2px #2563eb, ${isHovered ? '0 0 10px rgba(37, 99, 235, 0.5)' : '0 0 8px rgba(37, 99, 235, 0.35)'}`,
+              zIndex: 1,
+            }}
+          />
+          
+          {/* Líneas de aristas internas */}
+          <div
+            style={{
+              position: "absolute",
+              width: "70%",
+              height: "70%",
+              zIndex: 2,
+            }}
+          >
+            {/* Línea vertical */}
+            <div
+              style={{
+                position: "absolute",
+                left: "50%",
+                top: "0%",
+                width: "1px",
+                height: "100%",
+                backgroundColor: "#2563eb90",
+                transform: "translateX(-50%)",
+              }}
+            />
+            
+            {/* Línea horizontal */}
+            <div
+              style={{
+                position: "absolute",
+                left: "0%",
+                top: "50%",
+                width: "100%",
+                height: "1px",
+                backgroundColor: "#2563eb90",
+                transform: "translateY(-50%)",
+              }}
+            />
+          </div>
+          
+          {/* Punto central */}
+          <div
+            style={{
+              width: `${24/5}px`,
+              height: `${24/5}px`,
+              backgroundColor: "#2563eb",
+              borderRadius: "50%",
+              boxShadow: `0 0 4px #2563eb`,
+              zIndex: 3,
+            }}
+          />
+          
+          {/* Efecto adicional al estar activo */}
+          {isActive && (
+            <div
+              style={{
+                position: "absolute",
+                width: "110%",
+                height: "110%",
+                borderRadius: "50%",
+                border: "1px dashed #2563eb",
+                opacity: 0.6,
+                animation: "spin 8s linear infinite",
+                zIndex: 0,
+              }}
+            />
+          )}
+        </div>
+      );
 
     case "rectangle":
       return (
