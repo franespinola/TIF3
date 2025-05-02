@@ -10,7 +10,7 @@ import { normalizeGenogram } from '../utils/normalizeGenogram';
  * Hook personalizado para manejar el estado del genograma.
  */
 export default function useGenogramaState() {
-  const { project } = useReactFlow();
+  const { screenToFlowPosition } = useReactFlow();
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [idCounter, setIdCounter] = useState(1);
@@ -124,12 +124,15 @@ export default function useGenogramaState() {
       event.preventDefault();
       const reactFlowBounds = event.currentTarget.getBoundingClientRect();
       const data = JSON.parse(event.dataTransfer.getData("application/reactflow"));
-      const position = project({ x: event.clientX - reactFlowBounds.left, y: event.clientY - reactFlowBounds.top });
+      const position = screenToFlowPosition({ 
+        x: event.clientX, 
+        y: event.clientY 
+      });
       const newNode = { id: String(idCounter), type: data.type, position, data: { label: data.label } };
       setNodes((nds) => nds.concat(newNode));
       setIdCounter((prev) => prev + 1);
     },
-    [idCounter, setNodes, project]
+    [idCounter, setNodes, screenToFlowPosition]
   );
 
   const onDragOver = useCallback((event) => {
