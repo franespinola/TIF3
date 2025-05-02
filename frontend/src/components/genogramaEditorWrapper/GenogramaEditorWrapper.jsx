@@ -19,12 +19,17 @@ import html2canvas from 'html2canvas';
 import useGenogramaState from "../../hooks/useGenogramaState";
 import useSmartGuides from "../../hooks/useSmartGuides";
 import MenuBar from "../menuBar/MenuBar";
+import SubMenuBar from "../menuBar/SubMenuBar";
 import { transformToReactFlow } from "../../utils/transformToReactFlow";
 import useRecorder from "../../hooks/useRecorder";
 import layoutWithDagre from "../../utils/layoutWithDagre";
 
 // Constante para la altura del MenuBar - asegúrate de que coincida con el height en MenuBar.jsx
 const MENU_BAR_HEIGHT = 48;
+// Constante para la altura del SubMenuBar
+const SUB_MENU_BAR_HEIGHT = 40;
+// Altura total de la barra superior (MenuBar + SubMenuBar)
+const TOTAL_MENU_HEIGHT = MENU_BAR_HEIGHT + SUB_MENU_BAR_HEIGHT;
 
 // Estilos para los elementos fijos en la parte inferior
 const FIXED_CONTROL_STYLES = {
@@ -265,10 +270,18 @@ function GenogramaEditorWrapper() {
         showMinimap={showMinimap}
         setShowMinimap={setShowMinimap}
       />
+      <SubMenuBar 
+        onRelate={onRelate}
+        updateEdgeRelation={updateEdgeRelation}
+        selectedEdge={selectedEdge}
+        setNodes={setNodes}
+        setEdges={setEdges}
+        edges={edges}
+      />
       <div style={{ 
         display: "flex", 
         height: "100vh",
-        paddingTop: `${MENU_BAR_HEIGHT}px` // Añadir espacio para el menú fijo
+        paddingTop: `${TOTAL_MENU_HEIGHT}px` // Añadir espacio para ambas barras de menú
       }}>
         {/* Panel de Historia Clínica */}
         <ClinicalHistoryPanel

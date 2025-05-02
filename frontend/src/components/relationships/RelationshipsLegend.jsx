@@ -98,7 +98,7 @@ const RelationshipsLegend = () => {
             y1="10"
             x2="70"
             y2="10"
-            stroke="#ff0000"
+            stroke="#888888"
             strokeWidth="2"
             strokeDasharray="6 6"
           />
