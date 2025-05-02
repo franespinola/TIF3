@@ -36,7 +36,9 @@ function Sidebar({
   toggleClinicalHistory,
   isClinicalHistoryOpen,
   toggleSessionNotes,
-  isSessionNotesOpen
+  isSessionNotesOpen,
+  showRelationEditor = true, // Nuevo parámetro para mostrar/ocultar el editor de relaciones
+  showRelationLegend = true  // Nuevo parámetro para mostrar/ocultar la leyenda de relaciones
 }) {
   const [collapsed, setCollapsed] = useState(false);
   const [source, setSource] = useState("");
@@ -149,26 +151,34 @@ function Sidebar({
             handleDrawingToolSelect={handleDrawingToolSelect}
           />
 
-          <hr style={{ margin: "20px 0", borderColor: "#ddd" }} />
+          {/* Línea divisoria antes del gestor de relaciones - solo visible si el editor está visible */}
+          {showRelationEditor && (
+            <hr style={{ margin: "20px 0", borderColor: "#ddd" }} />
+          )}
           
           {/* Gestor de relaciones */}
-          <RelationshipManager 
-            source={source}
-            target={target}
-            relType={relType}
-            setSource={setSource}
-            setTarget={setTarget}
-            setRelType={setRelType}
-            onRelate={onRelate}
-            updateEdgeRelation={updateEdgeRelation}
-            selectedEdge={selectedEdge}
-            relationshipTypes={relationshipTypes}
-          />
+          {showRelationEditor && (
+            <RelationshipManager 
+              source={source}
+              target={target}
+              relType={relType}
+              setSource={setSource}
+              setTarget={setTarget}
+              setRelType={setRelType}
+              onRelate={onRelate}
+              updateEdgeRelation={updateEdgeRelation}
+              selectedEdge={selectedEdge}
+              relationshipTypes={relationshipTypes}
+            />
+          )}
 
-          <hr style={{ margin: "20px 0", borderColor: "#ddd" }} />
+          {/* Línea divisoria después del gestor de relaciones - visible solo si la leyenda está visible */}
+          {showRelationLegend && (
+            <hr style={{ margin: "20px 0", borderColor: "#ddd" }} />
+          )}
           
           {/* Leyenda de relaciones */}
-          <RelationshipsLegend />
+          {showRelationLegend && <RelationshipsLegend />}
         </>
       )}
     </div>

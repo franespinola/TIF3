@@ -57,6 +57,8 @@ function GenogramaEditorWrapper() {
   const [showSmartGuidesConfigPanel, setShowSmartGuidesConfigPanel] = useState(true);
   const [showThemeVisualizer, setShowThemeVisualizer] = useState(true);
   const [showMinimap, setShowMinimap] = useState(true);
+  const [showRelationEditor, setShowRelationEditor] = useState(true); // Nuevo estado para el editor de relaciones
+  const [showRelationLegend, setShowRelationLegend] = useState(true); // Nuevo estado para la leyenda de relaciones
   
   // Estado para los modos de visualización
   const [currentTheme, setCurrentTheme] = useState('default');
@@ -269,6 +271,10 @@ function GenogramaEditorWrapper() {
         setShowThemeVisualizer={setShowThemeVisualizer}
         showMinimap={showMinimap}
         setShowMinimap={setShowMinimap}
+        showRelationEditor={showRelationEditor}
+        setShowRelationEditor={setShowRelationEditor}
+        showRelationLegend={showRelationLegend}
+        setShowRelationLegend={setShowRelationLegend}
       />
       <SubMenuBar 
         onRelate={onRelate}
@@ -479,6 +485,8 @@ function GenogramaEditorWrapper() {
           isClinicalHistoryOpen={isClinicalHistoryOpen}
           toggleSessionNotes={toggleSessionNotesPanel}
           isSessionNotesOpen={isSessionNotesOpen}
+          showRelationEditor={showRelationEditor}
+          showRelationLegend={showRelationLegend}
         />
       </div>
     </>

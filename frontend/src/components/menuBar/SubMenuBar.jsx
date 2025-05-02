@@ -11,22 +11,37 @@ const SubMenuBar = ({
   selectedEdge,
   setNodes,
   setEdges,
-  edges
+  edges,
+  showRelationEditor = true,
+  showRelationLegend = true
 }) => {
   // Estado para manejar los menús desplegables
   const [showRelationMenu, setShowRelationMenu] = useState(false);
   const [showLegendPopup, setShowLegendPopup] = useState(false);
+  const [showLineStyleMenu, setShowLineStyleMenu] = useState(false);
   
   // Estado para formulario de relaciones
   const [source, setSource] = useState("");
   const [target, setTarget] = useState("");
   const [relType, setRelType] = useState("matrimonio");
+
+  // Estado para los estilos de línea
+  const [lineStyle, setLineStyle] = useState({
+    strokeType: "solid", // solid, dashed, dotted, doubleLines
+    connectionType: "bezier", // straight, bezier, step
+    markerEnd: "none", // none, arrow, circle
+    markerStart: "none", // none, arrow, circle
+    strokeWidth: 2,
+    autoConnect: true
+  });
   
   // Referencias para los menús desplegables
   const relationMenuRef = useRef(null);
   const relationButtonRef = useRef(null);
   const legendPopupRef = useRef(null);
   const legendButtonRef = useRef(null);
+  const lineStyleMenuRef = useRef(null);
+  const lineStyleButtonRef = useRef(null);
   
   // Lista de tipos de relaciones con sus iconos y descripciones
   const relationshipTypes = [
@@ -118,12 +133,48 @@ const SubMenuBar = ({
     },
   ];
 
+  // Lista de estilos de trazo disponibles
+  const strokeTypes = [
+    { id: "solid", name: "Continuo", icon: <svg width="60" height="20"><line x1="0" y1="10" x2="60" y2="10" stroke="currentColor" strokeWidth="2" /></svg> },
+    { id: "dashed", name: "Guiones", icon: <svg width="60" height="20"><line x1="0" y1="10" x2="60" y2="10" stroke="currentColor" strokeWidth="2" strokeDasharray="10 5" /></svg> },
+    { id: "dotted", name: "Punteado", icon: <svg width="60" height="20"><line x1="0" y1="10" x2="60" y2="10" stroke="currentColor" strokeWidth="2" strokeDasharray="2 2" /></svg> },
+    { id: "dashdot", name: "Guión punto", icon: <svg width="60" height="20"><line x1="0" y1="10" x2="60" y2="10" stroke="currentColor" strokeWidth="2" strokeDasharray="10 5 2 5" /></svg> },
+    { id: "doubleLines", name: "Doble línea", icon: <svg width="60" height="20"><line x1="0" y1="7" x2="60" y2="7" stroke="currentColor" strokeWidth="1.5" /><line x1="0" y1="13" x2="60" y2="13" stroke="currentColor" strokeWidth="1.5" /></svg> },
+  ];
+
+  // Lista de tipos de conexión
+  const connectionTypes = [
+    { id: "straight", name: "Recta", icon: <svg width="60" height="20"><line x1="5" y1="18" x2="55" y2="2" stroke="currentColor" strokeWidth="2" /></svg> },
+    { id: "bezier", name: "Curva", icon: <svg width="60" height="20"><path d="M5,18 C20,18 40,2 55,2" fill="none" stroke="currentColor" strokeWidth="2" /></svg> },
+    { id: "step", name: "Escalón", icon: <svg width="60" height="20"><polyline points="5,18 30,18 30,2 55,2" fill="none" stroke="currentColor" strokeWidth="2" /></svg> },
+  ];
+
+  // Lista de marcadores finales
+  const markers = [
+    { id: "none", name: "Ninguno", icon: <svg width="60" height="20"><line x1="5" y1="10" x2="55" y2="10" stroke="currentColor" strokeWidth="2" /></svg> },
+    { id: "arrow", name: "Flecha", icon: <svg width="60" height="20"><line x1="5" y1="10" x2="50" y2="10" stroke="currentColor" strokeWidth="2" /><polygon points="50,5 60,10 50,15" fill="currentColor" /></svg> },
+    { id: "circle", name: "Círculo", icon: <svg width="60" height="20"><line x1="5" y1="10" x2="45" y2="10" stroke="currentColor" strokeWidth="2" /><circle cx="52" cy="10" r="5" fill="white" stroke="currentColor" strokeWidth="2" /></svg> },
+  ];
+
   // Actualizar campos si hay una conexión seleccionada
   useEffect(() => {
     if (selectedEdge) {
       setSource(selectedEdge.source);
       setTarget(selectedEdge.target);
       setRelType(selectedEdge.data?.relType || "matrimonio");
+      
+      // Actualizar el estilo de línea basado en la arista seleccionada
+      if (selectedEdge.data) {
+        const edgeData = selectedEdge.data;
+        setLineStyle({
+          strokeType: edgeData.strokeType || "solid",
+          connectionType: edgeData.connectionType || "bezier",
+          markerEnd: edgeData.markerEnd || "none",
+          markerStart: edgeData.markerStart || "none",
+          strokeWidth: edgeData.strokeWidth || 2,
+          autoConnect: edgeData.autoConnect !== undefined ? edgeData.autoConnect : true
+        });
+      }
     }
   }, [selectedEdge]);
 
@@ -151,15 +202,26 @@ const SubMenuBar = ({
       ) {
         setShowLegendPopup(false);
       }
+      
+      // Para menú Estilo de Línea
+      if (
+        showLineStyleMenu &&
+        lineStyleMenuRef.current &&
+        !lineStyleMenuRef.current.contains(event.target) &&
+        lineStyleButtonRef.current &&
+        !lineStyleButtonRef.current.contains(event.target)
+      ) {
+        setShowLineStyleMenu(false);
+      }
     };
 
-    if (showRelationMenu || showLegendPopup) {
+    if (showRelationMenu || showLegendPopup || showLineStyleMenu) {
       document.addEventListener('click', handleClickOutside, true);
     }
     return () => {
       document.removeEventListener('click', handleClickOutside, true);
     };
-  }, [showRelationMenu, showLegendPopup]);
+  }, [showRelationMenu, showLegendPopup, showLineStyleMenu]);
 
   // Función para aplicar la relación al seleccionarla
   const handleRelationTypeSelect = (relId) => {
@@ -167,6 +229,33 @@ const SubMenuBar = ({
     // Si es una edición, aplicar el cambio inmediatamente
     if (selectedEdge) {
       updateEdgeRelation(selectedEdge.id, relId);
+    }
+  };
+  
+  // Función para actualizar el estilo de línea de la arista seleccionada
+  const updateLineStyle = (property, value) => {
+    // Actualiza el estado local
+    setLineStyle(prev => ({
+      ...prev,
+      [property]: value
+    }));
+    
+    // Si hay una arista seleccionada, actualiza sus datos
+    if (selectedEdge) {
+      const updatedEdges = edges.map(edge => {
+        if (edge.id === selectedEdge.id) {
+          return {
+            ...edge,
+            data: {
+              ...edge.data,
+              [property]: value
+            }
+          };
+        }
+        return edge;
+      });
+      
+      setEdges(updatedEdges);
     }
   };
 
@@ -218,6 +307,12 @@ const SubMenuBar = ({
     marginTop: '4px',
     zIndex: 1000,
     width: '300px', // Acotamos un poco el ancho
+  };
+
+  const lineStyleDropdownStyle = {
+    ...dropdownStyle,
+    width: '320px',
+    padding: '12px',
   };
 
   const inputStyle = {
@@ -276,31 +371,274 @@ const SubMenuBar = ({
     maxHeight: '400px',
     overflowY: 'auto',
   };
+  
+  const styleSectionTitle = {
+    fontSize: '14px',
+    fontWeight: '600',
+    marginTop: '12px',
+    marginBottom: '8px',
+    color: '#475569',
+    borderBottom: '1px solid #e2e8f0',
+    paddingBottom: '4px',
+  };
+  
+  const styleOptionContainer = {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: '8px',
+    marginBottom: '12px',
+  };
+  
+  const styleOption = {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    padding: '6px',
+    border: '1px solid #e2e8f0',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    width: '70px',
+    height: '50px',
+    transition: 'all 0.2s ease',
+  };
+  
+  const sliderContainer = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    marginBottom: '12px',
+  };
+  
+  const sliderLabel = {
+    fontSize: '13px',
+    color: '#475569',
+    minWidth: '100px',
+  };
+  
+  const sliderStyle = {
+    flex: 1,
+  };
+  
+  const sliderValueStyle = {
+    fontSize: '12px',
+    color: '#64748b',
+    minWidth: '30px',
+    textAlign: 'right',
+  };
+  
+  const checkboxContainer = {
+    display: 'flex',
+    alignItems: 'center',
+    marginBottom: '12px',
+  };
+  
+  const checkboxStyle = {
+    marginRight: '8px',
+  };
+  
+  const checkboxLabel = {
+    fontSize: '13px',
+    color: '#475569',
+  };
 
   return (
     <div style={subMenuBarStyle}>
       {/* Menú Relación */}
+      {showRelationEditor && (
+        <div
+          ref={relationButtonRef}
+          style={{
+            ...menuLabelStyle,
+            background: showRelationMenu ? '#e2e8f0' : 'transparent',
+          }}
+          onClick={() => {
+            setShowRelationMenu(prev => !prev);
+            setShowLegendPopup(false);
+            setShowLineStyleMenu(false);
+          }}
+        >
+          <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M9 17H5a2 2 0 0 0-2 2 2 2 0 0 0 2 2h2a2 2 0 0 0 2-2zm0 0V5a2 2 0 0 1 2-2h6" />
+              <path d="M14 13h4a2 2 0 0 0 2-2 2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2zm0 0v9"/>
+            </svg>
+            Relación
+          </span>
+          <span style={{
+            ...iconStyle,
+            transform: showRelationMenu ? 'rotate(180deg)' : 'rotate(0deg)',
+          }}>
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#334e68"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </span>
+
+          {showRelationMenu && (
+            <div ref={relationMenuRef} style={dropdownStyle}>
+              <div style={{ padding: '16px' }}>
+                <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', borderBottom: '1px solid #e2e8f0', paddingBottom: '8px' }}>
+                  {selectedEdge ? "Modificar relación" : "Crear relación"}
+                </h3>
+                
+                {/* Contenedor de inputs en fila */}
+                <div style={inputContainerStyle}>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ display: 'block', marginBottom: '4px', fontSize: '13px', color: '#475569' }}>
+                      Origen
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="ID origen"
+                      value={source}
+                      onChange={(e) => setSource(e.target.value)}
+                      style={{
+                        ...inputStyle,
+                        backgroundColor: selectedEdge ? '#f8fafc' : 'white'
+                      }}
+                      readOnly={selectedEdge !== null}
+                    />
+                  </div>
+                  
+                  <div style={{ flex: 1 }}>
+                    <label style={{ display: 'block', marginBottom: '4px', fontSize: '13px', color: '#475569' }}>
+                      Destino
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="ID destino"
+                      value={target}
+                      onChange={(e) => setTarget(e.target.value)}
+                      style={{
+                        ...inputStyle,
+                        backgroundColor: selectedEdge ? '#f8fafc' : 'white'
+                      }}
+                      readOnly={selectedEdge !== null}
+                    />
+                  </div>
+                </div>
+                
+                {/* Selector visual de relaciones con iconos */}
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', color: '#475569' }}>
+                    Tipo de relación
+                  </label>
+                  <div style={{ 
+                    display: 'grid', 
+                    gridTemplateColumns: 'repeat(3, 1fr)', 
+                    gap: '6px', 
+                    justifyContent: 'center' 
+                  }}>
+                    {relationshipTypes.map((type) => (
+                      <div
+                        key={type.id}
+                        onClick={() => handleRelationTypeSelect(type.id)}
+                        style={{
+                          ...relationIconStyle,
+                          backgroundColor: relType === type.id ? '#e0f2fe' : 'transparent',
+                          border: relType === type.id ? '1px solid #bae6fd' : '1px solid transparent',
+                        }}
+                        title={type.name}
+                      >
+                        <div style={{ 
+                          display: 'flex', 
+                          justifyContent: 'center', 
+                          alignItems: 'center',
+                          height: '28px'
+                        }}>
+                          {type.icon}
+                        </div>
+                        <span style={{ fontSize: '11px', marginTop: '2px' }}>{type.name}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Botón para crear relación (solo visible cuando no hay una relación seleccionada) */}
+                {!selectedEdge && (
+                  <button
+                    onClick={() => {
+                      onRelate(source, target, relType);
+                      setShowRelationMenu(false);
+                    }}
+                    style={buttonStyle}
+                  >
+                    Crear Relación
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Botón para mostrar leyenda */}
+      {showRelationLegend && (
+        <div
+          ref={legendButtonRef}
+          style={{
+            ...menuLabelStyle,
+            background: showLegendPopup ? '#e2e8f0' : 'transparent',
+          }}
+          onClick={() => {
+            setShowLegendPopup(prev => !prev);
+            setShowRelationMenu(false);
+            setShowLineStyleMenu(false);
+          }}
+        >
+          <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <rect x="3" y="3" width="18" height="18" rx="2" />
+              <path d="M7 7h.01"/>
+              <path d="M11 7h6"/>
+              <path d="M7 12h.01"/>
+              <path d="M11 12h6"/>
+              <path d="M7 17h.01"/>
+              <path d="M11 17h6"/>
+            </svg>
+            Leyenda
+          </span>
+
+          {showLegendPopup && (
+            <div ref={legendPopupRef} style={legendPopupStyle}>
+              <RelationshipsLegend />
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Botón y Menú Estilo de Línea */}
       <div
-        ref={relationButtonRef}
+        ref={lineStyleButtonRef}
         style={{
           ...menuLabelStyle,
-          background: showRelationMenu ? '#e2e8f0' : 'transparent',
+          background: showLineStyleMenu ? '#e2e8f0' : 'transparent',
         }}
         onClick={() => {
-          setShowRelationMenu(prev => !prev);
-          setShowLegendPopup(false); // Cerrar el otro popup
+          setShowLineStyleMenu(prev => !prev);
+          setShowRelationMenu(false);
+          setShowLegendPopup(false);
         }}
       >
         <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M9 17H5a2 2 0 0 0-2 2 2 2 0 0 0 2 2h2a2 2 0 0 0 2-2zm0 0V5a2 2 0 0 1 2-2h6" />
-            <path d="M14 13h4a2 2 0 0 0 2-2 2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2zm0 0v9"/>
+            <path d="M21 6H3"/>
+            <path d="M21 12H3" strokeDasharray="4 2"/>
+            <path d="M21 18H3" strokeDasharray="2 2"/>
           </svg>
-          Relación
+          Estilo de línea
         </span>
         <span style={{
           ...iconStyle,
-          transform: showRelationMenu ? 'rotate(180deg)' : 'rotate(0deg)',
+          transform: showLineStyleMenu ? 'rotate(180deg)' : 'rotate(0deg)',
         }}>
           <svg
             width="12"
@@ -316,136 +654,148 @@ const SubMenuBar = ({
           </svg>
         </span>
 
-        {showRelationMenu && (
-          <div ref={relationMenuRef} style={dropdownStyle}>
-            <div style={{ padding: '16px' }}>
-              <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', borderBottom: '1px solid #e2e8f0', paddingBottom: '8px' }}>
-                {selectedEdge ? "Modificar relación" : "Crear relación"}
-              </h3>
-              
-              {/* Contenedor de inputs en fila */}
-              <div style={inputContainerStyle}>
-                <div style={{ flex: 1 }}>
-                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '13px', color: '#475569' }}>
-                    Origen
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="ID origen"
-                    value={source}
-                    onChange={(e) => setSource(e.target.value)}
-                    style={{
-                      ...inputStyle,
-                      backgroundColor: selectedEdge ? '#f8fafc' : 'white'
-                    }}
-                    readOnly={selectedEdge !== null}
-                  />
-                </div>
-                
-                <div style={{ flex: 1 }}>
-                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '13px', color: '#475569' }}>
-                    Destino
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="ID destino"
-                    value={target}
-                    onChange={(e) => setTarget(e.target.value)}
-                    style={{
-                      ...inputStyle,
-                      backgroundColor: selectedEdge ? '#f8fafc' : 'white'
-                    }}
-                    readOnly={selectedEdge !== null}
-                  />
-                </div>
-              </div>
-              
-              {/* Selector visual de relaciones con iconos */}
-              <div style={{ marginBottom: '16px' }}>
-                <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', color: '#475569' }}>
-                  Tipo de relación
-                </label>
-                <div style={{ 
-                  display: 'grid', 
-                  gridTemplateColumns: 'repeat(3, 1fr)', 
-                  gap: '6px', 
-                  justifyContent: 'center' 
-                }}>
-                  {relationshipTypes.map((type) => (
-                    <div
-                      key={type.id}
-                      onClick={() => handleRelationTypeSelect(type.id)}
-                      style={{
-                        ...relationIconStyle,
-                        backgroundColor: relType === type.id ? '#e0f2fe' : 'transparent',
-                        border: relType === type.id ? '1px solid #bae6fd' : '1px solid transparent',
-                      }}
-                      title={type.name}
-                    >
-                      <div style={{ 
-                        display: 'flex', 
-                        justifyContent: 'center', 
-                        alignItems: 'center',
-                        height: '28px'
-                      }}>
-                        {type.icon}
-                      </div>
-                      <span style={{ fontSize: '11px', marginTop: '2px' }}>{type.name}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              
-              {/* Botón para crear relación (solo visible cuando no hay una relación seleccionada) */}
-              {!selectedEdge && (
-                <button
-                  onClick={() => {
-                    onRelate(source, target, relType);
-                    setShowRelationMenu(false);
+        {showLineStyleMenu && (
+          <div ref={lineStyleMenuRef} style={lineStyleDropdownStyle}>
+            <h3 style={{margin: '0 0 12px 0', fontSize: '16px'}}>Estilo de línea</h3>
+            
+            {/* Tipo de trazo */}
+            <div style={styleSectionTitle}>Tipo de trazo</div>
+            <div style={styleOptionContainer}>
+              {strokeTypes.map((type) => (
+                <div
+                  key={`stroke-${type.id}`}
+                  onClick={() => updateLineStyle('strokeType', type.id)}
+                  style={{
+                    ...styleOption,
+                    backgroundColor: lineStyle.strokeType === type.id ? '#e0f2fe' : 'transparent',
+                    borderColor: lineStyle.strokeType === type.id ? '#0284c7' : '#e2e8f0',
                   }}
-                  style={buttonStyle}
+                  title={type.name}
                 >
-                  Crear Relación
-                </button>
-              )}
+                  <div style={{color: lineStyle.strokeType === type.id ? '#0284c7' : 'currentColor'}}>
+                    {type.icon}
+                  </div>
+                  <span style={{fontSize: '11px', marginTop: '4px'}}>{type.name}</span>
+                </div>
+              ))}
+            </div>
+            
+            {/* Tipo de conexión */}
+            <div style={styleSectionTitle}>Tipo de conexión</div>
+            <div style={styleOptionContainer}>
+              {connectionTypes.map((type) => (
+                <div
+                  key={`connection-${type.id}`}
+                  onClick={() => updateLineStyle('connectionType', type.id)}
+                  style={{
+                    ...styleOption,
+                    backgroundColor: lineStyle.connectionType === type.id ? '#e0f2fe' : 'transparent',
+                    borderColor: lineStyle.connectionType === type.id ? '#0284c7' : '#e2e8f0',
+                  }}
+                  title={type.name}
+                >
+                  <div style={{color: lineStyle.connectionType === type.id ? '#0284c7' : 'currentColor'}}>
+                    {type.icon}
+                  </div>
+                  <span style={{fontSize: '11px', marginTop: '4px'}}>{type.name}</span>
+                </div>
+              ))}
+            </div>
+            
+            {/* Marcadores */}
+            <div style={styleSectionTitle}>Marcadores</div>
+            <div style={sliderContainer}>
+              <div style={sliderLabel}>Inicio:</div>
+              <div style={{display: 'flex', flex: 1, gap: '8px'}}>
+                {markers.map((marker) => (
+                  <div
+                    key={`start-${marker.id}`}
+                    onClick={() => updateLineStyle('markerStart', marker.id)}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      padding: '4px 8px',
+                      border: '1px solid',
+                      borderColor: lineStyle.markerStart === marker.id ? '#0284c7' : '#e2e8f0',
+                      borderRadius: '4px',
+                      backgroundColor: lineStyle.markerStart === marker.id ? '#e0f2fe' : 'transparent',
+                      cursor: 'pointer',
+                      height: '28px',
+                      width: '60px',
+                    }}
+                    title={marker.name}
+                  >
+                    <div style={{transform: 'scaleX(-1)', color: lineStyle.markerStart === marker.id ? '#0284c7' : 'currentColor'}}>
+                      {marker.icon}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div style={sliderContainer}>
+              <div style={sliderLabel}>Final:</div>
+              <div style={{display: 'flex', flex: 1, gap: '8px'}}>
+                {markers.map((marker) => (
+                  <div
+                    key={`end-${marker.id}`}
+                    onClick={() => updateLineStyle('markerEnd', marker.id)}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      padding: '4px 8px',
+                      border: '1px solid',
+                      borderColor: lineStyle.markerEnd === marker.id ? '#0284c7' : '#e2e8f0',
+                      borderRadius: '4px',
+                      backgroundColor: lineStyle.markerEnd === marker.id ? '#e0f2fe' : 'transparent',
+                      cursor: 'pointer',
+                      height: '28px',
+                      width: '60px',
+                    }}
+                    title={marker.name}
+                  >
+                    <div style={{color: lineStyle.markerEnd === marker.id ? '#0284c7' : 'currentColor'}}>
+                      {marker.icon}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            {/* Grosor de línea */}
+            <div style={styleSectionTitle}>Grosor y configuraciones</div>
+            <div style={sliderContainer}>
+              <div style={sliderLabel}>Grosor:</div>
+              <input
+                type="range"
+                min="1"
+                max="10"
+                value={lineStyle.strokeWidth}
+                onChange={(e) => updateLineStyle('strokeWidth', parseInt(e.target.value))}
+                style={sliderStyle}
+              />
+              <div style={sliderValueStyle}>{lineStyle.strokeWidth}px</div>
+            </div>
+            
+            {/* Auto-conexión */}
+            <div style={checkboxContainer}>
+              <input
+                type="checkbox"
+                checked={lineStyle.autoConnect}
+                onChange={(e) => updateLineStyle('autoConnect', e.target.checked)}
+                style={checkboxStyle}
+                id="autoconnect-checkbox"
+              />
+              <label htmlFor="autoconnect-checkbox" style={checkboxLabel}>
+                Conexión automática
+              </label>
             </div>
           </div>
         )}
       </div>
 
-      {/* Botón para mostrar leyenda */}
-      <div
-        ref={legendButtonRef}
-        style={{
-          ...menuLabelStyle,
-          background: showLegendPopup ? '#e2e8f0' : 'transparent',
-        }}
-        onClick={() => {
-          setShowLegendPopup(prev => !prev);
-          setShowRelationMenu(false); // Cerrar el otro menú
-        }}
-      >
-        <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <rect x="3" y="3" width="18" height="18" rx="2" />
-            <path d="M7 7h.01"/>
-            <path d="M11 7h6"/>
-            <path d="M7 12h.01"/>
-            <path d="M11 12h6"/>
-            <path d="M7 17h.01"/>
-            <path d="M11 17h6"/>
-          </svg>
-          Leyenda
-        </span>
-
-        {showLegendPopup && (
-          <div ref={legendPopupRef} style={legendPopupStyle}>
-            <RelationshipsLegend />
-          </div>
-        )}
-      </div>
-
-      {/* Modo rápido de creación de relaciones cuando hay una arista seleccionada */}
+      {/* Modo rápido de cambio cuando hay una arista seleccionada */}
       {selectedEdge && (
         <div style={{ 
           display: 'flex',
