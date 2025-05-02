@@ -351,13 +351,13 @@ function MiniIcon({ type, isActive }) {
           style={{
             width: 20,
             height: 20,
-            background: "#e0f7fa",
+            background: "#dcfce7",  // Cambiado de #e0f7fa a #dcfce7 (verde claro)
             borderRadius: 4,
-            border: "1px solid #0288d1",
+            border: "1px solid #10b981", // Cambiado de #0288d1 a #10b981 (verde)
             marginRight: 6,
             transform: scaleEffect,
             transition: "all 0.2s ease-in-out",
-            boxShadow: isHovered ? "0 0 5px rgba(2, 136, 209, 0.5)" : "none"
+            boxShadow: isHovered ? "0 0 5px rgba(16, 185, 129, 0.5)" : "none" // Cambiado rgba(2, 136, 209, 0.5) a rgba(16, 185, 129, 0.5)
           }}
         />
       );

@@ -53,12 +53,12 @@ function GenogramaEditorWrapper() {
   const [isSessionNotesOpen, setIsSessionNotesOpen] = useState(false);
   
   // Estados para la visibilidad de los paneles de visualización
-  const [showNavigationPanel, setShowNavigationPanel] = useState(true);
-  const [showSmartGuidesConfigPanel, setShowSmartGuidesConfigPanel] = useState(true);
-  const [showThemeVisualizer, setShowThemeVisualizer] = useState(true);
-  const [showMinimap, setShowMinimap] = useState(true);
-  const [showRelationEditor, setShowRelationEditor] = useState(true); // Nuevo estado para el editor de relaciones
-  const [showRelationLegend, setShowRelationLegend] = useState(true); // Nuevo estado para la leyenda de relaciones
+  const [showNavigationPanel, setShowNavigationPanel] = useState(false);
+  const [showSmartGuidesConfigPanel, setShowSmartGuidesConfigPanel] = useState(false);
+  const [showThemeVisualizer, setShowThemeVisualizer] = useState(false);
+  const [showMinimap, setShowMinimap] = useState(false);
+  const [showRelationEditor, setShowRelationEditor] = useState(false); // Nuevo estado para el editor de relaciones
+  const [showRelationLegend, setShowRelationLegend] = useState(false); // Nuevo estado para la leyenda de relaciones
   
   // Estado para los modos de visualización
   const [currentTheme, setCurrentTheme] = useState('default');
