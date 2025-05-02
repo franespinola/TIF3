@@ -100,9 +100,9 @@ function RelationshipEdge(props) {
       break;
 
     case "violencia":
-      edgePath = bezierPath;
+      // Ocultar línea base y mostrar solo la ondulada
+      edgePath = null;
       strokeColor = "#ff0000";
-      pathProps.strokeDasharray = "0";
       extraElements = (
         <path
           d={createRoundedWavePath(sourceX, sourceY, targetX, targetY, 30, 30)}
@@ -114,9 +114,9 @@ function RelationshipEdge(props) {
       break;
 
     case "conflicto":
-      edgePath = bezierPath;
+      // Ocultar línea base y mostrar solo el zigzag
+      edgePath = null;
       strokeColor = "#800000";
-      pathProps.strokeDasharray = "0";
       extraElements = (
         <path
           d={createZigZagPath(sourceX, sourceY, targetX, targetY, 12, 10)}
@@ -128,12 +128,12 @@ function RelationshipEdge(props) {
       break;
 
     case "cercana": {
+      // Ocultar línea base y mostrar solo las dos líneas paralelas
+      edgePath = null;
       const aquaColor = "#20c997";
-      const offset = 8;
-      edgePath = bezierPath;
-      strokeColor = aquaColor;
+      const offset = 4; // Usar el mismo offset que en las otras implementaciones
       
-      // Crear dos paths Bézier paralelas para relación cercana
+      // Crear dos paths Bézier paralelos
       const [path1] = getBezierPath({
         sourceX,
         sourceY: sourceY - offset,
@@ -152,17 +152,18 @@ function RelationshipEdge(props) {
       });
       extraElements = (
         <>
-          <path d={path1} stroke={aquaColor} strokeWidth="3" fill="none" />
-          <path d={path2} stroke={aquaColor} strokeWidth="3" fill="none" />
+          <path d={path1} stroke={aquaColor} strokeWidth="2" fill="none" />
+          <path d={path2} stroke={aquaColor} strokeWidth="2" fill="none" />
         </>
       );
       break;
     }
 
     case "distante":{
-      const redColor = "#ff0000";
+      // Actualizar para usar color gris con línea punteada
+      const grayColor = "#888888";
       edgePath = bezierPath;
-      strokeColor = redColor;
+      strokeColor = grayColor;
       pathProps.strokeDasharray = "6 6";
       break;
     }
@@ -201,17 +202,18 @@ function RelationshipEdge(props) {
 
   return (
     <g className="react-flow__edge">
-      {edgePath && (
-        <path
-          id={`${id}-hit-area`}
-          className="react-flow__edge-interaction"
-          d={edgePath}
-          stroke="transparent"
-          strokeWidth={hitStrokeWidth}
-          fill="none"
-          style={{ cursor: 'pointer' }}
-        />
-      )}
+      {/* Área de interacción - usar bezierPath incluso cuando edgePath es null */}
+      <path
+        id={`${id}-hit-area`}
+        className="react-flow__edge-interaction"
+        d={bezierPath}
+        stroke="transparent"
+        strokeWidth={hitStrokeWidth}
+        fill="none"
+        style={{ cursor: 'pointer' }}
+      />
+      
+      {/* Línea principal (si aplica) */}
       {edgePath && (
         <path
           id={id}
@@ -226,23 +228,6 @@ function RelationshipEdge(props) {
       
       {/* Elementos adicionales específicos de cada tipo de relación */}
       {extraElements}
-
-      {/* Áreas de selección para relaciones especiales que no usan edgePath */}
-      {!edgePath && extraElements && (
-        <path
-          d={relType === "violencia" 
-              ? createRoundedWavePath(sourceX, sourceY, targetX, targetY, 30, 30)
-              : relType === "conflicto" 
-                ? createZigZagPath(sourceX, sourceY, targetX, targetY, 12, 10)
-                : relType === "cercana" || relType === "distante"
-                  ? bezierPath
-                  : ""}
-          stroke="transparent"
-          strokeWidth={hitStrokeWidth}
-          fill="none"
-          style={{ cursor: 'pointer' }}
-        />
-      )}
     </g>
   );
 }

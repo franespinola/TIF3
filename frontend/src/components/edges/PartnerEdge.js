@@ -111,7 +111,7 @@ const PartnerEdge = ({
     case 'violencia':
       edgeStyle = {
         ...edgeStyle,
-        stroke: '#ff0000',
+        stroke: 'transparent',
       };
       extraElements = (
         <path
@@ -127,7 +127,7 @@ const PartnerEdge = ({
     case 'conflicto':
       edgeStyle = {
         ...edgeStyle,
-        stroke: '#800000',
+        stroke: 'transparent',
       };
       extraElements = (
         <path
@@ -141,33 +141,34 @@ const PartnerEdge = ({
       break;
       
     case 'cercana': {
+      // Crear dos líneas paralelas en color turquesa (como en la imagen)
       const aquaColor = "#20c997";
-      const offset = 3;
       edgeStyle = {
         ...edgeStyle,
-        stroke: aquaColor,
+        stroke: 'transparent', // Hacemos la línea principal invisible
       };
       
-      const dx = targetX - sourceX;
-      const dy = targetY - sourceY;
-      const angle = Math.atan2(dy, dx);
+      // Calcular offset perpendicular a la línea
+      const offset = 4; // Distancia entre las dos líneas paralelas
       
-      const offsetX = offset * Math.sin(angle);
-      const offsetY = -offset * Math.cos(angle);
-      
+      // Crear dos líneas paralelas
       extraElements = (
         <g key={`${id}-cercana-${relType}`}>
-          <path 
-            d={`M ${sourceX + offsetX},${sourceY + offsetY} L ${targetX + offsetX},${targetY + offsetY}`} 
-            stroke={aquaColor} 
-            strokeWidth="3" 
-            fill="none" 
+          <line
+            x1={sourceX}
+            y1={sourceY - offset}
+            x2={targetX}
+            y2={targetY - offset}
+            stroke={aquaColor}
+            strokeWidth={2}
           />
-          <path 
-            d={`M ${sourceX - offsetX},${sourceY - offsetY} L ${targetX - offsetX},${targetY - offsetY}`} 
-            stroke={aquaColor} 
-            strokeWidth="3" 
-            fill="none" 
+          <line
+            x1={sourceX}
+            y1={sourceY + offset}
+            x2={targetX}
+            y2={targetY + offset}
+            stroke={aquaColor}
+            strokeWidth={2}
           />
         </g>
       );
@@ -175,10 +176,10 @@ const PartnerEdge = ({
     }
       
     case 'distante': {
-      const redColor = "#ff0000";
+      const grayColor = "#888888";
       edgeStyle = {
         ...edgeStyle,
-        stroke: redColor,
+        stroke: grayColor,
         strokeDasharray: '6 6',
       };
       break;
