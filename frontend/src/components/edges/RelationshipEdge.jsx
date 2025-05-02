@@ -1,7 +1,11 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { getSmoothStepPath, getBezierPath } from "reactflow";
 import { createRoundedWavePath, createZigZagPath } from "../../utils/pathUtils";
 
+/**
+ * Componente universal para todos los tipos de bordes en el genograma
+ * Soporta relaciones conyugales, padre-hijo, hermanos/mellizos y anotaciones.
+ */
 function RelationshipEdge(props) {
   const {
     id,
@@ -15,49 +19,73 @@ function RelationshipEdge(props) {
     markerEnd,
   } = props;
 
-  const relType = data.relType || "matrimonio";
+  const { relType = "matrimonio", edgeType } = data;
+
+  // Log para depuración si es necesario
+  useEffect(() => {
+    console.log(`RelationshipEdge ${id} actualizado:`, { relType, edgeType, data });
+  }, [id, relType, edgeType, data]);
 
   let edgePath = "";
-  let strokeColor = "black";
+  let strokeColor = "#555";
   let strokeWidth = 2;
   let pathProps = { fill: "none" };
   let extraElements = null;
+  
+  // Determinar qué tipo de path generar según el contexto de la relación
+  let pathGenerator = getBezierPath;
+  
+  // Para relaciones padre-hijo usamos smoothStep si se indica específicamente
+  if (edgeType === 'childEdge' || relType === 'parentChild') {
+    pathGenerator = getSmoothStepPath;
+  } 
+  // Para anotaciones, ofrecemos la opción de estilo diferente
+  else if (edgeType === 'annotationEdge') {
+    const { stroke = "#555", strokeWidth = 1.5, animated = false, dashArray = "5,5" } = data;
+    strokeColor = stroke;
+    pathProps.strokeWidth = strokeWidth;
+    pathProps.strokeDasharray = dashArray;
+    if (animated) {
+      pathProps.className = "animated";
+    }
+  }
 
-  // Ruta "smooth" y posición de etiqueta
-  const [defaultSmooth, labelX, labelY] = getSmoothStepPath({
+  // Ruta y posición de etiqueta según el tipo de path
+  const [defaultPath, labelX, labelY] = pathGenerator({
     sourceX,
     sourceY,
     targetX,
     targetY,
     sourcePosition,
     targetPosition,
+    borderRadius: 10, // Para smooth step paths
   });
 
-  // Ruta Bézier (solo la ruta, sin los labels)
-  const [bezierPath, bezierLabelX, bezierLabelY] = getBezierPath({
-    sourceX,
-    sourceY,
-    targetX,
-    targetY,
-    sourcePosition,
-    targetPosition,
-  });
+  // Para ciertos tipos, siempre queremos una línea recta (como partnerEdge)
+  if (edgeType === 'partnerEdge') {
+    edgePath = `M ${sourceX} ${sourceY} L ${targetX} ${targetY}`;
+  } else {
+    edgePath = defaultPath;
+  }
 
-  // Usar el punto medio de la curva Bézier para posicionar elementos adicionales
-  const midX = bezierLabelX || labelX;
-  const midY = bezierLabelY || labelY;
+  // Usar el punto medio para posicionar elementos adicionales
+  const midX = labelX || (sourceX + targetX) / 2;
+  const midY = labelY || (sourceY + targetY) / 2;
 
+  // Aplicar estilos según el tipo de relación
   switch (relType) {
     case "matrimonio":
-      edgePath = bezierPath;
+    case "conyugal":
+      // Estilo predeterminado para relaciones conyugales
       break;
 
-    case "bezier":
-      edgePath = bezierPath;
+    case "parentChild":
+      // Estilo predeterminado para relaciones padre-hijo
       break;
 
     case "divorcio":
-      edgePath = bezierPath;
+      pathProps.strokeDasharray = "5,5";
+      strokeColor = "#f44336";
       extraElements = (
         <>
           <line
@@ -82,13 +110,12 @@ function RelationshipEdge(props) {
 
     case "cohabitacion":
       pathProps.strokeDasharray = "4 4";
-      edgePath = bezierPath;
       extraElements = (
         <path
           d={`M ${midX - 8},${midY} L ${midX},${midY - 8} L ${midX + 8},${midY}
               L ${midX + 8},${midY + 8} L ${midX - 8},${midY + 8} Z`}
           fill="none"
-          stroke="black"
+          stroke={strokeColor}
           strokeWidth={2}
         />
       );
@@ -96,7 +123,6 @@ function RelationshipEdge(props) {
 
     case "compromiso":
       pathProps.strokeDasharray = "6 3";
-      edgePath = bezierPath;
       break;
 
     case "violencia":
@@ -131,25 +157,39 @@ function RelationshipEdge(props) {
       // Ocultar línea base y mostrar solo las dos líneas paralelas
       edgePath = null;
       const aquaColor = "#20c997";
-      const offset = 4; // Usar el mismo offset que en las otras implementaciones
+      const offset = 4; // Distancia entre las líneas paralelas
       
-      // Crear dos paths Bézier paralelos
-      const [path1] = getBezierPath({
-        sourceX,
-        sourceY: sourceY - offset,
-        targetX,
-        targetY: targetY - offset,
-        sourcePosition,
-        targetPosition,
-      });
-      const [path2] = getBezierPath({
-        sourceX,
-        sourceY: sourceY + offset,
-        targetX,
-        targetY: targetY + offset,
-        sourcePosition,
-        targetPosition,
-      });
+      // Elegir entre paths rectos o curvos según el contexto
+      let path1, path2;
+      
+      if (edgeType === 'partnerEdge') {
+        // Para relaciones tipo partner, usamos líneas rectas
+        path1 = `M ${sourceX} ${sourceY - offset} L ${targetX} ${targetY - offset}`;
+        path2 = `M ${sourceX} ${sourceY + offset} L ${targetX} ${targetY + offset}`;
+      } else if (edgeType === 'childEdge' || relType === 'parentChild') {
+        // Para relaciones padre-hijo, usamos smoothstep
+        [path1] = getSmoothStepPath({
+          sourceX, sourceY: sourceY - offset, sourcePosition,
+          targetX, targetY: targetY - offset, targetPosition,
+          borderRadius: 10,
+        });
+        [path2] = getSmoothStepPath({
+          sourceX, sourceY: sourceY + offset, sourcePosition,
+          targetX, targetY: targetY + offset, targetPosition,
+          borderRadius: 10,
+        });
+      } else {
+        // Para el resto, bezier
+        [path1] = getBezierPath({
+          sourceX, sourceY: sourceY - offset, sourcePosition,
+          targetX, targetY: targetY - offset, targetPosition,
+        });
+        [path2] = getBezierPath({
+          sourceX, sourceY: sourceY + offset, sourcePosition,
+          targetX, targetY: targetY + offset, targetPosition,
+        });
+      }
+      
       extraElements = (
         <>
           <path d={path1} stroke={aquaColor} strokeWidth="2" fill="none" />
@@ -160,17 +200,14 @@ function RelationshipEdge(props) {
     }
 
     case "distante":{
-      // Actualizar para usar color gris con línea punteada
-      const grayColor = "#888888";
-      edgePath = bezierPath;
-      strokeColor = grayColor;
+      // Color gris con línea punteada
+      strokeColor = "#888888";
       pathProps.strokeDasharray = "6 6";
       break;
     }
 
     case "rota":
       strokeColor = "gray";
-      edgePath = bezierPath;
       extraElements = (
         <>
           <line
@@ -193,20 +230,28 @@ function RelationshipEdge(props) {
       );
       break;
 
+    case "hermanos":
+    case "mellizos":
+      // Estilo específico para relaciones entre hermanos
+      pathProps.strokeDasharray = relType === "mellizos" ? "3 3" : "5 2";
+      break;
+
     default:
-      edgePath = bezierPath;
+      // Estilo por defecto para otros tipos
+      console.log(`Tipo de relación no reconocido: ${relType}`);
   }
 
   // Zona "hit" invisible para mejorar la selección
   const hitStrokeWidth = 15;
+  const hitPath = defaultPath;
 
   return (
-    <g className="react-flow__edge">
-      {/* Área de interacción - usar bezierPath incluso cuando edgePath es null */}
+    <g className="react-flow__edge" data-rel-type={relType} data-edge-type={edgeType || "default"}>
+      {/* Área de interacción */}
       <path
         id={`${id}-hit-area`}
         className="react-flow__edge-interaction"
-        d={bezierPath}
+        d={hitPath}
         stroke="transparent"
         strokeWidth={hitStrokeWidth}
         fill="none"

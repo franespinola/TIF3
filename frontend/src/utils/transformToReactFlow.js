@@ -133,9 +133,9 @@ export function transformToReactFlow(genoData) {
         }
         // Asegurarse de que visualRelType sea uno de los tipos esperados por RelationshipEdge
         const validVisualTypes = [
-            "matrimonio", "divorcio", "cohabitacion", "compromiso",
+            "matrimonio", "divorcio", "cohabitacion", "compromiso", "separacion",
             "conflicto", "violencia", "cercana", "distante", "rota",
-            "parentChild" // Añadir parentChild si necesita estilo propio
+            "parentChild", "bezier", "mellizos", "hermanos", "conyugal"
         ];
         if (!validVisualTypes.includes(visualRelType) && visualRelType !== 'default') {
              // Si no es un tipo visual conocido, usar uno por defecto o el tipo base
@@ -151,14 +151,19 @@ export function transformToReactFlow(genoData) {
             id: rel.id,
             source: rel.source,
             target: rel.target,
-            type: "relationshipEdge", // Usar el componente personalizado para todas
+            type: "relationshipEdge", // Usar siempre RelationshipEdge para todos los tipos de relaciones
             data: {
                 // Pasar el tipo visual determinado para que RelationshipEdge lo use
                 relType: visualRelType,
+                // Pasar tipo original por si se necesita para lógica interna
+                originalType: rel.type || "default",
                 // Pasar otros datos si son necesarios para tooltips o lógica del edge
                 notes: rel.notes || "",
                 startDate: rel.startDate || "",
-                endDate: rel.endDate || ""
+                endDate: rel.endDate || "",
+                // Pasar vínculos emocionales y estado legal para referencia
+                emotionalBond: rel.emotionalBond || null,
+                legalStatus: rel.legalStatus || null
             }
         };
     }).filter(edge => edge !== null); // Filtrar edges nulos

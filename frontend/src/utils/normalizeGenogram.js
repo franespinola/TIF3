@@ -253,15 +253,21 @@ export function normalizeGenogram(genoData) {
 
     for (const parentId of parentIds) {
       finalEdges.push({
-        id: `p-${parentId}-${famNodeId}`, source: parentId, target: famNodeId, type: 'partnerEdge',
-        data: { relType: 'conyugal', notes: '' }
+        id: `p-${parentId}-${famNodeId}`, 
+        source: parentId, 
+        target: famNodeId, 
+        type: 'relationshipEdge',
+        data: { relType: 'conyugal', edgeType: 'partnerEdge', notes: '' }
       });
     }
 
     for (const childId of childrenSet) {
       finalEdges.push({
-        id: `c-${famNodeId}-${childId}`, source: famNodeId, target: childId, type: 'childEdge',
-        data: { notes: '' }
+        id: `c-${famNodeId}-${childId}`, 
+        source: famNodeId, 
+        target: childId, 
+        type: 'relationshipEdge',
+        data: { relType: 'parentChild', edgeType: 'childEdge', notes: '' }
       });
       processedChildren.add(childId);
     }
@@ -311,8 +317,8 @@ export function normalizeGenogram(genoData) {
           id: `p-${parentId}-${famNodeId}`, 
           source: parentId, 
           target: famNodeId, 
-          type: 'partnerEdge',
-          data: { relType: 'conyugal', notes: '' }
+          type: 'relationshipEdge',
+          data: { relType: 'conyugal', edgeType: 'partnerEdge', notes: '' }
         });
         
         // Crear conexiones del nodo familia a los hijos
@@ -321,8 +327,8 @@ export function normalizeGenogram(genoData) {
             id: `c-${famNodeId}-${childId}`, 
             source: famNodeId, 
             target: childId, 
-            type: 'childEdge',
-            data: { notes: '' }
+            type: 'relationshipEdge',
+            data: { relType: 'parentChild', edgeType: 'childEdge', notes: '' }
           });
           processedChildren.add(childId);
         }
@@ -344,8 +350,14 @@ export function normalizeGenogram(genoData) {
 
     // Añadir arista usando relationshipEdge (para vínculos emocionales, etc.)
     finalEdges.push({
-      id: rel.id, source: rel.source, target: rel.target, type: 'relationshipEdge',
-      data: { relType: rel.emotionalBond || rel.legalStatus || rel.type || 'default', notes: rel.notes || '' }
+      id: rel.id, 
+      source: rel.source, 
+      target: rel.target, 
+      type: 'relationshipEdge',
+      data: { 
+        relType: rel.emotionalBond || rel.legalStatus || rel.type || 'default', 
+        notes: rel.notes || '' 
+      }
     });
   });
 
