@@ -151,9 +151,9 @@ const SubMenuBar = ({
 
   // Lista de marcadores finales
   const markers = [
-    { id: "none", name: "Ninguno", icon: <svg width="60" height="20"><line x1="5" y1="10" x2="55" y2="10" stroke="currentColor" strokeWidth="2" /></svg> },
-    { id: "arrow", name: "Flecha", icon: <svg width="60" height="20"><line x1="5" y1="10" x2="50" y2="10" stroke="currentColor" strokeWidth="2" /><polygon points="50,5 60,10 50,15" fill="currentColor" /></svg> },
-    { id: "circle", name: "Círculo", icon: <svg width="60" height="20"><line x1="5" y1="10" x2="45" y2="10" stroke="currentColor" strokeWidth="2" /><circle cx="52" cy="10" r="5" fill="white" stroke="currentColor" strokeWidth="2" /></svg> },
+    { id: "none", name: "Ninguno", icon: <svg width="40" height="20"><line x1="5" y1="10" x2="35" y2="10" stroke="currentColor" strokeWidth="2" /></svg> },
+    { id: "arrow", name: "Flecha", icon: <svg width="40" height="20"><line x1="5" y1="10" x2="30" y2="10" stroke="currentColor" strokeWidth="2" /><polygon points="30,5 40,10 30,15" fill="currentColor" /></svg> },
+    { id: "circle", name: "Círculo", icon: <svg width="40" height="20"><line x1="5" y1="10" x2="30" y2="10" stroke="currentColor" strokeWidth="2" /><circle cx="35" cy="10" r="4" fill="white" stroke="currentColor" strokeWidth="2" /></svg> },
   ];
 
   // Actualizar campos si hay una conexión seleccionada
@@ -311,8 +311,8 @@ const SubMenuBar = ({
 
   const lineStyleDropdownStyle = {
     ...dropdownStyle,
-    width: '320px',
-    padding: '12px',
+    width: "300px",
+    padding: "12px",
   };
 
   const inputStyle = {
@@ -706,7 +706,7 @@ const SubMenuBar = ({
             <div style={styleSectionTitle}>Marcadores</div>
             <div style={sliderContainer}>
               <div style={sliderLabel}>Inicio:</div>
-              <div style={{display: 'flex', flex: 1, gap: '8px'}}>
+              <div style={{display: 'flex', flex: 1, gap: '6px'}}>
                 {markers.map((marker) => (
                   <div
                     key={`start-${marker.id}`}
@@ -715,14 +715,14 @@ const SubMenuBar = ({
                       display: 'inline-flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      padding: '4px 8px',
+                      padding: '4px',
                       border: '1px solid',
                       borderColor: lineStyle.markerStart === marker.id ? '#0284c7' : '#e2e8f0',
                       borderRadius: '4px',
                       backgroundColor: lineStyle.markerStart === marker.id ? '#e0f2fe' : 'transparent',
                       cursor: 'pointer',
                       height: '28px',
-                      width: '60px',
+                      width: '45px',
                     }}
                     title={marker.name}
                   >
@@ -735,7 +735,7 @@ const SubMenuBar = ({
             </div>
             <div style={sliderContainer}>
               <div style={sliderLabel}>Final:</div>
-              <div style={{display: 'flex', flex: 1, gap: '8px'}}>
+              <div style={{display: 'flex', flex: 1, gap: '6px'}}>
                 {markers.map((marker) => (
                   <div
                     key={`end-${marker.id}`}
@@ -744,14 +744,14 @@ const SubMenuBar = ({
                       display: 'inline-flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      padding: '4px 8px',
+                      padding: '4px',
                       border: '1px solid',
                       borderColor: lineStyle.markerEnd === marker.id ? '#0284c7' : '#e2e8f0',
                       borderRadius: '4px',
                       backgroundColor: lineStyle.markerEnd === marker.id ? '#e0f2fe' : 'transparent',
                       cursor: 'pointer',
                       height: '28px',
-                      width: '60px',
+                      width: '45px',
                     }}
                     title={marker.name}
                   >

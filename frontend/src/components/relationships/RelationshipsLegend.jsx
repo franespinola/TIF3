@@ -2,26 +2,33 @@ import React from "react";
 
 /**
  * Componente que muestra la leyenda con los diferentes tipos de relaciones disponibles
+ * Con tamaño de fuente ajustado para coincidir con la pestaña Relación
  */
 const RelationshipsLegend = () => {
   // Estilo para cada ítem de la leyenda
   const legendItemStyle = {
     display: "flex",
     alignItems: "center",
-    marginBottom: "6px",
+    marginBottom: "8px",
   };
 
   const sectionHeaderStyle = {
-    fontSize: "1rem",
+    fontSize: "16px",
     fontWeight: "600",
-    marginBottom: "10px",
-    border: "none",
-    paddingBottom: "0",
-    color: "#3b82f6",
+    marginBottom: "12px",
+    borderBottom: "1px solid #e2e8f0",
+    paddingBottom: "8px",
+    color: "#475569",
+  };
+  
+  const legendTextStyle = {
+    marginLeft: "8px",
+    fontSize: "13px", // Tamaño de fuente consistente con la pestaña Relación
+    color: "#475569",
   };
 
   return (
-    <div className="relationships-legend">
+    <div className="relationships-legend" style={{ padding: "4px" }}>
       <h4 style={sectionHeaderStyle}>Leyenda de relaciones</h4>
 
       {/* Distintos ejemplos de relaciones */}
@@ -29,7 +36,7 @@ const RelationshipsLegend = () => {
         <svg width="80" height="20">
           <path d="M10,10 L70,10" stroke="black" strokeWidth="2" />
         </svg>
-        <span style={{ marginLeft: "8px" }}>Matrimonio</span>
+        <span style={legendTextStyle}>Matrimonio</span>
       </div>
       <div style={legendItemStyle}>
         <svg width="80" height="20">
@@ -37,7 +44,7 @@ const RelationshipsLegend = () => {
           <line x1="45" y1="0" x2="35" y2="20" stroke="black" strokeWidth="2" />
           <line x1="49" y1="0" x2="39" y2="20" stroke="black" strokeWidth="2" />
         </svg>
-        <span style={{ marginLeft: "8px" }}>Divorcio</span>
+        <span style={legendTextStyle}>Divorcio</span>
       </div>
       <div style={legendItemStyle}>
         <svg width="80" height="20">
@@ -54,7 +61,7 @@ const RelationshipsLegend = () => {
             strokeWidth="2"
           />
         </svg>
-        <span style={{ marginLeft: "8px" }}>Cohabitación</span>
+        <span style={legendTextStyle}>Cohabitación</span>
       </div>
       <div style={legendItemStyle}>
         <svg width="80" height="20">
@@ -65,7 +72,7 @@ const RelationshipsLegend = () => {
             strokeWidth="2"
           />
         </svg>
-        <span style={{ marginLeft: "8px" }}>Compromiso</span>
+        <span style={legendTextStyle}>Compromiso</span>
       </div>
       <div style={legendItemStyle}>
         <svg width="80" height="20">
@@ -76,20 +83,26 @@ const RelationshipsLegend = () => {
             fill="none"
           />
         </svg>
-        <span style={{ marginLeft: "8px" }}>Conflicto</span>
+        <span style={legendTextStyle}>Conflicto</span>
       </div>
       <div style={legendItemStyle}>
         <svg width="80" height="20">
-          <path d="M10,10 L70,10" stroke="#ff0000" strokeWidth="2" fill="none" />
+          {/* Línea ondulada para violencia */}
+          <path 
+            d="M10,10 C20,3 30,17 40,10 C50,3 60,17 70,10" 
+            stroke="#ff0000" 
+            strokeWidth="2" 
+            fill="none" 
+          />
         </svg>
-        <span style={{ marginLeft: "8px" }}>Violencia</span>
+        <span style={legendTextStyle}>Violencia</span>
       </div>
       <div style={legendItemStyle}>
         <svg width="80" height="20">
-          <path d="M10,7 L70,7" stroke="#20c997" strokeWidth="3" />
-          <path d="M10,13 L70,13" stroke="#20c997" strokeWidth="3" />
+          <path d="M10,7 L70,7" stroke="#20c997" strokeWidth="2" />
+          <path d="M10,13 L70,13" stroke="#20c997" strokeWidth="2" />
         </svg>
-        <span style={{ marginLeft: "8px" }}>Relación cercana</span>
+        <span style={legendTextStyle}>Relación cercana</span>
       </div>
       <div style={legendItemStyle}>
         <svg width="80" height="20">
@@ -103,7 +116,7 @@ const RelationshipsLegend = () => {
             strokeDasharray="6 6"
           />
         </svg>
-        <span style={{ marginLeft: "8px" }}>Relación distante</span>
+        <span style={legendTextStyle}>Relación distante</span>
       </div>
       <div style={legendItemStyle}>
         <svg width="80" height="20">
@@ -111,7 +124,7 @@ const RelationshipsLegend = () => {
           <line x1="38" y1="5" x2="38" y2="15" stroke="gray" strokeWidth="3" />
           <line x1="42" y1="5" x2="42" y2="15" stroke="gray" strokeWidth="3" />
         </svg>
-        <span style={{ marginLeft: "8px" }}>Relación rota</span>
+        <span style={legendTextStyle}>Relación rota</span>
       </div>
     </div>
   );
