@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import RelationshipsLegend from '../relationships/RelationshipsLegend';
+import MenuPortal from './MenuPortal';
 
 /**
  * SubMenuBar - Barra de menú secundaria debajo de MenuBar para funcionalidades adicionales
@@ -19,6 +20,11 @@ const SubMenuBar = ({
   const [showRelationMenu, setShowRelationMenu] = useState(false);
   const [showLegendPopup, setShowLegendPopup] = useState(false);
   const [showLineStyleMenu, setShowLineStyleMenu] = useState(false);
+  
+  // Estado para posiciones de menús desplegables
+  const [relationMenuPosition, setRelationMenuPosition] = useState({ top: 0, left: 0 });
+  const [legendPopupPosition, setLegendPopupPosition] = useState({ top: 0, left: 0 });
+  const [lineStyleMenuPosition, setLineStyleMenuPosition] = useState({ top: 0, left: 0 });
   
   // Estado para formulario de relaciones
   const [source, setSource] = useState("");
@@ -451,7 +457,9 @@ const SubMenuBar = ({
             ...menuLabelStyle,
             background: showRelationMenu ? '#e2e8f0' : 'transparent',
           }}
-          onClick={() => {
+          onClick={(e) => {
+            const rect = relationButtonRef.current.getBoundingClientRect();
+            setRelationMenuPosition({ top: rect.bottom, left: rect.left });
             setShowRelationMenu(prev => !prev);
             setShowLegendPopup(false);
             setShowLineStyleMenu(false);
@@ -483,99 +491,101 @@ const SubMenuBar = ({
           </span>
 
           {showRelationMenu && (
-            <div ref={relationMenuRef} style={dropdownStyle}>
-              <div style={{ padding: '16px' }}>
-                <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', borderBottom: '1px solid #e2e8f0', paddingBottom: '8px' }}>
-                  {selectedEdge ? "Modificar relación" : "Crear relación"}
-                </h3>
-                
-                {/* Contenedor de inputs en fila */}
-                <div style={inputContainerStyle}>
-                  <div style={{ flex: 1 }}>
-                    <label style={{ display: 'block', marginBottom: '4px', fontSize: '13px', color: '#475569' }}>
-                      Origen
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="ID origen"
-                      value={source}
-                      onChange={(e) => setSource(e.target.value)}
-                      style={{
-                        ...inputStyle,
-                        backgroundColor: selectedEdge ? '#f8fafc' : 'white'
-                      }}
-                      readOnly={selectedEdge !== null}
-                    />
+            <MenuPortal isOpen={showRelationMenu} position={relationMenuPosition}>
+              <div ref={relationMenuRef} style={dropdownStyle}>
+                <div style={{ padding: '16px' }}>
+                  <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', borderBottom: '1px solid #e2e8f0', paddingBottom: '8px' }}>
+                    {selectedEdge ? "Modificar relación" : "Crear relación"}
+                  </h3>
+                  
+                  {/* Contenedor de inputs en fila */}
+                  <div style={inputContainerStyle}>
+                    <div style={{ flex: 1 }}>
+                      <label style={{ display: 'block', marginBottom: '4px', fontSize: '13px', color: '#475569' }}>
+                        Origen
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="ID origen"
+                        value={source}
+                        onChange={(e) => setSource(e.target.value)}
+                        style={{
+                          ...inputStyle,
+                          backgroundColor: selectedEdge ? '#f8fafc' : 'white'
+                        }}
+                        readOnly={selectedEdge !== null}
+                      />
+                    </div>
+                    
+                    <div style={{ flex: 1 }}>
+                      <label style={{ display: 'block', marginBottom: '4px', fontSize: '13px', color: '#475569' }}>
+                        Destino
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="ID destino"
+                        value={target}
+                        onChange={(e) => setTarget(e.target.value)}
+                        style={{
+                          ...inputStyle,
+                          backgroundColor: selectedEdge ? '#f8fafc' : 'white'
+                        }}
+                        readOnly={selectedEdge !== null}
+                      />
+                    </div>
                   </div>
                   
-                  <div style={{ flex: 1 }}>
-                    <label style={{ display: 'block', marginBottom: '4px', fontSize: '13px', color: '#475569' }}>
-                      Destino
+                  {/* Selector visual de relaciones con iconos */}
+                  <div style={{ marginBottom: '16px' }}>
+                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', color: '#475569' }}>
+                      Tipo de relación
                     </label>
-                    <input
-                      type="text"
-                      placeholder="ID destino"
-                      value={target}
-                      onChange={(e) => setTarget(e.target.value)}
-                      style={{
-                        ...inputStyle,
-                        backgroundColor: selectedEdge ? '#f8fafc' : 'white'
-                      }}
-                      readOnly={selectedEdge !== null}
-                    />
-                  </div>
-                </div>
-                
-                {/* Selector visual de relaciones con iconos */}
-                <div style={{ marginBottom: '16px' }}>
-                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', color: '#475569' }}>
-                    Tipo de relación
-                  </label>
-                  <div style={{ 
-                    display: 'grid', 
-                    gridTemplateColumns: 'repeat(3, 1fr)', 
-                    gap: '6px', 
-                    justifyContent: 'center' 
-                  }}>
-                    {relationshipTypes.map((type) => (
-                      <div
-                        key={type.id}
-                        onClick={() => handleRelationTypeSelect(type.id)}
-                        style={{
-                          ...relationIconStyle,
-                          backgroundColor: relType === type.id ? '#e0f2fe' : 'transparent',
-                          border: relType === type.id ? '1px solid #bae6fd' : '1px solid transparent',
-                        }}
-                        title={type.name}
-                      >
-                        <div style={{ 
-                          display: 'flex', 
-                          justifyContent: 'center', 
-                          alignItems: 'center',
-                          height: '28px'
-                        }}>
-                          {type.icon}
+                    <div style={{ 
+                      display: 'grid', 
+                      gridTemplateColumns: 'repeat(3, 1fr)', 
+                      gap: '6px', 
+                      justifyContent: 'center' 
+                    }}>
+                      {relationshipTypes.map((type) => (
+                        <div
+                          key={type.id}
+                          onClick={() => handleRelationTypeSelect(type.id)}
+                          style={{
+                            ...relationIconStyle,
+                            backgroundColor: relType === type.id ? '#e0f2fe' : 'transparent',
+                            border: relType === type.id ? '1px solid #bae6fd' : '1px solid transparent',
+                          }}
+                          title={type.name}
+                        >
+                          <div style={{ 
+                            display: 'flex', 
+                            justifyContent: 'center', 
+                            alignItems: 'center',
+                            height: '28px'
+                          }}>
+                            {type.icon}
+                          </div>
+                          <span style={{ fontSize: '11px', marginTop: '2px' }}>{type.name}</span>
                         </div>
-                        <span style={{ fontSize: '11px', marginTop: '2px' }}>{type.name}</span>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
+                  
+                  {/* Botón para crear relación (solo visible cuando no hay una relación seleccionada) */}
+                  {!selectedEdge && (
+                    <button
+                      onClick={() => {
+                        onRelate(source, target, relType);
+                        setShowRelationMenu(false);
+                      }}
+                      style={buttonStyle}
+                    >
+                      Crear Relación
+                    </button>
+                  )}
                 </div>
-                
-                {/* Botón para crear relación (solo visible cuando no hay una relación seleccionada) */}
-                {!selectedEdge && (
-                  <button
-                    onClick={() => {
-                      onRelate(source, target, relType);
-                      setShowRelationMenu(false);
-                    }}
-                    style={buttonStyle}
-                  >
-                    Crear Relación
-                  </button>
-                )}
               </div>
-            </div>
+            </MenuPortal>
           )}
         </div>
       )}
@@ -588,7 +598,9 @@ const SubMenuBar = ({
             ...menuLabelStyle,
             background: showLegendPopup ? '#e2e8f0' : 'transparent',
           }}
-          onClick={() => {
+          onClick={(e) => {
+            const rect = legendButtonRef.current.getBoundingClientRect();
+            setLegendPopupPosition({ top: rect.bottom, left: rect.left });
             setShowLegendPopup(prev => !prev);
             setShowRelationMenu(false);
             setShowLineStyleMenu(false);
@@ -608,9 +620,11 @@ const SubMenuBar = ({
           </span>
 
           {showLegendPopup && (
-            <div ref={legendPopupRef} style={legendPopupStyle}>
-              <RelationshipsLegend />
-            </div>
+            <MenuPortal isOpen={showLegendPopup} position={legendPopupPosition}>
+              <div ref={legendPopupRef} style={legendPopupStyle}>
+                <RelationshipsLegend />
+              </div>
+            </MenuPortal>
           )}
         </div>
       )}
@@ -622,7 +636,9 @@ const SubMenuBar = ({
           ...menuLabelStyle,
           background: showLineStyleMenu ? '#e2e8f0' : 'transparent',
         }}
-        onClick={() => {
+        onClick={(e) => {
+          const rect = lineStyleButtonRef.current.getBoundingClientRect();
+          setLineStyleMenuPosition({ top: rect.bottom, left: rect.left });
           setShowLineStyleMenu(prev => !prev);
           setShowRelationMenu(false);
           setShowLegendPopup(false);
@@ -655,143 +671,145 @@ const SubMenuBar = ({
         </span>
 
         {showLineStyleMenu && (
-          <div ref={lineStyleMenuRef} style={lineStyleDropdownStyle}>
-            <h3 style={{margin: '0 0 12px 0', fontSize: '16px'}}>Estilo de línea</h3>
-            
-            {/* Tipo de trazo */}
-            <div style={styleSectionTitle}>Tipo de trazo</div>
-            <div style={styleOptionContainer}>
-              {strokeTypes.map((type) => (
-                <div
-                  key={`stroke-${type.id}`}
-                  onClick={() => updateLineStyle('strokeType', type.id)}
-                  style={{
-                    ...styleOption,
-                    backgroundColor: lineStyle.strokeType === type.id ? '#e0f2fe' : 'transparent',
-                    borderColor: lineStyle.strokeType === type.id ? '#0284c7' : '#e2e8f0',
-                  }}
-                  title={type.name}
-                >
-                  <div style={{color: lineStyle.strokeType === type.id ? '#0284c7' : 'currentColor'}}>
-                    {type.icon}
-                  </div>
-                  <span style={{fontSize: '11px', marginTop: '4px'}}>{type.name}</span>
-                </div>
-              ))}
-            </div>
-            
-            {/* Tipo de conexión */}
-            <div style={styleSectionTitle}>Tipo de conexión</div>
-            <div style={styleOptionContainer}>
-              {connectionTypes.map((type) => (
-                <div
-                  key={`connection-${type.id}`}
-                  onClick={() => updateLineStyle('connectionType', type.id)}
-                  style={{
-                    ...styleOption,
-                    backgroundColor: lineStyle.connectionType === type.id ? '#e0f2fe' : 'transparent',
-                    borderColor: lineStyle.connectionType === type.id ? '#0284c7' : '#e2e8f0',
-                  }}
-                  title={type.name}
-                >
-                  <div style={{color: lineStyle.connectionType === type.id ? '#0284c7' : 'currentColor'}}>
-                    {type.icon}
-                  </div>
-                  <span style={{fontSize: '11px', marginTop: '4px'}}>{type.name}</span>
-                </div>
-              ))}
-            </div>
-            
-            {/* Marcadores */}
-            <div style={styleSectionTitle}>Marcadores</div>
-            <div style={sliderContainer}>
-              <div style={sliderLabel}>Inicio:</div>
-              <div style={{display: 'flex', flex: 1, gap: '6px'}}>
-                {markers.map((marker) => (
+          <MenuPortal isOpen={showLineStyleMenu} position={lineStyleMenuPosition}>
+            <div ref={lineStyleMenuRef} style={lineStyleDropdownStyle}>
+              <h3 style={{margin: '0 0 12px 0', fontSize: '16px'}}>Estilo de línea</h3>
+              
+              {/* Tipo de trazo */}
+              <div style={styleSectionTitle}>Tipo de trazo</div>
+              <div style={styleOptionContainer}>
+                {strokeTypes.map((type) => (
                   <div
-                    key={`start-${marker.id}`}
-                    onClick={() => updateLineStyle('markerStart', marker.id)}
+                    key={`stroke-${type.id}`}
+                    onClick={() => updateLineStyle('strokeType', type.id)}
                     style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      padding: '4px',
-                      border: '1px solid',
-                      borderColor: lineStyle.markerStart === marker.id ? '#0284c7' : '#e2e8f0',
-                      borderRadius: '4px',
-                      backgroundColor: lineStyle.markerStart === marker.id ? '#e0f2fe' : 'transparent',
-                      cursor: 'pointer',
-                      height: '28px',
-                      width: '45px',
+                      ...styleOption,
+                      backgroundColor: lineStyle.strokeType === type.id ? '#e0f2fe' : 'transparent',
+                      borderColor: lineStyle.strokeType === type.id ? '#0284c7' : '#e2e8f0',
                     }}
-                    title={marker.name}
+                    title={type.name}
                   >
-                    <div style={{transform: 'scaleX(-1)', color: lineStyle.markerStart === marker.id ? '#0284c7' : 'currentColor'}}>
-                      {marker.icon}
+                    <div style={{color: lineStyle.strokeType === type.id ? '#0284c7' : 'currentColor'}}>
+                      {type.icon}
                     </div>
+                    <span style={{fontSize: '11px', marginTop: '4px'}}>{type.name}</span>
                   </div>
                 ))}
               </div>
-            </div>
-            <div style={sliderContainer}>
-              <div style={sliderLabel}>Final:</div>
-              <div style={{display: 'flex', flex: 1, gap: '6px'}}>
-                {markers.map((marker) => (
+              
+              {/* Tipo de conexión */}
+              <div style={styleSectionTitle}>Tipo de conexión</div>
+              <div style={styleOptionContainer}>
+                {connectionTypes.map((type) => (
                   <div
-                    key={`end-${marker.id}`}
-                    onClick={() => updateLineStyle('markerEnd', marker.id)}
+                    key={`connection-${type.id}`}
+                    onClick={() => updateLineStyle('connectionType', type.id)}
                     style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      padding: '4px',
-                      border: '1px solid',
-                      borderColor: lineStyle.markerEnd === marker.id ? '#0284c7' : '#e2e8f0',
-                      borderRadius: '4px',
-                      backgroundColor: lineStyle.markerEnd === marker.id ? '#e0f2fe' : 'transparent',
-                      cursor: 'pointer',
-                      height: '28px',
-                      width: '45px',
+                      ...styleOption,
+                      backgroundColor: lineStyle.connectionType === type.id ? '#e0f2fe' : 'transparent',
+                      borderColor: lineStyle.connectionType === type.id ? '#0284c7' : '#e2e8f0',
                     }}
-                    title={marker.name}
+                    title={type.name}
                   >
-                    <div style={{color: lineStyle.markerEnd === marker.id ? '#0284c7' : 'currentColor'}}>
-                      {marker.icon}
+                    <div style={{color: lineStyle.connectionType === type.id ? '#0284c7' : 'currentColor'}}>
+                      {type.icon}
                     </div>
+                    <span style={{fontSize: '11px', marginTop: '4px'}}>{type.name}</span>
                   </div>
                 ))}
               </div>
+              
+              {/* Marcadores */}
+              <div style={styleSectionTitle}>Marcadores</div>
+              <div style={sliderContainer}>
+                <div style={sliderLabel}>Inicio:</div>
+                <div style={{display: 'flex', flex: 1, gap: '6px'}}>
+                  {markers.map((marker) => (
+                    <div
+                      key={`start-${marker.id}`}
+                      onClick={() => updateLineStyle('markerStart', marker.id)}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: '4px',
+                        border: '1px solid',
+                        borderColor: lineStyle.markerStart === marker.id ? '#0284c7' : '#e2e8f0',
+                        borderRadius: '4px',
+                        backgroundColor: lineStyle.markerStart === marker.id ? '#e0f2fe' : 'transparent',
+                        cursor: 'pointer',
+                        height: '28px',
+                        width: '45px',
+                      }}
+                      title={marker.name}
+                    >
+                      <div style={{transform: 'scaleX(-1)', color: lineStyle.markerStart === marker.id ? '#0284c7' : 'currentColor'}}>
+                        {marker.icon}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div style={sliderContainer}>
+                <div style={sliderLabel}>Final:</div>
+                <div style={{display: 'flex', flex: 1, gap: '6px'}}>
+                  {markers.map((marker) => (
+                    <div
+                      key={`end-${marker.id}`}
+                      onClick={() => updateLineStyle('markerEnd', marker.id)}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: '4px',
+                        border: '1px solid',
+                        borderColor: lineStyle.markerEnd === marker.id ? '#0284c7' : '#e2e8f0',
+                        borderRadius: '4px',
+                        backgroundColor: lineStyle.markerEnd === marker.id ? '#e0f2fe' : 'transparent',
+                        cursor: 'pointer',
+                        height: '28px',
+                        width: '45px',
+                      }}
+                      title={marker.name}
+                    >
+                      <div style={{color: lineStyle.markerEnd === marker.id ? '#0284c7' : 'currentColor'}}>
+                        {marker.icon}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              {/* Grosor de línea */}
+              <div style={styleSectionTitle}>Grosor y configuraciones</div>
+              <div style={sliderContainer}>
+                <div style={sliderLabel}>Grosor:</div>
+                <input
+                  type="range"
+                  min="1"
+                  max="10"
+                  value={lineStyle.strokeWidth}
+                  onChange={(e) => updateLineStyle('strokeWidth', parseInt(e.target.value))}
+                  style={sliderStyle}
+                />
+                <div style={sliderValueStyle}>{lineStyle.strokeWidth}px</div>
+              </div>
+              
+              {/* Auto-conexión */}
+              <div style={checkboxContainer}>
+                <input
+                  type="checkbox"
+                  checked={lineStyle.autoConnect}
+                  onChange={(e) => updateLineStyle('autoConnect', e.target.checked)}
+                  style={checkboxStyle}
+                  id="autoconnect-checkbox"
+                />
+                <label htmlFor="autoconnect-checkbox" style={checkboxLabel}>
+                  Conexión automática
+                </label>
+              </div>
             </div>
-            
-            {/* Grosor de línea */}
-            <div style={styleSectionTitle}>Grosor y configuraciones</div>
-            <div style={sliderContainer}>
-              <div style={sliderLabel}>Grosor:</div>
-              <input
-                type="range"
-                min="1"
-                max="10"
-                value={lineStyle.strokeWidth}
-                onChange={(e) => updateLineStyle('strokeWidth', parseInt(e.target.value))}
-                style={sliderStyle}
-              />
-              <div style={sliderValueStyle}>{lineStyle.strokeWidth}px</div>
-            </div>
-            
-            {/* Auto-conexión */}
-            <div style={checkboxContainer}>
-              <input
-                type="checkbox"
-                checked={lineStyle.autoConnect}
-                onChange={(e) => updateLineStyle('autoConnect', e.target.checked)}
-                style={checkboxStyle}
-                id="autoconnect-checkbox"
-              />
-              <label htmlFor="autoconnect-checkbox" style={checkboxLabel}>
-                Conexión automática
-              </label>
-            </div>
-          </div>
+          </MenuPortal>
         )}
       </div>
 

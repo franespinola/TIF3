@@ -4,44 +4,62 @@ import React from 'react';
  * Componente que maneja el botón para colapsar/expandir el sidebar
  */
 const CollapseToggle = ({ collapsed, setCollapsed }) => {
-  // Base style for collapse toggle button
+  // Estilo base para el botón de toggle
   const toggleButtonStyle = {
-    background: 'linear-gradient(135deg, #e0e5ec, #f5f7fa)',
-    border: '1px solid #ccd6e3',
-    borderRadius: '50%',
-    width: '30px',
-    height: '30px',
+    background: '#f1f5f9',
+    border: 'none',
+    borderRadius: '4px',
+    width: '28px',
+    height: '28px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+    boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
     cursor: 'pointer',
-    transition: 'transform 0.3s ease-in-out, background 0.3s',
-    position: 'relative',
-    top: '-10px',
-    left: '-10px',
+    transition: 'all 0.2s ease',
+    padding: 0,
   };
 
-  // Arrow icon style for collapse toggle
-  const arrowStyle = {
-    transition: 'transform 0.3s ease-in-out',
-    transform: collapsed ? 'rotate(180deg)' : 'rotate(0deg)',
-    stroke: '#4f46e5',
-    strokeWidth: 2,
-    fill: 'none',
+  // Estilo para el hover del botón
+  const handleMouseEnter = (e) => {
+    e.currentTarget.style.background = '#e2e8f0';
+  };
+  
+  const handleMouseLeave = (e) => {
+    e.currentTarget.style.background = '#f1f5f9';
+  };
+
+  // Manejar el clic para colapsar/expandir y notificar al padre
+  const handleToggle = () => {
+    const newState = !collapsed;
+    setCollapsed(newState);
   };
 
   return (
-    <div style={{ position: 'relative', padding: '8px' }}>
-      <button 
-        onClick={() => setCollapsed(c => !c)} 
-        style={toggleButtonStyle}
+    <button 
+      onClick={handleToggle} 
+      style={toggleButtonStyle}
+      title={collapsed ? "Expandir barra lateral" : "Colapsar barra lateral"}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="#64748b"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        style={{
+          transition: 'transform 0.2s ease',
+          transform: collapsed ? 'rotate(0deg)' : 'rotate(180deg)',
+        }}
       >
-        <svg width="20" height="20" viewBox="0 0 24 24" style={arrowStyle}>
-          <path d="M15 18l-6-6 6-6" />
-        </svg>
-      </button>
-    </div>
+        <polyline points={collapsed ? "9 18 15 12 9 6" : "15 18 9 12 15 6"} />
+      </svg>
+    </button>
   );
 };
 

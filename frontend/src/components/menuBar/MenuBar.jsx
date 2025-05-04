@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import MenuPortal from './MenuPortal';
 
 /**
  * MenuBar component renders the top menu with import/export options
@@ -25,6 +26,8 @@ export default function MenuBar({
 }) {
   const [showFileMenu, setShowFileMenu] = useState(false);
   const [showViewMenu, setShowViewMenu] = useState(false);
+  const [fileMenuPosition, setFileMenuPosition] = useState({ top: 0, left: 0 });
+  const [viewMenuPosition, setViewMenuPosition] = useState({ top: 0, left: 0 });
   const fileInputRef = useRef(null);
   const fileMenuRef = useRef(null);
   const fileMenuButtonRef = useRef(null);
@@ -169,9 +172,11 @@ export default function MenuBar({
             ...menuLabelStyle,
             background: showFileMenu ? '#e2e8f0' : 'transparent',
           }}
-          onClick={() => {
+          onClick={(e) => {
             setShowFileMenu(prev => !prev);
             setShowViewMenu(false); // Cerrar el otro menú
+            const rect = e.currentTarget.getBoundingClientRect();
+            setFileMenuPosition({ top: rect.bottom, left: rect.left });
           }}
         >
           <span>Archivo</span>
@@ -194,74 +199,76 @@ export default function MenuBar({
           </span>
 
           {showFileMenu && (
-            <div ref={fileMenuRef} style={dropdownStyle}>
-              {/* Importar JSON */}
-              <div
-                style={dropdownItemStyle}
-                onMouseEnter={dropdownItemHover}
-                onMouseLeave={dropdownItemLeave}
-                onClick={() => {
-                  // cerramos antes de abrir el diálogo
-                  setShowFileMenu(false);
-                  // y lanzamos el click en el input tras un tick
-                  setTimeout(() => fileInputRef.current.click(), 0);
-                }}
-              >
-                Importar JSON
-              </div>
+            <MenuPortal isOpen={showFileMenu} position={fileMenuPosition}>
+              <div ref={fileMenuRef} style={dropdownStyle}>
+                {/* Importar JSON */}
+                <div
+                  style={dropdownItemStyle}
+                  onMouseEnter={dropdownItemHover}
+                  onMouseLeave={dropdownItemLeave}
+                  onClick={() => {
+                    // cerramos antes de abrir el diálogo
+                    setShowFileMenu(false);
+                    // y lanzamos el click en el input tras un tick
+                    setTimeout(() => fileInputRef.current.click(), 0);
+                  }}
+                >
+                  Importar JSON
+                </div>
 
-              {/* Exportar JSON */}
-              <div
-                style={dropdownItemStyle}
-                onMouseEnter={dropdownItemHover}
-                onMouseLeave={dropdownItemLeave}
-                onClick={() => {
-                  setShowFileMenu(false);
-                  onExportJSON();
-                }}
-              >
-                Exportar JSON
-              </div>
+                {/* Exportar JSON */}
+                <div
+                  style={dropdownItemStyle}
+                  onMouseEnter={dropdownItemHover}
+                  onMouseLeave={dropdownItemLeave}
+                  onClick={() => {
+                    setShowFileMenu(false);
+                    onExportJSON();
+                  }}
+                >
+                  Exportar JSON
+                </div>
 
-              {/* Exportar CSV */}
-              <div
-                style={dropdownItemStyle}
-                onMouseEnter={dropdownItemHover}
-                onMouseLeave={dropdownItemLeave}
-                onClick={() => {
-                  setShowFileMenu(false);
-                  onExportCSV();
-                }}
-              >
-                Exportar CSV
-              </div>
+                {/* Exportar CSV */}
+                <div
+                  style={dropdownItemStyle}
+                  onMouseEnter={dropdownItemHover}
+                  onMouseLeave={dropdownItemLeave}
+                  onClick={() => {
+                    setShowFileMenu(false);
+                    onExportCSV();
+                  }}
+                >
+                  Exportar CSV
+                </div>
 
-              {/* Exportar PNG */}
-              <div
-                style={dropdownItemStyle}
-                onMouseEnter={dropdownItemHover}
-                onMouseLeave={dropdownItemLeave}
-                onClick={() => {
-                  setShowFileMenu(false);
-                  onExportPNG();
-                }}
-              >
-                Exportar PNG
-              </div>
+                {/* Exportar PNG */}
+                <div
+                  style={dropdownItemStyle}
+                  onMouseEnter={dropdownItemHover}
+                  onMouseLeave={dropdownItemLeave}
+                  onClick={() => {
+                    setShowFileMenu(false);
+                    onExportPNG();
+                  }}
+                >
+                  Exportar PNG
+                </div>
 
-              {/* Exportar JPG */}
-              <div
-                style={dropdownItemStyle}
-                onMouseEnter={dropdownItemHover}
-                onMouseLeave={dropdownItemLeave}
-                onClick={() => {
-                  setShowFileMenu(false);
-                  onExportJPG();
-                }}
-              >
-                Exportar JPG
+                {/* Exportar JPG */}
+                <div
+                  style={dropdownItemStyle}
+                  onMouseEnter={dropdownItemHover}
+                  onMouseLeave={dropdownItemLeave}
+                  onClick={() => {
+                    setShowFileMenu(false);
+                    onExportJPG();
+                  }}
+                >
+                  Exportar JPG
+                </div>
               </div>
-            </div>
+            </MenuPortal>
           )}
         </div>
 
@@ -272,9 +279,11 @@ export default function MenuBar({
             ...menuLabelStyle,
             background: showViewMenu ? '#e2e8f0' : 'transparent',
           }}
-          onClick={() => {
+          onClick={(e) => {
             setShowViewMenu(prev => !prev);
             setShowFileMenu(false); // Cerrar el otro menú
+            const rect = e.currentTarget.getBoundingClientRect();
+            setViewMenuPosition({ top: rect.bottom, left: rect.left });
           }}
         >
           <span>Visualizar</span>
@@ -297,109 +306,111 @@ export default function MenuBar({
           </span>
 
           {showViewMenu && (
-            <div ref={viewMenuRef} style={dropdownStyle}>
-              {/* Opción Panel de Navegación */}
-              <div
-                style={checkboxItemStyle}
-                onMouseEnter={dropdownItemHover}
-                onMouseLeave={dropdownItemLeave}
-              >
-                <label style={checkboxLabelStyle}>
-                  <input
-                    type="checkbox"
-                    style={checkboxStyle}
-                    checked={showNavigationPanel}
-                    onChange={() => setShowNavigationPanel(!showNavigationPanel)}
-                  />
-                  Panel de Navegación
-                </label>
-              </div>
+            <MenuPortal isOpen={showViewMenu} position={viewMenuPosition}>
+              <div ref={viewMenuRef} style={dropdownStyle}>
+                {/* Opción Panel de Navegación */}
+                <div
+                  style={checkboxItemStyle}
+                  onMouseEnter={dropdownItemHover}
+                  onMouseLeave={dropdownItemLeave}
+                >
+                  <label style={checkboxLabelStyle}>
+                    <input
+                      type="checkbox"
+                      style={checkboxStyle}
+                      checked={showNavigationPanel}
+                      onChange={() => setShowNavigationPanel(!showNavigationPanel)}
+                    />
+                    Panel de Navegación
+                  </label>
+                </div>
 
-              {/* Opción Panel de Configuración de Guías */}
-              <div
-                style={checkboxItemStyle}
-                onMouseEnter={dropdownItemHover}
-                onMouseLeave={dropdownItemLeave}
-              >
-                <label style={checkboxLabelStyle}>
-                  <input
-                    type="checkbox"
-                    style={checkboxStyle}
-                    checked={showSmartGuidesConfigPanel}
-                    onChange={() => setShowSmartGuidesConfigPanel(!showSmartGuidesConfigPanel)}
-                  />
-                  Smart Guides
-                </label>
-              </div>
+                {/* Opción Panel de Configuración de Guías */}
+                <div
+                  style={checkboxItemStyle}
+                  onMouseEnter={dropdownItemHover}
+                  onMouseLeave={dropdownItemLeave}
+                >
+                  <label style={checkboxLabelStyle}>
+                    <input
+                      type="checkbox"
+                      style={checkboxStyle}
+                      checked={showSmartGuidesConfigPanel}
+                      onChange={() => setShowSmartGuidesConfigPanel(!showSmartGuidesConfigPanel)}
+                    />
+                    Smart Guides
+                  </label>
+                </div>
 
-              {/* Opción Modos de Visualización */}
-              <div
-                style={checkboxItemStyle}
-                onMouseEnter={dropdownItemHover}
-                onMouseLeave={dropdownItemLeave}
-              >
-                <label style={checkboxLabelStyle}>
-                  <input
-                    type="checkbox"
-                    style={checkboxStyle}
-                    checked={showThemeVisualizer}
-                    onChange={() => setShowThemeVisualizer(!showThemeVisualizer)}
-                  />
-                  Modos de Visualización
-                </label>
-              </div>
+                {/* Opción Modos de Visualización */}
+                <div
+                  style={checkboxItemStyle}
+                  onMouseEnter={dropdownItemHover}
+                  onMouseLeave={dropdownItemLeave}
+                >
+                  <label style={checkboxLabelStyle}>
+                    <input
+                      type="checkbox"
+                      style={checkboxStyle}
+                      checked={showThemeVisualizer}
+                      onChange={() => setShowThemeVisualizer(!showThemeVisualizer)}
+                    />
+                    Modos de Visualización
+                  </label>
+                </div>
 
-              {/* Opción Minimapa */}
-              <div
-                style={checkboxItemStyle}
-                onMouseEnter={dropdownItemHover}
-                onMouseLeave={dropdownItemLeave}
-              >
-                <label style={checkboxLabelStyle}>
-                  <input
-                    type="checkbox"
-                    style={checkboxStyle}
-                    checked={showMinimap}
-                    onChange={() => setShowMinimap(!showMinimap)}
-                  />
-                  Minimapa
-                </label>
-              </div>
+                {/* Opción Minimapa */}
+                <div
+                  style={checkboxItemStyle}
+                  onMouseEnter={dropdownItemHover}
+                  onMouseLeave={dropdownItemLeave}
+                >
+                  <label style={checkboxLabelStyle}>
+                    <input
+                      type="checkbox"
+                      style={checkboxStyle}
+                      checked={showMinimap}
+                      onChange={() => setShowMinimap(!showMinimap)}
+                    />
+                    Minimapa
+                  </label>
+                </div>
 
-              {/* Opción Editor de Relaciones (en sidebar) */}
-              <div
-                style={checkboxItemStyle}
-                onMouseEnter={dropdownItemHover}
-                onMouseLeave={dropdownItemLeave}
-              >
-                <label style={checkboxLabelStyle}>
-                  <input
-                    type="checkbox"
-                    style={checkboxStyle}
-                    checked={showRelationEditor}
-                    onChange={() => setShowRelationEditor(!showRelationEditor)}
-                  />
-                  Editor de Relaciones (sidebar)
-                </label>
-              </div>
+                {/* Opción Editor de Relaciones (en sidebar) */}
+                <div
+                  style={checkboxItemStyle}
+                  onMouseEnter={dropdownItemHover}
+                  onMouseLeave={dropdownItemLeave}
+                >
+                  <label style={checkboxLabelStyle}>
+                    <input
+                      type="checkbox"
+                      style={checkboxStyle}
+                      checked={showRelationEditor}
+                      onChange={() => setShowRelationEditor(!showRelationEditor)}
+                    />
+                    Editor de Relaciones (sidebar)
+                  </label>
+                </div>
 
-              {/* Opción Leyenda de Relaciones (en sidebar) */}
-              <div
-                style={checkboxItemStyle}
-                onMouseEnter={dropdownItemHover}
-                onMouseLeave={dropdownItemLeave}
-              >
-                <label style={checkboxLabelStyle}>
-                  <input
-                    type="checkbox"
-                    style={checkboxStyle}
-                    checked={showRelationLegend}
-                    onChange={() => setShowRelationLegend(!showRelationLegend)}
-                  />
-                  Leyenda de Relaciones (sidebar)
-                </label>
+                {/* Opción Leyenda de Relaciones (en sidebar) */}
+                <div
+                  style={checkboxItemStyle}
+                  onMouseEnter={dropdownItemHover}
+                  onMouseLeave={dropdownItemLeave}
+                >
+                  <label style={checkboxLabelStyle}>
+                    <input
+                      type="checkbox"
+                      style={checkboxStyle}
+                      checked={showRelationLegend}
+                      onChange={() => setShowRelationLegend(!showRelationLegend)}
+                    />
+                    Leyenda de Relaciones (sidebar)
+                  </label>
+                </div>
               </div>
-            </div>
+            </MenuPortal>
           )}
         </div>
       </div>

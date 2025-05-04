@@ -48,6 +48,9 @@ function GenogramaEditorWrapper() {
   const [selectedEdge, setSelectedEdge] = useState(null);
   const [selectedNode, setSelectedNode] = useState(null);
   
+  // Estado para controlar si el sidebar está colapsado
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  
   // Estados para los paneles laterales
   const [isClinicalHistoryOpen, setIsClinicalHistoryOpen] = useState(false);
   const [isSessionNotesOpen, setIsSessionNotesOpen] = useState(false);
@@ -289,21 +292,24 @@ function GenogramaEditorWrapper() {
         height: "100vh",
         paddingTop: `${TOTAL_MENU_HEIGHT}px` // Añadir espacio para ambas barras de menú
       }}>
-        {/* Panel de Historia Clínica */}
+        {/* Panel de Historia Clínica - Ahora a la derecha */}
         <ClinicalHistoryPanel
           selectedNode={selectedNode}
           onUpdateNode={handleUpdateNode}
           isOpen={isClinicalHistoryOpen}
           onToggle={toggleClinicalHistoryPanel}
           patientName={patientName}
+          style={{ right: 0 }} // Posicionarlo a la derecha
         />
         
         <div
           id="flowWrapper"
           style={{ 
             flexGrow: 1,
-            height: "100%", // Cambiado de 100vh a 100% para ajustarse al contenedor padre
-            position: "relative"
+            height: "100%",
+            position: "relative",
+            paddingLeft: sidebarCollapsed ? "60px" : "500px", // Ajusta el padding según el estado del sidebar
+            transition: "padding-left 0.3s ease" // Añade una transición suave
           }}
           onDrop={onDrop}
           onDragOver={onDragOver}
@@ -446,7 +452,7 @@ function GenogramaEditorWrapper() {
           </ReactFlow>
         </div>
         
-        {/* Panel de Notas de Sesión */}
+        {/* Panel de Notas de Sesión - Ahora a la derecha */}
         <SessionNotesPanel
           isOpen={isSessionNotesOpen}
           onToggle={toggleSessionNotesPanel}
@@ -454,6 +460,7 @@ function GenogramaEditorWrapper() {
           nodes={nodes}
           edges={edges}
           patientName={patientName}
+          style={{ right: 0 }} // Posicionarlo a la derecha
         />
         
         <Sidebar
@@ -487,6 +494,7 @@ function GenogramaEditorWrapper() {
           isSessionNotesOpen={isSessionNotesOpen}
           showRelationEditor={showRelationEditor}
           showRelationLegend={showRelationLegend}
+          onSidebarCollapse={setSidebarCollapsed} // Pasar el callback para actualizar el estado de colapso
         />
       </div>
     </>

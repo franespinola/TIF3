@@ -212,7 +212,7 @@ const SessionNotesPanel = ({
           borderRadius: '8px 0 0 8px',
           boxShadow: '-2px 0 10px rgba(0, 0, 0, 0.1)',
           cursor: 'pointer',
-          transition: 'all 0.3s ease'
+          transition: 'all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
         }}
         onClick={onToggle}
       >
@@ -251,17 +251,18 @@ const SessionNotesPanel = ({
       style={{
         position: 'absolute',
         right: 0,
-        top: 48, // Para dejar espacio para la barra de menú
+        top: 88, // Modificado de 48px a 88px para considerar MenuBar (48px) + SubMenuBar (40px)
         width: '320px',
-        height: 'calc(100vh - 48px)',
+        height: 'calc(100vh - 88px)', // Actualizado para mantener la altura correcta
         backgroundColor: '#f0f9ff',
         borderLeft: '1px solid #e0e7ff',
         boxShadow: '-2px 0 10px rgba(0, 0, 0, 0.1)',
         zIndex: 1000,
         overflowY: 'auto',
-        transition: 'all 0.3s ease',
+        transition: 'all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
         display: 'flex',
-        flexDirection: 'column'
+        flexDirection: 'column',
+        animation: 'slideInRight 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards'
       }}
     >
       {/* Encabezado del panel */}
