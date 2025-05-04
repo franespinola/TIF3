@@ -4,10 +4,8 @@ import React from "react";
  * Componente que gestiona los botones para mostrar/ocultar los paneles laterales
  */
 const SidebarPanels = ({
-  toggleClinicalHistory,
-  isClinicalHistoryOpen,
-  toggleSessionNotes,
-  isSessionNotesOpen
+  toggleClinicalTabs,
+  isClinicalTabsOpen
 }) => {
   // Estilo para botones de paneles laterales
   const lateralPanelButtonStyle = {
@@ -61,54 +59,23 @@ const SidebarPanels = ({
         Paneles Laterales
       </h4>
       
-      {/* Botón para Historia Clínica */}
+      {/* Botón para Panel Clínico con Pestañas */}
       <button
-        onClick={toggleClinicalHistory}
+        onClick={toggleClinicalTabs}
         style={{
           ...lateralPanelButtonStyle,
-          ...(isClinicalHistoryOpen ? activePanelButtonStyle : {
+          ...(isClinicalTabsOpen ? activePanelButtonStyle : {
             backgroundColor: '#f1f5f9',
             color: '#475569'
           })
         }}
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M22 12h-6l-2 3h-4l-2-3H2"/>
-          <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>
+          <path d="M9 3h6a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/>
+          <path d="M9 3v18M9 14h6"/>
         </svg>
-        Historia Clínica
-        {isClinicalHistoryOpen && (
-          <span style={{ 
-            marginLeft: 'auto', 
-            fontSize: '12px', 
-            backgroundColor: '#bae6fd', 
-            color: '#0284c7',
-            padding: '2px 6px',
-            borderRadius: '12px'
-          }}>
-            Abierto
-          </span>
-        )}
-      </button>
-      
-      {/* Botón para Notas de Sesión */}
-      <button
-        onClick={toggleSessionNotes}
-        style={{
-          ...lateralPanelButtonStyle,
-          ...(isSessionNotesOpen ? activePanelButtonStyle : {
-            backgroundColor: '#f1f5f9',
-            color: '#475569'
-          })
-        }}
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M14 3v4a1 1 0 0 0 1 1h4"/>
-          <path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/>
-          <path d="M9 9h1M9 13h6M9 17h6"/>
-        </svg>
-        Notas de Sesión
-        {isSessionNotesOpen && (
+        Panel Clínico
+        {isClinicalTabsOpen && (
           <span style={{ 
             marginLeft: 'auto', 
             fontSize: '12px', 

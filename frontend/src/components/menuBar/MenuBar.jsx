@@ -199,7 +199,11 @@ export default function MenuBar({
           </span>
 
           {showFileMenu && (
-            <MenuPortal isOpen={showFileMenu} position={fileMenuPosition}>
+            <MenuPortal 
+              isOpen={showFileMenu} 
+              position={fileMenuPosition}
+              onClickOutside={() => setShowFileMenu(false)}
+            >
               <div ref={fileMenuRef} style={dropdownStyle}>
                 {/* Importar JSON */}
                 <div
@@ -306,7 +310,11 @@ export default function MenuBar({
           </span>
 
           {showViewMenu && (
-            <MenuPortal isOpen={showViewMenu} position={viewMenuPosition}>
+            <MenuPortal 
+              isOpen={showViewMenu} 
+              position={viewMenuPosition}
+              onClickOutside={() => setShowViewMenu(false)}
+            >
               <div ref={viewMenuRef} style={dropdownStyle}>
                 {/* Opción Panel de Navegación */}
                 <div

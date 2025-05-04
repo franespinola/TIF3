@@ -1,3 +1,15 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden; /* Prevenir scroll en el documento */
+  box-sizing: border-box;
+}
+
+*, *:before, *:after {
+  box-sizing: inherit; /* Asegurar que todos los elementos hereden el box-sizing */
+}
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
@@ -5,6 +17,12 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Asegurar que el contenedor de React toma la altura completa */
+#root {
+  height: 100%;
+  overflow: hidden;
 }
 
 code {
@@ -17,6 +35,23 @@ code {
   to {
     stroke-dashoffset: 1000;
   }
+}
+
+/* Estilos para ReactFlow */
+.react-flow {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+}
+
+/* Asegurar que el contenedor del ReactFlow ocupe todo el espacio disponible */
+.react-flow__container {
+  width: 100%;
+  height: 100%;
+}
+
+.react-flow__pane {
+  height: 100%;
 }
 
 /* Estilo para nodos seleccionados */

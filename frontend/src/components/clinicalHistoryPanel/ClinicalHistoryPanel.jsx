@@ -10,7 +10,8 @@ const ClinicalHistoryPanel = ({
   onUpdateNode, 
   isOpen, 
   onToggle,
-  patientName 
+  patientName,
+  style = {} // Nuevo prop para estilos personalizados
 }) => {
   // Estado para los campos editables de la historia clínica
   const [clinicalData, setClinicalData] = useState({
@@ -145,16 +146,19 @@ const ClinicalHistoryPanel = ({
         position: 'absolute',
         left: 0,
         top: 48, // Para dejar espacio para la barra de menú
-        width: '300px',
+        width: '440px', // Actualizado a 440px para coincidir con ClinicalTabsPanel
         height: 'calc(100vh - 48px)',
         backgroundColor: '#f0f9ff',
         borderRight: '1px solid #e0e7ff',
         boxShadow: '2px 0 10px rgba(0, 0, 0, 0.1)',
         zIndex: 1000,
         overflowY: 'auto',
+        overflowX: 'hidden', // Evitar scroll horizontal
         transition: 'all 0.3s ease',
         display: 'flex',
-        flexDirection: 'column'
+        flexDirection: 'column',
+        boxSizing: 'border-box', // Asegurar que padding y border estén incluidos en el ancho
+        ...style // Aplicar estilos personalizados
       }}
     >
       {/* Encabezado del panel */}
@@ -198,7 +202,7 @@ const ClinicalHistoryPanel = ({
       </div>
       
       {/* Contenido del paciente */}
-      <div style={{ padding: '15px' }}>
+      <div style={{ padding: '15px 20px' }}> {/* Aumentado el padding horizontal */}
         {selectedNode ? (
           <>
             <div style={{ 
@@ -259,7 +263,8 @@ const ClinicalHistoryPanel = ({
                     borderRadius: '6px',
                     border: '1px solid #cbd5e1',
                     fontSize: '14px',
-                    resize: 'vertical'
+                    resize: 'vertical',
+                    boxSizing: 'border-box' // Asegurar que padding y border estén dentro del width
                   }}
                 />
               </section>
@@ -284,7 +289,8 @@ const ClinicalHistoryPanel = ({
                     borderRadius: '6px',
                     border: '1px solid #cbd5e1',
                     fontSize: '14px',
-                    resize: 'vertical'
+                    resize: 'vertical',
+                    boxSizing: 'border-box' // Asegurar que padding y border estén dentro del width
                   }}
                 />
               </section>
@@ -310,7 +316,8 @@ const ClinicalHistoryPanel = ({
                     borderRadius: '6px',
                     border: '1px solid #cbd5e1',
                     fontSize: '14px',
-                    resize: 'vertical'
+                    resize: 'vertical',
+                    boxSizing: 'border-box' // Asegurar que padding y border estén dentro del width
                   }}
                 />
               </section>
@@ -335,7 +342,8 @@ const ClinicalHistoryPanel = ({
                     borderRadius: '6px',
                     border: '1px solid #cbd5e1',
                     fontSize: '14px',
-                    resize: 'vertical'
+                    resize: 'vertical',
+                    boxSizing: 'border-box' // Asegurar que padding y border estén dentro del width
                   }}
                 />
               </section>
@@ -361,7 +369,8 @@ const ClinicalHistoryPanel = ({
                     borderRadius: '6px',
                     border: '1px solid #cbd5e1',
                     fontSize: '14px',
-                    resize: 'vertical'
+                    resize: 'vertical',
+                    boxSizing: 'border-box' // Asegurar que padding y border estén dentro del width
                   }}
                 />
               </section>
@@ -486,7 +495,8 @@ const ClinicalHistoryPanel = ({
                               borderRadius: '4px',
                               border: '1px solid #cbd5e1',
                               fontSize: '13px',
-                              resize: 'vertical'
+                              resize: 'vertical',
+                              boxSizing: 'border-box' // Asegurar que padding y border estén dentro del width
                             }}
                           />
                         </div>
@@ -506,7 +516,8 @@ const ClinicalHistoryPanel = ({
                               borderRadius: '4px',
                               border: '1px solid #cbd5e1',
                               fontSize: '13px',
-                              resize: 'vertical'
+                              resize: 'vertical',
+                              boxSizing: 'border-box' // Asegurar que padding y border estén dentro del width
                             }}
                           />
                         </div>
@@ -548,7 +559,8 @@ const ClinicalHistoryPanel = ({
                     borderRadius: '6px',
                     border: '1px solid #cbd5e1',
                     fontSize: '14px',
-                    resize: 'vertical'
+                    resize: 'vertical',
+                    boxSizing: 'border-box' // Asegurar que padding y border estén dentro del width
                   }}
                 />
               </section>

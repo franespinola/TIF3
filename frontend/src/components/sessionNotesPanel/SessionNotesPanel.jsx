@@ -11,7 +11,8 @@ const SessionNotesPanel = ({
   selectedNode, 
   nodes, 
   edges,
-  patientName
+  patientName,
+  style = {} // Nuevo prop para estilos personalizados
 }) => {
   const [notes, setNotes] = useState([]);
   const [currentNote, setCurrentNote] = useState('');
@@ -251,18 +252,21 @@ const SessionNotesPanel = ({
       style={{
         position: 'absolute',
         right: 0,
-        top: 88, // Modificado de 48px a 88px para considerar MenuBar (48px) + SubMenuBar (40px)
-        width: '320px',
-        height: 'calc(100vh - 88px)', // Actualizado para mantener la altura correcta
+        top: 88, // MenuBar (48px) + SubMenuBar (40px)
+        width: '440px', // Actualizado de 420px a 440px para coincidir con ClinicalTabsPanel
+        height: 'calc(100vh - 88px)',
         backgroundColor: '#f0f9ff',
         borderLeft: '1px solid #e0e7ff',
         boxShadow: '-2px 0 10px rgba(0, 0, 0, 0.1)',
         zIndex: 1000,
         overflowY: 'auto',
+        overflowX: 'hidden', // Evita scroll horizontal
         transition: 'all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
         display: 'flex',
         flexDirection: 'column',
-        animation: 'slideInRight 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards'
+        animation: 'slideInRight 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards',
+        boxSizing: 'border-box', // Incluir padding y border en el ancho
+        ...style // Aplicar estilos personalizados
       }}
     >
       {/* Encabezado del panel */}
@@ -308,7 +312,7 @@ const SessionNotesPanel = ({
       
       {/* Área de entrada para añadir/editar nota */}
       <div style={{ 
-        padding: '15px', 
+        padding: '15px 20px', // Aumentado el padding horizontal
         borderBottom: '1px solid #e0e7ff',
         backgroundColor: 'white'
       }}>
@@ -324,7 +328,8 @@ const SessionNotesPanel = ({
             border: '1px solid #cbd5e1',
             marginBottom: '10px',
             fontSize: '14px',
-            resize: 'vertical'
+            resize: 'vertical',
+            boxSizing: 'border-box' // Asegurar que padding y border estén dentro del width
           }}
         />
         
@@ -401,7 +406,7 @@ const SessionNotesPanel = ({
       
       {/* Barra de búsqueda y filtros */}
       <div style={{ 
-        padding: '10px 15px', 
+        padding: '10px 20px', // Aumentado el padding horizontal
         backgroundColor: '#f8fafc',
         borderBottom: '1px solid #e0e7ff',
         display: 'flex',
@@ -438,7 +443,8 @@ const SessionNotesPanel = ({
               padding: '8px 10px 8px 32px',
               borderRadius: '6px',
               border: '1px solid #cbd5e1',
-              fontSize: '13px'
+              fontSize: '13px',
+              boxSizing: 'border-box' // Asegurar que padding y border estén dentro del width
             }}
           />
         </div>
@@ -479,7 +485,7 @@ const SessionNotesPanel = ({
       <div style={{ 
         flex: 1, 
         overflowY: 'auto',
-        padding: '10px 15px' 
+        padding: '10px 20px' // Aumentado el padding horizontal
       }}>
         {filteredNotes.length > 0 ? (
           <div style={{ 

@@ -13,8 +13,7 @@ import FreeDrawOverlay from "../drawing/FreeDrawOverlay";
 import SmartGuidesOverlay from "../guides/SmartGuidesOverlay";
 import EnhancedMinimap from "../navigation/EnhancedMinimap";
 import ThemeVisualizer from "../visualization/ThemeVisualizer";
-import SessionNotesPanel from "../sessionNotesPanel/SessionNotesPanel";
-import ClinicalHistoryPanel from "../clinicalHistoryPanel/ClinicalHistoryPanel";
+import ClinicalTabsPanel from "../ClinicalTabsPanel/ClinicalTabsPanel";
 import html2canvas from 'html2canvas';
 import useGenogramaState from "../../hooks/useGenogramaState";
 import useSmartGuides from "../../hooks/useSmartGuides";
@@ -52,8 +51,7 @@ function GenogramaEditorWrapper() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   
   // Estados para los paneles laterales
-  const [isClinicalHistoryOpen, setIsClinicalHistoryOpen] = useState(false);
-  const [isSessionNotesOpen, setIsSessionNotesOpen] = useState(false);
+  const [isClinicalTabsOpen, setIsClinicalTabsOpen] = useState(false);
   
   // Estados para la visibilidad de los paneles de visualización
   const [showNavigationPanel, setShowNavigationPanel] = useState(false);
@@ -246,15 +244,10 @@ function GenogramaEditorWrapper() {
   const handleUpdateNode = useCallback((nodeId, data) => {
     updateNodeData(nodeId, data);
   }, [updateNodeData]);
-
-  // Toggle para el panel de historia clínica
-  const toggleClinicalHistoryPanel = useCallback(() => {
-    setIsClinicalHistoryOpen(prev => !prev);
-  }, []);
   
-  // Toggle para el panel de notas de sesión
-  const toggleSessionNotesPanel = useCallback(() => {
-    setIsSessionNotesOpen(prev => !prev);
+  // Toggle para el panel de pestañas clínicas
+  const toggleClinicalTabsPanel = useCallback(() => {
+    setIsClinicalTabsOpen(prev => !prev);
   }, []);
 
   return (
@@ -289,16 +282,20 @@ function GenogramaEditorWrapper() {
       />
       <div style={{ 
         display: "flex", 
-        height: "100vh",
-        paddingTop: `${TOTAL_MENU_HEIGHT}px` // Añadir espacio para ambas barras de menú
+        height: `calc(100vh - ${TOTAL_MENU_HEIGHT}px)`,
+        marginTop: `${TOTAL_MENU_HEIGHT}px`, // Cambiar paddingTop por marginTop
+        boxSizing: "border-box", // Asegurar que padding no afecte el tamaño total
+        overflow: "hidden", // Evitar scroll en este contenedor
+        position: "relative" // Mantener el posicionamiento relativo
       }}>
-        {/* Panel de Historia Clínica - Ahora a la derecha */}
-        <ClinicalHistoryPanel
+        <ClinicalTabsPanel
           selectedNode={selectedNode}
           onUpdateNode={handleUpdateNode}
-          isOpen={isClinicalHistoryOpen}
-          onToggle={toggleClinicalHistoryPanel}
+          isOpen={isClinicalTabsOpen}
+          onClose={() => setIsClinicalTabsOpen(false)}
           patientName={patientName}
+          nodes={nodes}
+          edges={edges}
           style={{ right: 0 }} // Posicionarlo a la derecha
         />
         
@@ -309,7 +306,10 @@ function GenogramaEditorWrapper() {
             height: "100%",
             position: "relative",
             paddingLeft: sidebarCollapsed ? "60px" : "500px", // Ajusta el padding según el estado del sidebar
-            transition: "padding-left 0.3s ease" // Añade una transición suave
+            paddingRight: isClinicalTabsOpen ? "440px" : "0", // Actualizado a 440px para coincidir con el nuevo ancho del panel
+            transition: "padding-left 0.3s ease, padding-right 0.3s ease", // Transición suave para ambos paddings
+            boxSizing: "border-box", // Garantiza que los paddings no afecten el tamaño total
+            overflow: "hidden" // Previene scroll dentro del contenedor del canvas
           }}
           onDrop={onDrop}
           onDragOver={onDragOver}
@@ -339,11 +339,6 @@ function GenogramaEditorWrapper() {
             onPaneClick={handlePaneClick}
           >
             <Background gap={12} size={1} />
-            
-            {/* Panel fijo para los controles en la esquina inferior izquierda */}
-            <Panel position="bottom-left" style={FIXED_CONTROL_STYLES}>
-              <Controls showInteractive={false} />
-            </Panel>
             
             {/* Visualizador de Temas */}
             <ThemeVisualizer
@@ -452,17 +447,6 @@ function GenogramaEditorWrapper() {
           </ReactFlow>
         </div>
         
-        {/* Panel de Notas de Sesión - Ahora a la derecha */}
-        <SessionNotesPanel
-          isOpen={isSessionNotesOpen}
-          onToggle={toggleSessionNotesPanel}
-          selectedNode={selectedNode}
-          nodes={nodes}
-          edges={edges}
-          patientName={patientName}
-          style={{ right: 0 }} // Posicionarlo a la derecha
-        />
-        
         <Sidebar
           onRelate={onRelate}
           updateEdgeRelation={updateEdgeRelation}
@@ -487,11 +471,9 @@ function GenogramaEditorWrapper() {
           onToggleSmartGuides={toggleSmartGuides}
           guideOptions={guideOptions}
           updateGuideOptions={updateGuideOptions}
-          // Añadir togglers para los paneles laterales
-          toggleClinicalHistory={toggleClinicalHistoryPanel}
-          isClinicalHistoryOpen={isClinicalHistoryOpen}
-          toggleSessionNotes={toggleSessionNotesPanel}
-          isSessionNotesOpen={isSessionNotesOpen}
+          // Añadir toggler para el panel de pestañas clínicas
+          toggleClinicalTabs={toggleClinicalTabsPanel}
+          isClinicalTabsOpen={isClinicalTabsOpen}
           showRelationEditor={showRelationEditor}
           showRelationLegend={showRelationLegend}
           onSidebarCollapse={setSidebarCollapsed} // Pasar el callback para actualizar el estado de colapso

@@ -491,7 +491,11 @@ const SubMenuBar = ({
           </span>
 
           {showRelationMenu && (
-            <MenuPortal isOpen={showRelationMenu} position={relationMenuPosition}>
+            <MenuPortal 
+              isOpen={showRelationMenu} 
+              position={relationMenuPosition}
+              onClickOutside={() => setShowRelationMenu(false)}
+            >
               <div ref={relationMenuRef} style={dropdownStyle}>
                 <div style={{ padding: '16px' }}>
                   <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', borderBottom: '1px solid #e2e8f0', paddingBottom: '8px' }}>
@@ -620,7 +624,11 @@ const SubMenuBar = ({
           </span>
 
           {showLegendPopup && (
-            <MenuPortal isOpen={showLegendPopup} position={legendPopupPosition}>
+            <MenuPortal 
+              isOpen={showLegendPopup} 
+              position={legendPopupPosition}
+              onClickOutside={() => setShowLegendPopup(false)}
+            >
               <div ref={legendPopupRef} style={legendPopupStyle}>
                 <RelationshipsLegend />
               </div>
@@ -671,7 +679,11 @@ const SubMenuBar = ({
         </span>
 
         {showLineStyleMenu && (
-          <MenuPortal isOpen={showLineStyleMenu} position={lineStyleMenuPosition}>
+          <MenuPortal 
+            isOpen={showLineStyleMenu} 
+            position={lineStyleMenuPosition}
+            onClickOutside={() => setShowLineStyleMenu(false)}
+          >
             <div ref={lineStyleMenuRef} style={lineStyleDropdownStyle}>
               <h3 style={{margin: '0 0 12px 0', fontSize: '16px'}}>Estilo de línea</h3>
               
