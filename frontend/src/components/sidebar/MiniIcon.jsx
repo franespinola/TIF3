@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-function MiniIcon({ type, isActive }) {
+function MiniIcon({ type, isActive, size = 20 }) { // Añadida prop size con valor por defecto 20
   // Estado para controlar el efecto hover
   const [isHovered, setIsHovered] = useState(false);
   
@@ -17,6 +17,12 @@ function MiniIcon({ type, isActive }) {
   
   // Aplicar efecto de escala al hacer hover
   const scaleEffect = isHovered ? 'scale(1.1)' : 'scale(1)';
+
+  // Calcular tamaños secundarios basados en el tamaño principal
+  const borderSize = Math.max(1, Math.floor(size / 10)); // Borde adaptativo
+  const innerSize = size - (borderSize * 2); // Tamaño interno ajustado
+  const marginRight = Math.floor(size * 0.3); // Margen derecho proporcional
+  const shadowSize = Math.max(3, Math.floor(size / 5)); // Tamaño de sombra proporcional
   
   switch (type) {
     case "masculino":
@@ -24,14 +30,14 @@ function MiniIcon({ type, isActive }) {
         <div
           {...iconProps}
           style={{
-            width: 20,
-            height: 20,
+            width: size,
+            height: size,
             background: "#ddd6fe",
-            border: "2px solid #4f46e5",
-            marginRight: 6,
+            border: `${borderSize}px solid #4f46e5`,
+            marginRight,
             transform: scaleEffect,
             transition: "all 0.2s ease-in-out",
-            boxShadow: isHovered ? "0 0 5px rgba(79, 70, 229, 0.5)" : "none"
+            boxShadow: isHovered ? `0 0 ${shadowSize}px rgba(79, 70, 229, 0.5)` : "none"
           }}
         />
       );
@@ -40,15 +46,15 @@ function MiniIcon({ type, isActive }) {
         <div
           {...iconProps}
           style={{
-            width: 20,
-            height: 20,
+            width: size,
+            height: size,
             borderRadius: "999px",
             background: "#fbcfe8",
-            border: "2px solid #be185d",
-            marginRight: 6,
+            border: `${borderSize}px solid #be185d`,
+            marginRight,
             transform: scaleEffect,
             transition: "all 0.2s ease-in-out",
-            boxShadow: isHovered ? "0 0 5px rgba(190, 24, 93, 0.5)" : "none"
+            boxShadow: isHovered ? `0 0 ${shadowSize}px rgba(190, 24, 93, 0.5)` : "none"
           }}
         />
       );
@@ -57,39 +63,47 @@ function MiniIcon({ type, isActive }) {
         <div
           {...iconProps}
           style={{
-            width: 20,
-            height: 20,
+            width: size,
+            height: size,
             background: "#fee2e2",
-            border: "2px solid #7f1d1d",
+            border: `${borderSize}px solid #7f1d1d`,
             position: "relative",
-            marginRight: 6,
+            marginRight,
             transform: scaleEffect,
             transition: "all 0.2s ease-in-out",
-            boxShadow: isHovered ? "0 0 5px rgba(127, 29, 29, 0.5)" : "none"
+            boxShadow: isHovered ? `0 0 ${shadowSize}px rgba(127, 29, 29, 0.5)` : "none",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center"
           }}
         >
-          <div
-            style={{
-              width: 2,
-              height: 28,
-              background: "#7f1d1d",
-              position: "absolute",
-              top: -4,
-              left: 9,
-              transform: "rotate(45deg)",
-            }}
-          />
-          <div
-            style={{
-              width: 2,
-              height: 28,
-              background: "#7f1d1d",
-              position: "absolute",
-              top: -4,
-              left: 9,
-              transform: "rotate(-45deg)",
-            }}
-          />
+          <div style={{
+            position: "absolute",
+            width: "100%",
+            height: "100%",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center"
+          }}>
+            <div
+              style={{
+                width: borderSize,
+                height: size * 1.4,
+                background: "#7f1d1d",
+                position: "absolute",
+                transform: "rotate(45deg)",
+              }}
+            />
+            <div
+              style={{
+                width: borderSize,
+                height: size * 1.4,
+                background: "#7f1d1d",
+                position: "absolute",
+                transform: "rotate(-45deg)",
+              }}
+            />
+          </div>
         </div>
       );
     case "fallecidoF":
@@ -97,40 +111,48 @@ function MiniIcon({ type, isActive }) {
         <div
           {...iconProps}
           style={{
-            width: 20,
-            height: 20,
+            width: size,
+            height: size,
             borderRadius: "50%",
             background: "#fff1f2",
-            border: "2px solid #be123c",
+            border: `${borderSize}px solid #be123c`,
             position: "relative",
-            marginRight: 6,
+            marginRight,
             transform: scaleEffect,
             transition: "all 0.2s ease-in-out",
-            boxShadow: isHovered ? "0 0 5px rgba(190, 18, 60, 0.5)" : "none"
+            boxShadow: isHovered ? `0 0 ${shadowSize}px rgba(190, 18, 60, 0.5)` : "none",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center"
           }}
         >
-          <div
-            style={{
-              width: 2,
-              height: 28,
-              background: "#be123c",
-              position: "absolute",
-              top: -4,
-              left: 9,
-              transform: "rotate(45deg)",
-            }}
-          />
-          <div
-            style={{
-              width: 2,
-              height: 28,
-              background: "#be123c",
-              position: "absolute",
-              top: -4,
-              left: 9,
-              transform: "rotate(-45deg)",
-            }}
-          />
+          <div style={{
+            position: "absolute",
+            width: "100%",
+            height: "100%",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center"
+          }}>
+            <div
+              style={{
+                width: borderSize,
+                height: size * 1.4,
+                background: "#be123c",
+                position: "absolute",
+                transform: "rotate(45deg)",
+              }}
+            />
+            <div
+              style={{
+                width: borderSize,
+                height: size * 1.4,
+                background: "#be123c",
+                position: "absolute",
+                transform: "rotate(-45deg)",
+              }}
+            />
+          </div>
         </div>
       );
     case "embarazo":
@@ -139,9 +161,9 @@ function MiniIcon({ type, isActive }) {
           {...iconProps}
           style={{
             position: "relative",
-            width: 20,
-            height: 20,
-            marginRight: 6,
+            width: size,
+            height: size,
+            marginRight,
             transform: scaleEffect,
             transition: "all 0.2s ease-in-out"
           }}
@@ -150,21 +172,21 @@ function MiniIcon({ type, isActive }) {
             style={{
               width: 0,
               height: 0,
-              borderLeft: "10px solid transparent",
-              borderRight: "10px solid transparent",
-              borderBottom: "20px solid white",
+              borderLeft: `${size / 2}px solid transparent`,
+              borderRight: `${size / 2}px solid transparent`,
+              borderBottom: `${size}px solid white`,
               position: "absolute",
               zIndex: 1,
-              filter: isHovered ? "drop-shadow(0 0 2px rgba(0,0,0,0.3))" : "none",
+              filter: isHovered ? `drop-shadow(0 0 ${shadowSize}px rgba(0,0,0,0.3))` : "none",
             }}
           />
           <div
             style={{
               width: 0,
               height: 0,
-              borderLeft: "11px solid transparent",
-              borderRight: "11px solid transparent",
-              borderBottom: "22px solid black",
+              borderLeft: `${size / 2 + 1}px solid transparent`,
+              borderRight: `${size / 2 + 1}px solid transparent`,
+              borderBottom: `${size + 2}px solid black`,
               position: "absolute",
               top: -1,
               left: -1,
@@ -178,16 +200,16 @@ function MiniIcon({ type, isActive }) {
         <div
           {...iconProps}
           style={{
-            width: 16,
-            height: 16,
+            width: size * 0.8,
+            height: size * 0.8,
             borderRadius: "50%",
             background: "#000",
-            marginRight: 6,
-            marginLeft: 2,
-            marginTop: 2,
+            marginRight,
+            marginLeft: size * 0.1,
+            marginTop: size * 0.1,
             transform: scaleEffect,
             transition: "all 0.2s ease-in-out",
-            boxShadow: isHovered ? "0 0 5px rgba(0, 0, 0, 0.5)" : "none"
+            boxShadow: isHovered ? `0 0 ${shadowSize}px rgba(0, 0, 0, 0.5)` : "none"
           }}
         />
       );
@@ -197,32 +219,32 @@ function MiniIcon({ type, isActive }) {
           {...iconProps}
           style={{
             position: "relative",
-            width: 20,
-            height: 20,
-            marginRight: 6,
+            width: size,
+            height: size,
+            marginRight,
             transform: scaleEffect,
             transition: "all 0.2s ease-in-out"
           }}
         >
           <div
             style={{
-              width: 2,
-              height: 16,
+              width: borderSize,
+              height: size * 0.8,
               background: "#000",
               position: "absolute",
-              top: 2,
-              left: 9,
+              top: size * 0.1,
+              left: (size / 2) - (borderSize / 2),
               transform: "rotate(45deg)",
             }}
           />
           <div
             style={{
-              width: 2,
-              height: 16,
+              width: borderSize,
+              height: size * 0.8,
               background: "#000",
               position: "absolute",
-              top: 2,
-              left: 9,
+              top: size * 0.1,
+              left: (size / 2) - (borderSize / 2),
               transform: "rotate(-45deg)",
             }}
           />
@@ -234,46 +256,54 @@ function MiniIcon({ type, isActive }) {
           {...iconProps}
           style={{
             position: "relative",
-            width: 20,
-            height: 20,
-            marginRight: 6,
+            width: size,
+            height: size,
+            marginRight,
             transform: scaleEffect,
             transition: "all 0.2s ease-in-out"
           }}
         >
           <div
             style={{
-              width: 16,
-              height: 16,
+              width: innerSize,
+              height: innerSize,
               background: "white",
-              border: "2px solid #000",
+              border: `${borderSize}px solid #000`,
               position: "absolute",
-              top: 2,
-              left: 2,
+              top: borderSize,
+              left: borderSize,
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center"
             }}
           >
-            <div
-              style={{
-                width: 1,
-                height: 14,
-                background: "#000",
-                position: "absolute",
-                top: 1,
-                left: 7,
-                transform: "rotate(45deg)",
-              }}
-            />
-            <div
-              style={{
-                width: 1,
-                height: 14,
-                background: "#000",
-                position: "absolute",
-                top: 1,
-                left: 7,
-                transform: "rotate(-45deg)",
-              }}
-            />
+            <div style={{
+              position: "relative",
+              width: "100%",
+              height: "100%",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center"
+            }}>
+              <div
+                style={{
+                  width: borderSize / 2,
+                  height: innerSize * 0.9,
+                  background: "#000",
+                  position: "absolute",
+                  transform: "rotate(45deg)",
+                }}
+              />
+              <div
+                style={{
+                  width: borderSize / 2,
+                  height: innerSize * 0.9,
+                  background: "#000",
+                  position: "absolute",
+                  transform: "rotate(-45deg)",
+                }}
+              />
+            </div>
           </div>
         </div>
       );
@@ -283,47 +313,55 @@ function MiniIcon({ type, isActive }) {
           {...iconProps}
           style={{
             position: "relative",
-            width: 20,
-            height: 20,
-            marginRight: 6,
+            width: size,
+            height: size,
+            marginRight,
             transform: scaleEffect,
             transition: "all 0.2s ease-in-out"
           }}
         >
           <div
             style={{
-              width: 16,
-              height: 16,
+              width: innerSize,
+              height: innerSize,
               background: "white",
-              border: "2px solid #000",
+              border: `${borderSize}px solid #000`,
               borderRadius: "50%",
               position: "absolute",
-              top: 2,
-              left: 2,
+              top: borderSize,
+              left: borderSize,
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center"
             }}
           >
-            <div
-              style={{
-                width: 1,
-                height: 14,
-                background: "#000",
-                position: "absolute",
-                top: 1,
-                left: 7,
-                transform: "rotate(45deg)",
-              }}
-            />
-            <div
-              style={{
-                width: 1,
-                height: 14,
-                background: "#000",
-                position: "absolute",
-                top: 1,
-                left: 7,
-                transform: "rotate(-45deg)",
-              }}
-            />
+            <div style={{
+              position: "relative",
+              width: "100%",
+              height: "100%",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center"
+            }}>
+              <div
+                style={{
+                  width: borderSize / 2,
+                  height: innerSize * 0.9,
+                  background: "#000",
+                  position: "absolute",
+                  transform: "rotate(45deg)",
+                }}
+              />
+              <div
+                style={{
+                  width: borderSize / 2,
+                  height: innerSize * 0.9,
+                  background: "#000",
+                  position: "absolute",
+                  transform: "rotate(-45deg)",
+                }}
+              />
+            </div>
           </div>
         </div>
       );
@@ -332,15 +370,15 @@ function MiniIcon({ type, isActive }) {
         <div
           {...iconProps}
           style={{
-            width: 20,
-            height: 20,
+            width: size,
+            height: size,
             borderRadius: "50%",
             background: "#e0f2fe",
-            border: "2px dotted #4b5563",
-            marginRight: 6,
+            border: `${borderSize}px dotted #4b5563`,
+            marginRight,
             transform: scaleEffect,
             transition: "all 0.2s ease-in-out",
-            boxShadow: isHovered ? "0 0 5px rgba(75, 85, 99, 0.5)" : "none"
+            boxShadow: isHovered ? `0 0 ${shadowSize}px rgba(75, 85, 99, 0.5)` : "none"
           }}
         />
       );
@@ -349,15 +387,15 @@ function MiniIcon({ type, isActive }) {
         <div
           {...iconProps}
           style={{
-            width: 20,
-            height: 20,
-            background: "#dcfce7",  // Cambiado de #e0f7fa a #dcfce7 (verde claro)
-            borderRadius: 4,
-            border: "1px solid #10b981", // Cambiado de #0288d1 a #10b981 (verde)
-            marginRight: 6,
+            width: size,
+            height: size,
+            background: "#dcfce7",
+            borderRadius: size * 0.2,
+            border: `${borderSize}px solid #10b981`,
+            marginRight,
             transform: scaleEffect,
             transition: "all 0.2s ease-in-out",
-            boxShadow: isHovered ? "0 0 5px rgba(16, 185, 129, 0.5)" : "none" // Cambiado rgba(2, 136, 209, 0.5) a rgba(16, 185, 129, 0.5)
+            boxShadow: isHovered ? `0 0 ${shadowSize}px rgba(16, 185, 129, 0.5)` : "none"
           }}
         />
       );
@@ -366,18 +404,17 @@ function MiniIcon({ type, isActive }) {
         <div
           {...iconProps}
           style={{
-            width: 24,
-            height: 24,
+            width: size + 4,
+            height: size + 4,
             position: "relative",
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
-            marginRight: 6,
+            marginRight,
             transform: scaleEffect,
             transition: "all 0.2s ease-in-out"
           }}
         >
-          {/* Círculo principal */}
           <div
             style={{
               position: "absolute",
@@ -385,12 +422,10 @@ function MiniIcon({ type, isActive }) {
               height: "100%",
               borderRadius: "50%",
               background: `radial-gradient(circle, #f8fafc 0%, #f8fafc 60%, #2563eb80 100%)`,
-              boxShadow: `0 0 0 2px #2563eb, ${isHovered ? '0 0 10px rgba(37, 99, 235, 0.5)' : '0 0 8px rgba(37, 99, 235, 0.35)'}`,
+              boxShadow: `0 0 0 ${borderSize}px #2563eb, ${isHovered ? `0 0 ${shadowSize}px rgba(37, 99, 235, 0.5)` : `0 0 ${shadowSize - 2}px rgba(37, 99, 235, 0.35)`}`,
               zIndex: 1,
             }}
           />
-          
-          {/* Líneas de aristas internas */}
           <div
             style={{
               position: "absolute",
@@ -399,46 +434,39 @@ function MiniIcon({ type, isActive }) {
               zIndex: 2,
             }}
           >
-            {/* Línea vertical */}
             <div
               style={{
                 position: "absolute",
                 left: "50%",
                 top: "0%",
-                width: "1px",
+                width: `${borderSize / 2}px`,
                 height: "100%",
                 backgroundColor: "#2563eb90",
                 transform: "translateX(-50%)",
               }}
             />
-            
-            {/* Línea horizontal */}
             <div
               style={{
                 position: "absolute",
                 left: "0%",
                 top: "50%",
                 width: "100%",
-                height: "1px",
+                height: `${borderSize / 2}px`,
                 backgroundColor: "#2563eb90",
                 transform: "translateY(-50%)",
               }}
             />
           </div>
-          
-          {/* Punto central */}
           <div
             style={{
-              width: `${24/5}px`,
-              height: `${24/5}px`,
+              width: `${size / 5}px`,
+              height: `${size / 5}px`,
               backgroundColor: "#2563eb",
               borderRadius: "50%",
-              boxShadow: `0 0 4px #2563eb`,
+              boxShadow: `0 0 ${borderSize}px #2563eb`,
               zIndex: 3,
             }}
           />
-          
-          {/* Efecto adicional al estar activo */}
           {isActive && (
             <div
               style={{
@@ -446,7 +474,7 @@ function MiniIcon({ type, isActive }) {
                 width: "110%",
                 height: "110%",
                 borderRadius: "50%",
-                border: "1px dashed #2563eb",
+                border: `${borderSize / 2}px dashed #2563eb`,
                 opacity: 0.6,
                 animation: "spin 8s linear infinite",
                 zIndex: 0,
@@ -455,17 +483,16 @@ function MiniIcon({ type, isActive }) {
           )}
         </div>
       );
-
     case "rectangle":
       return (
         <svg 
-          width="26" 
-          height="26" 
+          width={size + 6} 
+          height={size + 6} 
           viewBox="0 0 24 24" 
           style={{ 
-            marginRight: 6,
+            marginRight,
             transform: scaleEffect,
-            filter: isHovered || isActive ? "drop-shadow(0 0 3px rgba(79, 70, 229, 0.7))" : "none",
+            filter: isHovered || isActive ? `drop-shadow(0 0 ${shadowSize}px rgba(79, 70, 229, 0.7))` : "none",
             transition: "all 0.2s ease-in-out"
           }}
           {...iconProps}
@@ -511,17 +538,16 @@ function MiniIcon({ type, isActive }) {
           )}
         </svg>
       );
-    
     case "circle":
       return (
         <svg 
-          width="26" 
-          height="26" 
+          width={size + 6} 
+          height={size + 6} 
           viewBox="0 0 24 24" 
           style={{ 
-            marginRight: 6,
+            marginRight,
             transform: scaleEffect,
-            filter: isHovered || isActive ? "drop-shadow(0 0 3px rgba(16, 185, 129, 0.7))" : "none",
+            filter: isHovered || isActive ? `drop-shadow(0 0 ${shadowSize}px rgba(16, 185, 129, 0.7))` : "none",
             transition: "all 0.2s ease-in-out"
           }}
           {...iconProps}
@@ -567,17 +593,16 @@ function MiniIcon({ type, isActive }) {
           )}
         </svg>
       );
-    
     case "text":
       return (
         <svg 
-          width="26" 
-          height="26" 
+          width={size + 6} 
+          height={size + 6} 
           viewBox="0 0 24 24" 
           style={{ 
-            marginRight: 6,
+            marginRight,
             transform: scaleEffect,
-            filter: isHovered || isActive ? "drop-shadow(0 0 3px rgba(239, 68, 68, 0.7))" : "none",
+            filter: isHovered || isActive ? `drop-shadow(0 0 ${shadowSize}px rgba(239, 68, 68, 0.7))` : "none",
             transition: "all 0.2s ease-in-out"
           }}
           {...iconProps}
@@ -624,17 +649,16 @@ function MiniIcon({ type, isActive }) {
           )}
         </svg>
       );
-    
     case "note":
       return (
         <svg 
-          width="26" 
-          height="26" 
+          width={size + 6} 
+          height={size + 6} 
           viewBox="0 0 24 24" 
           style={{ 
-            marginRight: 6,
+            marginRight,
             transform: scaleEffect,
-            filter: isHovered || isActive ? "drop-shadow(0 0 3px rgba(234, 179, 8, 0.7))" : "none",
+            filter: isHovered || isActive ? `drop-shadow(0 0 ${shadowSize}px rgba(234, 179, 8, 0.7))` : "none",
             transition: "all 0.2s ease-in-out"
           }}
           {...iconProps}
@@ -691,19 +715,18 @@ function MiniIcon({ type, isActive }) {
           )}
         </svg>
       );
-
     default:
       return (
         <div
           {...iconProps}
           style={{
-            width: 20,
-            height: 20,
+            width: size,
+            height: size,
             background: "#ccc",
-            marginRight: 6,
+            marginRight,
             transform: scaleEffect,
             transition: "all 0.2s ease-in-out",
-            boxShadow: isHovered ? "0 0 5px rgba(0, 0, 0, 0.2)" : "none"
+            boxShadow: isHovered ? `0 0 ${shadowSize}px rgba(0, 0, 0, 0.2)` : "none"
           }}
         />
       );

@@ -7,10 +7,37 @@ import ReactDOM from 'react-dom';
  * @param {boolean} isOpen
  * @param {{ top: number, left: number }} position
  * @param {Function} onClickOutside - Callback opcional que se invoca cuando se hace clic fuera del menú
+ * @param {number} closeDelay - Retraso en ms antes de cerrar el menú al salir (default: 300)
  */
-const MenuPortal = ({ children, isOpen, position, onClickOutside }) => {
+const MenuPortal = ({ children, isOpen, position, onClickOutside, closeDelay = 300 }) => {
   const [portalContainer, setPortalContainer] = useState(null);
   const menuRef = useRef(null);
+  const closeTimerRef = useRef(null);
+  const [mouseInsideMenu, setMouseInsideMenu] = useState(false);
+
+  // Registramos este MenuPortal en un registro global de menús activos
+  useEffect(() => {
+    if (isOpen) {
+      // Crear o obtener el registro global de menús activos
+      if (!window._activeMenus) {
+        window._activeMenus = new Set();
+      }
+      
+      // Añadir una referencia a este menú y su callback de cierre
+      const menuInfo = {
+        ref: menuRef,
+        onClose: onClickOutside
+      };
+      window._activeMenus.add(menuInfo);
+
+      return () => {
+        // Limpiamos la referencia cuando el componente se desmonta
+        if (window._activeMenus) {
+          window._activeMenus.delete(menuInfo);
+        }
+      };
+    }
+  }, [isOpen, onClickOutside]);
 
   useEffect(() => {
     if (isOpen) {
@@ -27,7 +54,7 @@ const MenuPortal = ({ children, isOpen, position, onClickOutside }) => {
   // Efecto para manejar clicks fuera del menú
   useEffect(() => {
     const handleClickOutside = (event) => {
-      // Si el menú está abierto y el clic no fue dentro del menú
+      // Solo cerramos si el clic fue fuera del menú
       if (isOpen && menuRef.current && !menuRef.current.contains(event.target)) {
         // Si se proporcionó un callback onClickOutside, llamarlo
         if (typeof onClickOutside === 'function') {
@@ -48,6 +75,38 @@ const MenuPortal = ({ children, isOpen, position, onClickOutside }) => {
     };
   }, [isOpen, onClickOutside]);
 
+  // Al salir del menú, iniciamos un temporizador para cerrarlo
+  const handleMouseLeave = () => {
+    setMouseInsideMenu(false);
+    if (closeTimerRef.current) {
+      clearTimeout(closeTimerRef.current);
+    }
+    
+    closeTimerRef.current = setTimeout(() => {
+      if (!mouseInsideMenu && typeof onClickOutside === 'function') {
+        onClickOutside();
+      }
+    }, closeDelay);
+  };
+
+  // Al entrar al menú, cancelamos cualquier temporizador de cierre
+  const handleMouseEnter = () => {
+    setMouseInsideMenu(true);
+    if (closeTimerRef.current) {
+      clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = null;
+    }
+  };
+
+  // Limpieza del temporizador cuando el componente se desmonta
+  useEffect(() => {
+    return () => {
+      if (closeTimerRef.current) {
+        clearTimeout(closeTimerRef.current);
+      }
+    };
+  }, []);
+
   if (!isOpen || !portalContainer) return null;
 
   const dropdownStyle = {
@@ -58,7 +117,14 @@ const MenuPortal = ({ children, isOpen, position, onClickOutside }) => {
   };
 
   return ReactDOM.createPortal(
-    <div style={dropdownStyle} ref={menuRef}>{children}</div>,
+    <div 
+      ref={menuRef} 
+      style={dropdownStyle} 
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      {children}
+    </div>,
     portalContainer
   );
 };

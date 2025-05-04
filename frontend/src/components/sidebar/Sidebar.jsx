@@ -17,6 +17,12 @@ const MENU_BAR_HEIGHT = 48;
 const SUB_MENU_BAR_HEIGHT = 40;
 const TOTAL_MENU_HEIGHT = MENU_BAR_HEIGHT + SUB_MENU_BAR_HEIGHT;
 
+// Constantes para los tamaños del sidebar responsive
+const SIDEBAR_COLLAPSED_WIDTH = 48; // Reducido de 60px
+const SIDEBAR_EXPANDED_DESKTOP = 360; // Reducido de 460px
+const SIDEBAR_EXPANDED_TABLET = 300; 
+const SIDEBAR_EXPANDED_MOBILE = 280;
+
 /**
  * Componente principal del Sidebar que orquesta todos los subcomponentes de la barra lateral
  */
@@ -50,11 +56,31 @@ function Sidebar({
   const [target, setTarget] = useState("");
   const [relType, setRelType] = useState("matrimonio");
   const [activeDrawingTool, setActiveDrawingTool] = useState("");
+  const [screenWidth, setScreenWidth] = useState(window.innerWidth);
   
   // Estado para manejar qué sección está expandida
   const [expandedSection, setExpandedSection] = useState(null);
   // Estado para tooltip activo
   const [activeTooltip, setActiveTooltip] = useState(null);
+
+  // Detectar el ancho de la pantalla para responsive
+  useEffect(() => {
+    const handleResize = () => {
+      setScreenWidth(window.innerWidth);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
+  // Obtener el ancho expandido según el tamaño de pantalla
+  const getExpandedWidth = () => {
+    if (screenWidth <= 480) return SIDEBAR_EXPANDED_MOBILE;
+    if (screenWidth <= 768) return SIDEBAR_EXPANDED_TABLET;
+    return SIDEBAR_EXPANDED_DESKTOP;
+  };
 
   // Lista de tipos de relaciones disponibles
   const relationshipTypes = [
@@ -101,10 +127,18 @@ function Sidebar({
   // Función para alternar expandir/colapsar secciones
   const toggleSection = (section) => {
     if (collapsed) {
+      // Si el sidebar está colapsado, lo expandimos y mostramos la sección seleccionada
       setCollapsed(false);
       setExpandedSection(section);
     } else {
-      setExpandedSection(expandedSection === section ? null : section);
+      // Si el sidebar ya está expandido
+      if (expandedSection === section) {
+        // Si la sección actual ya está abierta, la cerramos
+        setExpandedSection(null);
+      } else {
+        // Si es una sección diferente, abrimos esa y cerramos la anterior
+        setExpandedSection(section);
+      }
     }
   };
 
@@ -117,13 +151,13 @@ function Sidebar({
     setActiveDrawingTool(type === activeDrawingTool ? "" : type);
   };
 
-  // Estilos generales del sidebar - Cambiado a la izquierda y aumentado el ancho
+  // Estilos generales del sidebar - Más angosto y responsive
   const sidebarContainerStyle = {
     position: 'fixed',
     top: `${TOTAL_MENU_HEIGHT}px`, 
     bottom: '0',
     left: '0', 
-    width: collapsed ? '60px' : '460px', // Aumentado de 380px a 420px para que quepan mejor las herramientas
+    width: collapsed ? `${SIDEBAR_COLLAPSED_WIDTH}px` : `${getExpandedWidth()}px`,
     transition: 'width 0.3s ease',
     background: "#ffffff",
     overflowX: 'hidden',
@@ -134,9 +168,9 @@ function Sidebar({
     display: 'flex',
   };
 
-  // Estilo para el contenedor de iconos
+  // Estilo para el contenedor de iconos - Más angosto
   const iconsContainerStyle = {
-    width: '60px',
+    width: `${SIDEBAR_COLLAPSED_WIDTH}px`,
     height: '100%',
     borderRight: collapsed ? 'none' : '1px solid #e2e8f0',
     backgroundColor: '#f9fafb',
@@ -146,7 +180,7 @@ function Sidebar({
     flexShrink: 0,
   };
 
-  // Estilo para el contenedor de contenido expandido
+  // Estilo para el contenedor de contenido expandido - Padding reducido
   const contentContainerStyle = {
     flex: 1,
     height: '100%',
@@ -154,48 +188,48 @@ function Sidebar({
     overflowX: 'hidden',
     backgroundColor: '#ffffff',
     display: collapsed ? 'none' : 'block',
-    padding: '10px 15px',
+    padding: screenWidth <= 768 ? '8px 10px' : '10px 12px',
   };
 
-  // Estilo para secciones
+  // Estilo para secciones - Padding reducido para móviles
   const sectionStyle = (expanded) => ({
-    padding: '10px',
+    padding: screenWidth <= 768 ? '6px' : '8px',
     borderRadius: '0',
     backgroundColor: expanded ? '#f1f5f9' : 'transparent',
     transition: 'all 0.2s ease',
   });
 
-  // Estilo para cabecera de sección
+  // Estilo para cabecera de sección - Tamaño de fuente reducido para móviles
   const sectionHeaderStyle = (expanded) => ({
-    padding: '10px 15px',
+    padding: screenWidth <= 768 ? '8px 10px' : '10px 15px',
     backgroundColor: expanded ? '#f1f5f9' : '#ffffff',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
     cursor: 'pointer',
     fontWeight: '600',
-    fontSize: '14px',
+    fontSize: screenWidth <= 768 ? '13px' : '14px',
     borderLeft: expanded ? '3px solid #3b82f6' : '3px solid transparent',
     transition: 'all 0.2s ease',
     color: expanded ? '#3b82f6' : '#475569',
   });
 
-  // Estilo para el contenido de las secciones
+  // Estilo para el contenido de las secciones - Padding reducido
   const sectionContentStyle = {
-    padding: '15px',
+    padding: screenWidth <= 768 ? '12px' : '15px',
     backgroundColor: '#ffffff',
     borderTop: '1px solid #e2e8f0',
   };
 
-  // Estilo para iconos en la barra lateral
+  // Estilo para iconos en la barra lateral - Tamaño reducido
   const sidebarIconStyle = (isActive) => ({
-    width: '42px',
-    height: '42px',
+    width: '36px', // Reducido de 42px
+    height: '36px', // Reducido de 42px
     borderRadius: '4px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    margin: '8px auto',
+    margin: '6px auto', // Reducido de 8px
     cursor: 'pointer',
     backgroundColor: isActive ? '#e0f2fe' : 'transparent',
     color: isActive ? '#0ea5e9' : '#64748b',
@@ -204,18 +238,18 @@ function Sidebar({
     border: isActive ? '1px solid #bae6fd' : '1px solid transparent',
   });
 
-  // Estilo para tooltip - Modificado para aparecer a la derecha en forma de burbuja
+  // Estilo para tooltip - Mantiene posición a la derecha del icono
   const tooltipStyle = {
     position: 'absolute',
-    left: '100%', // Mantiene posición a la derecha del icono
+    left: '100%',
     top: '50%',
     transform: 'translateY(-50%)',
     backgroundColor: '#1e293b',
     color: '#fff',
-    padding: '8px 12px',
+    padding: '6px 10px', // Reducido de 8px 12px
     borderRadius: '6px',
-    marginLeft: '10px',
-    fontSize: '13px',
+    marginLeft: '8px', // Reducido de 10px
+    fontSize: '12px', // Reducido de 13px
     fontWeight: '500',
     whiteSpace: 'nowrap',
     pointerEvents: 'none',
@@ -232,18 +266,26 @@ function Sidebar({
     left: '-6px',
     top: '50%',
     transform: 'translateY(-50%) rotate(45deg)',
-    width: '12px',
-    height: '12px',
+    width: '10px', // Reducido de 12px
+    height: '10px', // Reducido de 12px
     backgroundColor: '#1e293b',
     zIndex: 1099,
   };
 
-  // Separador para el sidebar
+  // Separador para el sidebar - más delgado
   const dividerStyle = {
-    margin: '10px auto',
-    width: '80%',
+    margin: '8px auto', // Reducido de 10px
+    width: '70%', // Reducido de 80%
     height: '1px',
     backgroundColor: '#e2e8f0',
+  };
+
+  // Clase CSS para encabezados responsive
+  const headerStyle = {
+    fontSize: screenWidth <= 768 ? '14px' : '16px',
+    fontWeight: '600',
+    marginBottom: screenWidth <= 768 ? '12px' : '15px',
+    color: '#1e40af'
   };
 
   // Mostrar tooltip al pasar el mouse
@@ -312,7 +354,7 @@ function Sidebar({
       case 'drawing':
         return (
           <>
-            <h2 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '15px', color: '#1e40af' }}>
+            <h2 style={headerStyle}>
               Herramientas de dibujo
             </h2>
             <DrawingTools
@@ -328,7 +370,7 @@ function Sidebar({
       case 'figuras':
         return (
           <>
-            <h2 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '15px', color: '#1e40af' }}>
+            <h2 style={headerStyle}>
               Figuras
             </h2>
             <GenogramNodePalette nodes={genogramaNodes} />
@@ -337,7 +379,7 @@ function Sidebar({
       case 'diagramas':
         return (
           <>
-            <h2 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '15px', color: '#1e40af' }}>
+            <h2 style={headerStyle}>
               Diagramas de flujo
             </h2>
             <AnnotationToolPalette 
@@ -350,7 +392,7 @@ function Sidebar({
       case 'relaciones':
         return (
           <>
-            <h2 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '15px', color: '#1e40af' }}>
+            <h2 style={headerStyle}>
               Gestor de relaciones
             </h2>
             <RelationshipManager 
@@ -367,8 +409,14 @@ function Sidebar({
             />
             
             {showRelationLegend && (
-              <div style={{ marginTop: '20px' }}>
-                <h4 style={{ fontSize: '14px', margin: '0 0 10px 0', color: '#64748b' }}>Leyenda de relaciones</h4>
+              <div style={{ marginTop: screenWidth <= 768 ? '16px' : '20px' }}>
+                <h4 style={{ 
+                  fontSize: screenWidth <= 768 ? '13px' : '14px', 
+                  margin: '0 0 8px 0', 
+                  color: '#64748b' 
+                }}>
+                  Leyenda de relaciones
+                </h4>
                 <RelationshipsLegend />
               </div>
             )}
@@ -377,7 +425,7 @@ function Sidebar({
       case 'config':
         return (
           <>
-            <h2 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '15px', color: '#1e40af' }}>
+            <h2 style={headerStyle}>
               Configuración
             </h2>
             <SmartGuidesConfig
@@ -388,37 +436,53 @@ function Sidebar({
             />
             
             {onExportDrawing && (
-              <div style={{ marginTop: '15px' }}>
+              <div style={{ marginTop: screenWidth <= 768 ? '12px' : '15px' }}>
                 <ExportImageButton onExportDrawing={onExportDrawing} />
               </div>
             )}
           </>
         );
-      default:
+      case 'grabacion':
         return (
           <>
+            <h2 style={headerStyle}>
+              Grabación de audio
+            </h2>
             <RecordingControls 
               isRecording={isRecording}
               onRecordToggle={onRecordToggle}
               patientName={patientName}
               onPatientNameChange={onPatientNameChange}
             />
-            
+          </>
+        );
+      default:
+        return (
+          <div style={{ 
+            padding: screenWidth <= 768 ? '15px' : '20px', 
+            textAlign: 'center' 
+          }}>
+            <p style={{ 
+              color: '#64748b', 
+              fontSize: screenWidth <= 768 ? '13px' : '14px' 
+            }}>
+              Selecciona una herramienta en el menú lateral para comenzar.
+            </p>
+            <img 
+              src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjE1MCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiM5NGEzYjgiIHN0cm9rZS13aWR0aD0iMiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSIxMCI+PC9jaXJjbGU+PHBhdGggZD0iTTggMTRzMS41IDIgNCAyIDQtMiA0LTIiPjwvcGF0aD48bGluZSB4MT0iOSIgeTE9IjkiIHgyPSI5LjAxIiB5Mj0iOSI+PC9saW5lPjxsaW5lIHgxPSIxNSIgeTE9IjkiIHgyPSIxNS4wMSIgeTI9IjkiPjwvbGluZT48L3N2Zz4=" 
+              alt="Selecciona una herramienta" 
+              style={{ 
+                margin: '15px auto', 
+                opacity: 0.5,
+                maxWidth: '100%',
+                height: 'auto' 
+              }}
+            />
             <SidebarPanels 
               toggleClinicalTabs={toggleClinicalTabs}
               isClinicalTabsOpen={isClinicalTabsOpen}
             />
-            <div style={{ padding: '20px', textAlign: 'center' }}>
-              <p style={{ color: '#64748b', fontSize: '14px' }}>
-                Selecciona una herramienta en el menú lateral para comenzar.
-              </p>
-              <img 
-                src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjE1MCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiM5NGEzYjgiIHN0cm9rZS13aWR0aD0iMiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSIxMCI+PC9jaXJjbGU+PHBhdGggZD0iTTggMTRzMS41IDIgNCAyIDQtMiA0LTIiPjwvcGF0aD48bGluZSB4MT0iOSIgeTE9IjkiIHgyPSI5LjAxIiB5Mj0iOSI+PC9saW5lPjxsaW5lIHgxPSIxNSIgeTE9IjkiIHgyPSIxNS4wMSIgeTI9IjkiPjwvbGluZT48L3N2Zz4=" 
-                alt="Selecciona una herramienta" 
-                style={{ margin: '20px auto', opacity: 0.5 }}
-              />
-            </div>
-          </>
+          </div>
         );
     }
   };
@@ -429,7 +493,7 @@ function Sidebar({
       <div style={iconsContainerStyle}>
         {/* Botón para colapsar/expandir el sidebar */}
         <div style={{ 
-          padding: '10px 0', 
+          padding: '8px 0', 
           display: 'flex', 
           justifyContent: 'center',
           borderBottom: '1px solid #e2e8f0'
@@ -443,96 +507,128 @@ function Sidebar({
           />
         </div>
 
-        {/* Icono para herramientas de dibujo */}
+        {/* Icono para herramientas de dibujo - Lápiz/Pincel */}
         <SidebarIconButton
           id="drawing"
           isActive={expandedSection === 'drawing'}
           onClick={() => toggleSection('drawing')}
           label="Herramientas de dibujo"
           icon={
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 19l7-7 3 3-7 7-3-3z" />
-              <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z" />
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path>
+              <path d="m15 5 4 4"></path>
             </svg>
           }
         />
 
-        {/* Icono para figuras */}
+        {/* Icono para figuras - Personas/Familia */}
         <SidebarIconButton
           id="figuras"
           isActive={expandedSection === 'figuras'}
           onClick={() => toggleSection('figuras')}
-          label="Figuras"
+          label="Símbolos de familia"
           icon={
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="3" width="7" height="7" />
-              <rect x="14" y="3" width="7" height="7" />
-              <rect x="14" y="14" width="7" height="7" />
-              <rect x="3" y="14" width="7" height="7" />
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
             </svg>
           }
         />
 
-        {/* Icono para diagramas de flujo */}
+        {/* Icono para diagramas de flujo - Formas/Anotaciones */}
         <SidebarIconButton
           id="diagramas"
           isActive={expandedSection === 'diagramas'}
           onClick={() => toggleSection('diagramas')}
-          label="Diagramas de flujo"
+          label="Formas y anotaciones"
           icon={
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M18 8h1a4 4 0 010 8h-1"></path>
-              <path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"></path>
-              <line x1="6" y1="1" x2="6" y2="4"></line>
-              <line x1="10" y1="1" x2="10" y2="4"></line>
-              <line x1="14" y1="1" x2="14" y2="4"></line>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="3" width="5" height="5" rx="1"></rect>
+              <rect x="16" y="3" width="5" height="5" rx="1"></rect>
+              <rect x="3" y="16" width="5" height="5" rx="1"></rect>
+              <path d="M16 18h.01"></path>
+              <path d="M21 18h.01"></path>
+              <path d="M16 21h.01"></path>
+              <path d="M21 21h.01"></path>
+              <path d="M8 6h8"></path>
+              <path d="M6 8v8"></path>
+              <path d="M18 8v8"></path>
+              <path d="M8 18h8"></path>
             </svg>
           }
         />
 
-        {/* Icono para relaciones */}
+        {/* Icono para relaciones - Conexiones entre personas */}
         {showRelationEditor && (
           <SidebarIconButton
             id="relaciones"
             isActive={expandedSection === 'relaciones'}
             onClick={() => toggleSection('relaciones')}
-            label="Relaciones"
+            label="Relaciones familiares"
             icon={
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="3" y1="12" x2="21" y2="12"></line>
-                <path d="M8 5l-5 7 5 7"></path>
-                <path d="M16 5l5 7-5 7"></path>
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M8 19H5c-1 0-2-1-2-2v-1a3 3 0 0 1 6 0v1c0 1-1 2-2 2Z"></path>
+                <path d="M16 19h-3c-1 0-2-1-2-2v-1a3 3 0 0 1 6 0v1c0 1-1 2-2 2Z"></path>
+                <path d="M19 12a3 3 0 1 0 0-6a3 3 0 0 0 0 6Z"></path>
+                <path d="M11 12a3 3 0 1 0 0-6a3 3 0 0 0 0 6Z"></path>
+                <path d="M3 12a3 3 0 1 0 0-6a3 3 0 0 0 0 6Z"></path>
+                <path d="M17.17 19.51c-.44-1.94-1.64-3.49-3.17-4.44"></path>
+                <path d="M7 15.07c-1.53.95-2.72 2.5-3.17 4.44"></path>
+                <path d="M16.41 7.38c-.34.2-.69.38-1.06.52"></path>
+                <path d="M7.59 7.38c.34.2.69.38 1.06.52"></path>
               </svg>
             }
           />
         )}
 
-        {/* Icono para configuración */}
+        {/* Icono para configuración - Tuerca/Gear */}
         <SidebarIconButton
           id="config"
           isActive={expandedSection === 'config'}
           onClick={() => toggleSection('config')}
           label="Configuración"
           icon={
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="3"></circle>
-              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
             </svg>
           }
         />
 
         <div style={dividerStyle}></div>
 
-        {/* Botón para historia clínica */}
+        {/* Botón para grabación - Micrófono médico */}
+        <SidebarIconButton
+          id="grabacion"
+          isActive={expandedSection === 'grabacion'}
+          onClick={() => toggleSection('grabacion')}
+          label="Grabación de audio"
+          icon={
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={isRecording ? "#ef4444" : "currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3Z"></path>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+              <line x1="12" y1="19" x2="12" y2="23"></line>
+              <line x1="8" y1="23" x2="16" y2="23"></line>
+              {isRecording && <circle cx="12" cy="12" r="1" fill="#ef4444" />}
+            </svg>
+          }
+        />
+
+        {/* Botón para historia clínica - Hoja de documento */}
         <SidebarIconButton
           id="historia"
           isActive={isClinicalTabsOpen}
           onClick={toggleClinicalTabs}
           label="Historia Clínica"
           icon={
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={isClinicalTabsOpen ? "#16a34a" : "currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M22 12h-6l-2 3h-4l-2-3H2"/>
-              <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={isClinicalTabsOpen ? "#16a34a" : "currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <path d="M14 2v6h6"></path>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <line x1="10" y1="9" x2="8" y2="9"></line>
             </svg>
           }
         />

@@ -184,50 +184,85 @@ const SubMenuBar = ({
     }
   }, [selectedEdge]);
 
-  // Cierra los menús si se hace clic fuera
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      // Para menú Relación
-      if (
-        showRelationMenu &&
-        relationMenuRef.current &&
-        !relationMenuRef.current.contains(event.target) &&
-        relationButtonRef.current &&
-        !relationButtonRef.current.contains(event.target)
-      ) {
-        setShowRelationMenu(false);
-      }
-      
-      // Para ventana Leyenda
-      if (
-        showLegendPopup &&
-        legendPopupRef.current &&
-        !legendPopupRef.current.contains(event.target) &&
-        legendButtonRef.current &&
-        !legendButtonRef.current.contains(event.target)
-      ) {
-        setShowLegendPopup(false);
-      }
-      
-      // Para menú Estilo de Línea
-      if (
-        showLineStyleMenu &&
-        lineStyleMenuRef.current &&
-        !lineStyleMenuRef.current.contains(event.target) &&
-        lineStyleButtonRef.current &&
-        !lineStyleButtonRef.current.contains(event.target)
-      ) {
-        setShowLineStyleMenu(false);
-      }
-    };
-
-    if (showRelationMenu || showLegendPopup || showLineStyleMenu) {
-      document.addEventListener('click', handleClickOutside, true);
+  // Función para cerrar menús actualmente abiertos excepto el indicado
+  const closeOtherMenus = (currentMenuRef) => {
+    if (window._activeMenus) {
+      window._activeMenus.forEach(menu => {
+        // Si el menú no es el actual (el que vamos a mostrar), lo cerramos
+        if (menu.ref.current !== currentMenuRef.current && menu.onClose) {
+          menu.onClose();
+        }
+      });
     }
-    return () => {
-      document.removeEventListener('click', handleClickOutside, true);
-    };
-  }, [showRelationMenu, showLegendPopup, showLineStyleMenu]);
+  };
+
+  // Función para mostrar un menú y esconder los otros
+  const openMenuAndCloseOthers = (menuToOpen) => {
+    if (menuToOpen === 'relation') {
+      setShowRelationMenu(true);
+      setShowLegendPopup(false);
+      setShowLineStyleMenu(false);
+      closeOtherMenus(relationMenuRef);
+    } else if (menuToOpen === 'legend') {
+      setShowLegendPopup(true);
+      setShowRelationMenu(false);
+      setShowLineStyleMenu(false);
+      closeOtherMenus(legendPopupRef);
+    } else if (menuToOpen === 'lineStyle') {
+      setShowLineStyleMenu(true);
+      setShowRelationMenu(false);
+      setShowLegendPopup(false);
+      closeOtherMenus(lineStyleMenuRef);
+    }
+  };
+
+  // Función para manejar la apertura automática al hacer hover
+  const handleMenuHover = (menuType) => {
+    if (menuType === 'relation' && !showRelationMenu) {
+      const rect = relationButtonRef.current.getBoundingClientRect();
+      setRelationMenuPosition({ top: rect.bottom, left: rect.left });
+      openMenuAndCloseOthers('relation');
+    } else if (menuType === 'legend' && !showLegendPopup) {
+      const rect = legendButtonRef.current.getBoundingClientRect();
+      setLegendPopupPosition({ top: rect.bottom, left: rect.left });
+      openMenuAndCloseOthers('legend');
+    } else if (menuType === 'lineStyle' && !showLineStyleMenu) {
+      const rect = lineStyleButtonRef.current.getBoundingClientRect();
+      setLineStyleMenuPosition({ top: rect.bottom, left: rect.left });
+      openMenuAndCloseOthers('lineStyle');
+    }
+  };
+
+  // Función para manejar el clic en un botón de menú
+  const handleMenuClick = (menuType, e) => {
+    e.stopPropagation();
+    
+    if (menuType === 'relation') {
+      if (showRelationMenu) {
+        // No cerramos si ya está abierto, el usuario probablemente quiere navegar el menú
+      } else {
+        const rect = relationButtonRef.current.getBoundingClientRect();
+        setRelationMenuPosition({ top: rect.bottom, left: rect.left });
+        openMenuAndCloseOthers('relation');
+      }
+    } else if (menuType === 'legend') {
+      if (showLegendPopup) {
+        // No cerramos si ya está abierto, el usuario probablemente quiere navegar el menú
+      } else {
+        const rect = legendButtonRef.current.getBoundingClientRect();
+        setLegendPopupPosition({ top: rect.bottom, left: rect.left });
+        openMenuAndCloseOthers('legend');
+      }
+    } else if (menuType === 'lineStyle') {
+      if (showLineStyleMenu) {
+        // No cerramos si ya está abierto, el usuario probablemente quiere navegar el menú
+      } else {
+        const rect = lineStyleButtonRef.current.getBoundingClientRect();
+        setLineStyleMenuPosition({ top: rect.bottom, left: rect.left });
+        openMenuAndCloseOthers('lineStyle');
+      }
+    }
+  };
 
   // Función para aplicar la relación al seleccionarla
   const handleRelationTypeSelect = (relId) => {
@@ -322,26 +357,25 @@ const SubMenuBar = ({
   };
 
   const inputStyle = {
-    width: '100%',
-    padding: '5px 6px', // Reducido el padding
-    marginBottom: '10px',
-    border: '1px solid #e2e8f0',
-    borderRadius: '4px',
-    fontSize: '12px', // Reducido el tamaño de fuente
-    height: '28px', // Fijamos una altura específica para ambos inputs
-    boxSizing: 'border-box', // Aseguramos que el padding no afecte el tamaño total
+    width: "100%",
+    padding: "10px",
+    marginBottom: "10px",
+    border: "1px solid #e2e8f0",
+    borderRadius: "4px",
+    fontSize: "14px",
   };
 
-  const inputContainerStyle = {
-    display: 'flex',
-    gap: '30px', // Aumentado de 8px a 30px
-    marginBottom: '10px',
-    paddingLeft: '5px', // Espacio simétrico izquierdo
-    paddingRight: '5px', // Espacio simétrico derecho
+  const selectStyle = {
+    width: "100%",
+    padding: "10px",
+    marginBottom: "10px",
+    border: "1px solid #e2e8f0",
+    borderRadius: "4px",
+    fontSize: "14px",
   };
 
   const buttonStyle = {
-    padding: '8px 12px',
+    padding: "10px",
     backgroundColor: selectedEdge ? '#10b981' : '#3b82f6',
     color: 'white',
     border: 'none',
@@ -373,38 +407,36 @@ const SubMenuBar = ({
     borderRadius: '8px',
     padding: '12px',
     zIndex: 1000,
-    maxWidth: '400px',
-    maxHeight: '400px',
-    overflowY: 'auto',
+    width: '340px',
   };
-  
+
+  const inputContainerStyle = {
+    display: 'flex', 
+    gap: '10px', 
+    marginBottom: '12px'
+  };
+
   const styleSectionTitle = {
-    fontSize: '14px',
-    fontWeight: '600',
-    marginTop: '12px',
-    marginBottom: '8px',
+    fontSize: '13px',
     color: '#475569',
-    borderBottom: '1px solid #e2e8f0',
-    paddingBottom: '4px',
+    marginBottom: '8px',
   };
   
   const styleOptionContainer = {
     display: 'flex',
     flexWrap: 'wrap',
     gap: '8px',
-    marginBottom: '12px',
+    marginBottom: '16px',
   };
   
   const styleOption = {
+    padding: '6px',
+    borderRadius: '4px',
+    border: '1px solid #e2e8f0',
+    cursor: 'pointer',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    padding: '6px',
-    border: '1px solid #e2e8f0',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    width: '70px',
-    height: '50px',
     transition: 'all 0.2s ease',
   };
   
@@ -457,13 +489,8 @@ const SubMenuBar = ({
             ...menuLabelStyle,
             background: showRelationMenu ? '#e2e8f0' : 'transparent',
           }}
-          onClick={(e) => {
-            const rect = relationButtonRef.current.getBoundingClientRect();
-            setRelationMenuPosition({ top: rect.bottom, left: rect.left });
-            setShowRelationMenu(prev => !prev);
-            setShowLegendPopup(false);
-            setShowLineStyleMenu(false);
-          }}
+          onClick={(e) => handleMenuClick('relation', e)}
+          onMouseEnter={() => handleMenuHover('relation')}
         >
           <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -602,13 +629,8 @@ const SubMenuBar = ({
             ...menuLabelStyle,
             background: showLegendPopup ? '#e2e8f0' : 'transparent',
           }}
-          onClick={(e) => {
-            const rect = legendButtonRef.current.getBoundingClientRect();
-            setLegendPopupPosition({ top: rect.bottom, left: rect.left });
-            setShowLegendPopup(prev => !prev);
-            setShowRelationMenu(false);
-            setShowLineStyleMenu(false);
-          }}
+          onClick={(e) => handleMenuClick('legend', e)}
+          onMouseEnter={() => handleMenuHover('legend')}
         >
           <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -644,13 +666,8 @@ const SubMenuBar = ({
           ...menuLabelStyle,
           background: showLineStyleMenu ? '#e2e8f0' : 'transparent',
         }}
-        onClick={(e) => {
-          const rect = lineStyleButtonRef.current.getBoundingClientRect();
-          setLineStyleMenuPosition({ top: rect.bottom, left: rect.left });
-          setShowLineStyleMenu(prev => !prev);
-          setShowRelationMenu(false);
-          setShowLegendPopup(false);
-        }}
+        onClick={(e) => handleMenuClick('lineStyle', e)}
+        onMouseEnter={() => handleMenuHover('lineStyle')}
       >
         <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -755,15 +772,16 @@ const SubMenuBar = ({
                       }}
                       title={marker.name}
                     >
-                      <div style={{transform: 'scaleX(-1)', color: lineStyle.markerStart === marker.id ? '#0284c7' : 'currentColor'}}>
+                      <div style={{color: lineStyle.markerStart === marker.id ? '#0284c7' : 'currentColor'}}>
                         {marker.icon}
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
+              
               <div style={sliderContainer}>
-                <div style={sliderLabel}>Final:</div>
+                <div style={sliderLabel}>Fin:</div>
                 <div style={{display: 'flex', flex: 1, gap: '6px'}}>
                   {markers.map((marker) => (
                     <div
@@ -861,7 +879,7 @@ const SubMenuBar = ({
                 }}
                 title={type.name}
               >
-                {React.cloneElement(type.icon, {width: 20, height: 20})}
+                {type.icon}
               </div>
             ))}
           </div>

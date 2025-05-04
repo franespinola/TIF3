@@ -13,55 +13,55 @@ export default function DrawingTools({ activeTool, toggleTool, drawingColor, set
     inactiveGradient: 'linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%)',
   };
 
-  // Estilos de contenedor principal
+  // Estilos de contenedor principal - Reducido padding
   const containerStyle = {
     backgroundColor: '#f8fafc',
-    borderRadius: '12px',
+    borderRadius: '10px', // Reducido de 12px
     boxShadow: '0 4px 8px rgba(0, 0, 0, 0.03)',
-    padding: '16px',
-    marginBottom: '20px',
+    padding: '12px', // Reducido de 16px
+    marginBottom: '16px', // Reducido de 20px
     border: '1px solid #e2e8f0',
   };
 
-  // Estilo para el encabezado con gradiente
+  // Estilo para el encabezado con gradiente - Reducido tamaño
   const headerStyle = {
-    fontSize: '1.1rem',
+    fontSize: '1rem', // Reducido de 1.1rem
     fontWeight: '700',
-    marginBottom: '16px',
+    marginBottom: '12px', // Reducido de 16px
     color: colors.primary,
     display: 'flex',
     alignItems: 'center',
-    gap: '8px',
+    gap: '6px', // Reducido de 8px
     position: 'relative',
-    paddingBottom: '8px',
+    paddingBottom: '6px', // Reducido de 8px
     borderBottom: `2px solid ${colors.primary}`,
   };
 
-  // Contenedor para herramientas (con apariencia de paleta de pintura)
+  // Contenedor para herramientas - Reducido gap y padding
   const toolContainerStyle = {
     display: 'grid',
     gridTemplateColumns: 'repeat(3, 1fr)',
-    gap: '10px',
-    marginBottom: '18px',
-    padding: '6px',
+    gap: '8px', // Reducido de 10px
+    marginBottom: '14px', // Reducido de 18px
+    padding: '5px', // Reducido de 6px
     backgroundColor: '#e2e8f0',
-    borderRadius: '10px',
+    borderRadius: '8px', // Reducido de 10px
     boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.06)'
   };
 
-  // Estilo para los botones de herramienta
+  // Estilo para los botones de herramienta - Reducido padding y tamaño
   const toolButtonStyle = (isActive) => ({
     backgroundColor: isActive ? colors.primary : colors.light,
     color: isActive ? '#fff' : colors.dark,
     border: 'none',
-    borderRadius: '8px',
-    padding: '10px 8px',
+    borderRadius: '7px', // Reducido de 8px
+    padding: '8px 6px', // Reducido de 10px 8px
     cursor: 'pointer',
     transition: 'all 0.2s ease',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    gap: '6px',
+    gap: '4px', // Reducido de 6px
     position: 'relative',
     boxShadow: isActive 
       ? `0 0 0 2px ${colors.primary}, 0 4px 6px rgba(79, 70, 229, 0.3)` 
@@ -70,76 +70,76 @@ export default function DrawingTools({ activeTool, toggleTool, drawingColor, set
     overflow: 'hidden',
   });
 
-  // Estilo para seleccionar color
+  // Estilo para seleccionar color - Reducido padding y margen
   const colorPickerContainerStyle = {
     display: 'flex',
     alignItems: 'center',
-    marginBottom: '16px',
-    padding: '10px',
+    marginBottom: '12px', // Reducido de 16px
+    padding: '8px', // Reducido de 10px
     backgroundColor: colors.light,
-    borderRadius: '10px',
+    borderRadius: '8px', // Reducido de 10px
     boxShadow: '0 2px 4px rgba(0, 0, 0, 0.03)',
     border: '1px solid #e2e8f0',
   };
 
-  // Estilo personalizado para el selector de color
+  // Estilo personalizado para el selector de color - Reducido tamaño
   const colorPickerStyle = {
     WebkitAppearance: 'none',
-    width: '40px',
-    height: '40px',
+    width: '32px', // Reducido de 40px
+    height: '32px', // Reducido de 40px
     border: 'none',
-    borderRadius: '8px',
+    borderRadius: '6px', // Reducido de 8px
     cursor: 'pointer',
     background: 'transparent',
     boxShadow: '0 0 0 2px #fff, 0 0 0 3px #cbd5e1',
     overflow: 'hidden',
   };
 
-  // Estilo para la etiqueta del color
+  // Estilo para la etiqueta del color - Reducido gap y margen
   const colorLabelStyle = {
     display: 'flex',
     alignItems: 'center',
-    gap: '8px',
+    gap: '6px', // Reducido de 8px
     fontWeight: '600',
-    fontSize: '0.9rem',
+    fontSize: '0.85rem', // Reducido de 0.9rem
     color: colors.dark,
-    marginRight: '12px',
+    marginRight: '8px', // Reducido de 12px
   };
 
-  // Estilo para muestras de color predefinidas
+  // Estilo para muestras de color predefinidas - Reducido gap
   const colorSwatchesStyle = {
     display: 'flex',
     marginLeft: 'auto',
-    gap: '6px',
+    gap: '4px', // Reducido de 6px
   };
 
   // Colores predefinidos para elegir rápidamente
   const predefinedColors = ['#000000', '#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'];
 
-  // Estilo para el control deslizante de grosor
+  // Estilo para el control deslizante de grosor - Reducido padding
   const strokeWidthContainerStyle = {
     display: 'flex',
     flexDirection: 'column',
-    padding: '12px',
+    padding: '10px', // Reducido de 12px
     backgroundColor: colors.light,
-    borderRadius: '10px',
+    borderRadius: '8px', // Reducido de 10px
     boxShadow: '0 2px 4px rgba(0, 0, 0, 0.03)',
     border: '1px solid #e2e8f0',
   };
 
-  // Estilos para slider personalizado
+  // Estilos para slider personalizado - Reducido gap y margen
   const sliderContainerStyle = {
     display: 'flex',
     alignItems: 'center',
-    gap: '10px',
+    gap: '8px', // Reducido de 10px
     position: 'relative',
-    marginTop: '8px',
+    marginTop: '6px', // Reducido de 8px
   };
 
-  // Estilo para la vista previa del grosor del trazo
+  // Estilo para la vista previa del grosor del trazo - Reducido tamaño
   const strokePreviewStyle = {
-    width: '60px',
-    height: '30px',
+    width: '50px', // Reducido de 60px
+    height: '25px', // Reducido de 30px
     borderRadius: '4px',
     backgroundColor: '#f8fafc',
     boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.06)',
@@ -157,20 +157,22 @@ export default function DrawingTools({ activeTool, toggleTool, drawingColor, set
     borderRadius: '4px',
   };
 
-  // Estilo mejorado para indicador de valor
+  // Estilo mejorado para indicador de valor - Reducido padding y tamaño de fuente
   const valueIndicatorStyle = {
-    fontSize: '0.9rem',
+    fontSize: '0.85rem', // Reducido de 0.9rem
     fontWeight: '600',
     color: colors.primary,
-    padding: '4px 8px',
+    padding: '3px 6px', // Reducido de 4px 8px
     borderRadius: '4px',
     backgroundColor: 'rgba(79, 70, 229, 0.1)',
-    marginLeft: 'auto',
+    marginLeft: '-10px', // Cambiado de 'auto' a '8px' para mover a la izquierda
+    minWidth: '36px',  // Agregado para mantener un tamaño consistente
+    textAlign: 'center', // Agregado para centrar el texto
   };
 
-  // SVG personalizado para ícono de lápiz
+  // SVG personalizado para ícono de lápiz - Reducido tamaño
   const PencilIcon = ({ isActive }) => (
-    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path 
         d="M15.5 5L18 7.5M12 21H21M3 21H7M12.2535 14.8879L6 21H3V18L9.29101 11.709C9.48044 11.5195 9.73481 11.4138 10 11.4138C10.2652 11.4138 10.5196 11.5195 10.709 11.709L12.2535 13.2535C12.4429 13.443 12.5487 13.6974 12.5487 13.9626C12.5487 14.2278 12.4429 14.4822 12.2535 14.6716V14.8879ZM16.2535 10.8879L18 9.21599L14.784 6L13.112 7.74701L14.6575 9.29251C14.8469 9.48194 15.1013 9.58768 15.3665 9.58768C15.6317 9.58768 15.886 9.48194 16.0755 9.29251L16.2535 10.8879Z"
         stroke={isActive ? "#fff" : "#1e293b"} 
@@ -181,37 +183,31 @@ export default function DrawingTools({ activeTool, toggleTool, drawingColor, set
     </svg>
   );
 
-  // SVG personalizado para ícono de selector
+  // SVG personalizado para ícono de selector - Reducido tamaño
   const SelectIcon = ({ isActive }) => (
-    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path 
-        d="M6 3L12 10L8 12L10 18L4 10L8 9L6 3Z"
+        d="M3 3L10 16L12 12L16 10L3 3Z"
         fill={isActive ? "#fff" : "none"} 
         stroke={isActive ? "#fff" : "#1e293b"} 
         strokeWidth="1.5" 
         strokeLinecap="round" 
         strokeLinejoin="round"
       />
-      <path 
-        d="M17 12C17 12 18 13.2 18 14C18 14.8 17.2 15 16 15C14.8 15 14 14.2 14 13"
+      <path
+        d="M17 8L21 21L14 16.5"
         stroke={isActive ? "#fff" : "#1e293b"} 
         strokeWidth="1.5" 
         strokeLinecap="round" 
         strokeLinejoin="round"
-      />
-      <circle
-        cx="14"
-        cy="9"
-        r="2"
-        stroke={isActive ? "#fff" : "#1e293b"} 
-        strokeWidth="1.5" 
+        fill="none"
       />
     </svg>
   );
 
-  // SVG personalizado para ícono de borrador
+  // SVG personalizado para ícono de borrador - Reducido tamaño
   const EraserIcon = ({ isActive }) => (
-    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path 
         d="M13.5001 20.5L9.5 20.5M20.5 9.5L14.5 3.5C13.8953 2.89543 12.9047 2.89543 12.3 3.5L3.5 12.3C2.89543 12.9047 2.89543 13.8953 3.5 14.5L9.5 20.5L20.5 9.5ZM20.5 9.5L14.5 15.5"
         stroke={isActive ? "#fff" : "#1e293b"} 
@@ -222,13 +218,13 @@ export default function DrawingTools({ activeTool, toggleTool, drawingColor, set
     </svg>
   );
 
-  // Función para crear un botón de color predefinido
+  // Función para crear un botón de color predefinido - Reducido tamaño
   const ColorSwatch = ({ color }) => (
     <button
       onClick={() => setDrawingColor(color)}
       style={{
-        width: '20px',
-        height: '20px',
+        width: '18px', // Reducido de 20px
+        height: '18px', // Reducido de 20px
         borderRadius: '50%',
         backgroundColor: color,
         border: color === drawingColor ? `2px solid ${colors.primary}` : '2px solid white',
@@ -246,7 +242,7 @@ export default function DrawingTools({ activeTool, toggleTool, drawingColor, set
   return (
     <div style={containerStyle}>
       <h3 style={headerStyle}>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M2 12.5L7.5 18L22 3.5" stroke={colors.primary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           <path d="M14 7L16.5 9.5" stroke={colors.primary} strokeWidth="2" strokeLinecap="round"/>
           <path d="M9 12L11.5 14.5" stroke={colors.primary} strokeWidth="2" strokeLinecap="round"/>
@@ -262,7 +258,7 @@ export default function DrawingTools({ activeTool, toggleTool, drawingColor, set
           title="Seleccionar y mover elementos"
         >
           <SelectIcon isActive={activeTool === 'select'} />
-          <span style={{ fontSize: '0.8rem', fontWeight: '500' }}>Seleccionar</span>
+          <span style={{ fontSize: '0.75rem', fontWeight: '500' }}>Seleccionar</span>
         </button>
         
         <button
@@ -271,7 +267,7 @@ export default function DrawingTools({ activeTool, toggleTool, drawingColor, set
           title="Dibujar a mano alzada"
         >
           <PencilIcon isActive={activeTool === 'pen'} />
-          <span style={{ fontSize: '0.8rem', fontWeight: '500' }}>Lápiz</span>
+          <span style={{ fontSize: '0.75rem', fontWeight: '500' }}>Lápiz</span>
         </button>
         
         <button
@@ -280,14 +276,14 @@ export default function DrawingTools({ activeTool, toggleTool, drawingColor, set
           title="Borrar elementos dibujados"
         >
           <EraserIcon isActive={activeTool === 'eraser'} />
-          <span style={{ fontSize: '0.8rem', fontWeight: '500' }}>Borrador</span>
+          <span style={{ fontSize: '0.75rem', fontWeight: '500' }}>Borrador</span>
         </button>
       </div>
 
       {/* Selector de color con muestras predefinidas */}
       <div style={colorPickerContainerStyle}>
         <div style={colorLabelStyle}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M12 18.5C12 19.8807 10.8807 21 9.5 21C8.11929 21 7 19.8807 7 18.5C7 17.1193 8.11929 16 9.5 16C10.8807 16 12 17.1193 12 18.5Z" stroke="currentColor" strokeWidth="1.5"/>
             <path d="M14 16L22 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
             <path d="M14.5 7.5L3 19" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
@@ -312,8 +308,8 @@ export default function DrawingTools({ activeTool, toggleTool, drawingColor, set
 
       {/* Control de grosor de trazo */}
       <div style={strokeWidthContainerStyle}>
-        <div style={{ fontWeight: '600', fontSize: '0.9rem', color: colors.dark, display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <div style={{ fontWeight: '600', fontSize: '0.85rem', color: colors.dark, display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M6 12H18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
             <path d="M6 16H18" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/>
             <path d="M6 8H18" stroke="currentColor" strokeWidth="0.5" strokeLinecap="round"/>
@@ -321,7 +317,7 @@ export default function DrawingTools({ activeTool, toggleTool, drawingColor, set
           Grosor
         </div>
         <div style={sliderContainerStyle}>
-          <span style={{ fontSize: '0.8rem', opacity: 0.8 }}>Fino</span>
+          <span style={{ fontSize: '0.7rem', opacity: 0.8 }}>Fino</span>
           <input 
             type="range" 
             min="1" 
@@ -330,7 +326,7 @@ export default function DrawingTools({ activeTool, toggleTool, drawingColor, set
             onChange={e => setStrokeWidth(+e.target.value)}
             style={{
               flex: 1,
-              height: '6px',
+              height: '5px', // Reducido de 6px
               WebkitAppearance: 'none',
               background: `linear-gradient(to right, ${colors.primary} 0%, ${colors.primary} ${strokeWidth * 2}%, #e2e8f0 ${strokeWidth * 2}%, #e2e8f0 100%)`,
               borderRadius: '3px',
@@ -338,7 +334,7 @@ export default function DrawingTools({ activeTool, toggleTool, drawingColor, set
               cursor: 'pointer',
             }}
           />
-          <span style={{ fontSize: '0.8rem', opacity: 0.8 }}>Grueso</span>
+          <span style={{ fontSize: '0.7rem', opacity: 0.8 }}>Grueso</span>
           <div style={strokePreviewStyle}>
             <div style={strokeLineStyle}></div>
           </div>

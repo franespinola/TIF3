@@ -28,45 +28,74 @@ export default function MenuBar({
   const [showViewMenu, setShowViewMenu] = useState(false);
   const [fileMenuPosition, setFileMenuPosition] = useState({ top: 0, left: 0 });
   const [viewMenuPosition, setViewMenuPosition] = useState({ top: 0, left: 0 });
+  
+  // Referencia al input file oculto para importar
   const fileInputRef = useRef(null);
   const fileMenuRef = useRef(null);
   const fileMenuButtonRef = useRef(null);
   const viewMenuRef = useRef(null);
   const viewMenuButtonRef = useRef(null);
 
-  // Cierra los menús si clicás fuera del botón o del dropdown
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      // Para menú Archivo
-      if (
-        showFileMenu &&
-        fileMenuRef.current &&
-        !fileMenuRef.current.contains(event.target) &&
-        fileMenuButtonRef.current &&
-        !fileMenuButtonRef.current.contains(event.target)
-      ) {
-        setShowFileMenu(false);
-      }
-      
-      // Para menú Visualizar
-      if (
-        showViewMenu &&
-        viewMenuRef.current &&
-        !viewMenuRef.current.contains(event.target) &&
-        viewMenuButtonRef.current &&
-        !viewMenuButtonRef.current.contains(event.target)
-      ) {
-        setShowViewMenu(false);
-      }
-    };
-
-    if (showFileMenu || showViewMenu) {
-      document.addEventListener('click', handleClickOutside, true);
+  // Función para cerrar menús actualmente abiertos excepto el indicado
+  const closeOtherMenus = (currentMenuRef) => {
+    if (window._activeMenus) {
+      window._activeMenus.forEach(menu => {
+        // Si el menú no es el actual (el que vamos a mostrar), lo cerramos
+        if (menu.ref.current !== currentMenuRef.current && menu.onClose) {
+          menu.onClose();
+        }
+      });
     }
-    return () => {
-      document.removeEventListener('click', handleClickOutside, true);
-    };
-  }, [showFileMenu, showViewMenu]);
+  };
+
+  // Función para mostrar un menú y esconder los otros
+  const openMenuAndCloseOthers = (menuToOpen) => {
+    if (menuToOpen === 'file') {
+      setShowFileMenu(true);
+      setShowViewMenu(false);
+      closeOtherMenus(fileMenuRef);
+    } else if (menuToOpen === 'view') {
+      setShowViewMenu(true);
+      setShowFileMenu(false);
+      closeOtherMenus(viewMenuRef);
+    }
+  };
+
+  // Función para manejar el hover con intención (detección de intención real)
+  const handleMenuHover = (menuType) => {
+    if (menuType === 'file' && !showFileMenu) {
+      const rect = fileMenuButtonRef.current.getBoundingClientRect();
+      setFileMenuPosition({ top: rect.bottom, left: rect.left });
+      openMenuAndCloseOthers('file');
+    } else if (menuType === 'view' && !showViewMenu) {
+      const rect = viewMenuButtonRef.current.getBoundingClientRect();
+      setViewMenuPosition({ top: rect.bottom, left: rect.left });
+      openMenuAndCloseOthers('view');
+    }
+  };
+
+  // Función para manejar el clic en un botón de menú
+  const handleMenuClick = (menuType, e) => {
+    e.stopPropagation();
+    
+    if (menuType === 'file') {
+      if (showFileMenu) {
+        // No cerramos si ya está abierto, el usuario probablemente quiere navegar el menú
+      } else {
+        const rect = fileMenuButtonRef.current.getBoundingClientRect();
+        setFileMenuPosition({ top: rect.bottom, left: rect.left });
+        openMenuAndCloseOthers('file');
+      }
+    } else if (menuType === 'view') {
+      if (showViewMenu) {
+        // No cerramos si ya está abierto, el usuario probablemente quiere navegar el menú
+      } else {
+        const rect = viewMenuButtonRef.current.getBoundingClientRect();
+        setViewMenuPosition({ top: rect.bottom, left: rect.left });
+        openMenuAndCloseOthers('view');
+      }
+    }
+  };
 
   // Estilos
   const menuBarStyle = {
@@ -172,12 +201,8 @@ export default function MenuBar({
             ...menuLabelStyle,
             background: showFileMenu ? '#e2e8f0' : 'transparent',
           }}
-          onClick={(e) => {
-            setShowFileMenu(prev => !prev);
-            setShowViewMenu(false); // Cerrar el otro menú
-            const rect = e.currentTarget.getBoundingClientRect();
-            setFileMenuPosition({ top: rect.bottom, left: rect.left });
-          }}
+          onClick={(e) => handleMenuClick('file', e)}
+          onMouseEnter={() => handleMenuHover('file')}
         >
           <span>Archivo</span>
           <span style={{
@@ -283,12 +308,8 @@ export default function MenuBar({
             ...menuLabelStyle,
             background: showViewMenu ? '#e2e8f0' : 'transparent',
           }}
-          onClick={(e) => {
-            setShowViewMenu(prev => !prev);
-            setShowFileMenu(false); // Cerrar el otro menú
-            const rect = e.currentTarget.getBoundingClientRect();
-            setViewMenuPosition({ top: rect.bottom, left: rect.left });
-          }}
+          onClick={(e) => handleMenuClick('view', e)}
+          onMouseEnter={() => handleMenuHover('view')}
         >
           <span>Visualizar</span>
           <span style={{
