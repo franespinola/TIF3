@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
-import RelationshipsLegend from '../relationships/RelationshipsLegend';
 import MenuPortal from './MenuPortal';
+import FormattingToolbar from './FormattingToolbar';
 
 /**
  * SubMenuBar - Barra de menú secundaria debajo de MenuBar para funcionalidades adicionales
  * Incluye opciones para crear y gestionar relaciones entre nodos con selector visual
+ * y barra de herramientas de formato de texto similar a Lucidchart
  */
 const SubMenuBar = ({
   onRelate,
@@ -14,16 +15,15 @@ const SubMenuBar = ({
   setEdges,
   edges,
   showRelationEditor = true,
-  showRelationLegend = true
+  selectedNode = null, // Nodo seleccionado para formato
+  updateNodeStyle, // Función para actualizar el estilo del nodo
 }) => {
   // Estado para manejar los menús desplegables
   const [showRelationMenu, setShowRelationMenu] = useState(false);
-  const [showLegendPopup, setShowLegendPopup] = useState(false);
   const [showLineStyleMenu, setShowLineStyleMenu] = useState(false);
   
   // Estado para posiciones de menús desplegables
   const [relationMenuPosition, setRelationMenuPosition] = useState({ top: 0, left: 0 });
-  const [legendPopupPosition, setLegendPopupPosition] = useState({ top: 0, left: 0 });
   const [lineStyleMenuPosition, setLineStyleMenuPosition] = useState({ top: 0, left: 0 });
   
   // Estado para formulario de relaciones
@@ -44,11 +44,9 @@ const SubMenuBar = ({
   // Referencias para los menús desplegables
   const relationMenuRef = useRef(null);
   const relationButtonRef = useRef(null);
-  const legendPopupRef = useRef(null);
-  const legendButtonRef = useRef(null);
   const lineStyleMenuRef = useRef(null);
   const lineStyleButtonRef = useRef(null);
-  
+
   // Lista de tipos de relaciones con sus iconos y descripciones
   const relationshipTypes = [
     { 
@@ -200,18 +198,11 @@ const SubMenuBar = ({
   const openMenuAndCloseOthers = (menuToOpen) => {
     if (menuToOpen === 'relation') {
       setShowRelationMenu(true);
-      setShowLegendPopup(false);
       setShowLineStyleMenu(false);
       closeOtherMenus(relationMenuRef);
-    } else if (menuToOpen === 'legend') {
-      setShowLegendPopup(true);
-      setShowRelationMenu(false);
-      setShowLineStyleMenu(false);
-      closeOtherMenus(legendPopupRef);
     } else if (menuToOpen === 'lineStyle') {
       setShowLineStyleMenu(true);
       setShowRelationMenu(false);
-      setShowLegendPopup(false);
       closeOtherMenus(lineStyleMenuRef);
     }
   };
@@ -222,10 +213,6 @@ const SubMenuBar = ({
       const rect = relationButtonRef.current.getBoundingClientRect();
       setRelationMenuPosition({ top: rect.bottom, left: rect.left });
       openMenuAndCloseOthers('relation');
-    } else if (menuType === 'legend' && !showLegendPopup) {
-      const rect = legendButtonRef.current.getBoundingClientRect();
-      setLegendPopupPosition({ top: rect.bottom, left: rect.left });
-      openMenuAndCloseOthers('legend');
     } else if (menuType === 'lineStyle' && !showLineStyleMenu) {
       const rect = lineStyleButtonRef.current.getBoundingClientRect();
       setLineStyleMenuPosition({ top: rect.bottom, left: rect.left });
@@ -244,14 +231,6 @@ const SubMenuBar = ({
         const rect = relationButtonRef.current.getBoundingClientRect();
         setRelationMenuPosition({ top: rect.bottom, left: rect.left });
         openMenuAndCloseOthers('relation');
-      }
-    } else if (menuType === 'legend') {
-      if (showLegendPopup) {
-        // No cerramos si ya está abierto, el usuario probablemente quiere navegar el menú
-      } else {
-        const rect = legendButtonRef.current.getBoundingClientRect();
-        setLegendPopupPosition({ top: rect.bottom, left: rect.left });
-        openMenuAndCloseOthers('legend');
       }
     } else if (menuType === 'lineStyle') {
       if (showLineStyleMenu) {
@@ -304,11 +283,12 @@ const SubMenuBar = ({
   const subMenuBarStyle = {
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'flex-start',
+    justifyContent: 'flex-start', // Revertimos a flex-start para poder controlar mejor la posición
     background: '#f8fafc',
     height: '40px',
     borderBottom: '1px solid #e2e8f0',
     padding: '0 32px',
+    paddingLeft: '380px', // Añadimos padding izquierdo para mover los elementos después del sidebar
     fontFamily: 'Segoe UI, Tahoma, sans-serif',
     position: 'fixed',
     top: '48px', // Justo debajo de MenuBar
@@ -365,15 +345,6 @@ const SubMenuBar = ({
     fontSize: "14px",
   };
 
-  const selectStyle = {
-    width: "100%",
-    padding: "10px",
-    marginBottom: "10px",
-    border: "1px solid #e2e8f0",
-    borderRadius: "4px",
-    fontSize: "14px",
-  };
-
   const buttonStyle = {
     padding: "10px",
     backgroundColor: selectedEdge ? '#10b981' : '#3b82f6',
@@ -395,19 +366,6 @@ const SubMenuBar = ({
     borderRadius: '4px',
     cursor: 'pointer',
     transition: 'all 0.2s ease',
-  };
-
-  const legendPopupStyle = {
-    position: 'absolute',
-    top: '100%',
-    left: '0px',
-    background: '#ffffff',
-    border: '1px solid #e2e8f0',
-    boxShadow: '0 2px 10px rgba(0,0,0,0.15)',
-    borderRadius: '8px',
-    padding: '12px',
-    zIndex: 1000,
-    width: '340px',
   };
 
   const inputContainerStyle = {
@@ -481,6 +439,12 @@ const SubMenuBar = ({
 
   return (
     <div style={subMenuBarStyle}>
+      {/* Barra de herramientas de formato - Utilizamos el componente FormattingToolbar */}
+      <FormattingToolbar 
+        selectedNode={selectedNode} 
+        updateNodeStyle={updateNodeStyle} 
+      />
+
       {/* Menú Relación */}
       {showRelationEditor && (
         <div
@@ -516,7 +480,7 @@ const SubMenuBar = ({
               <polyline points="6 9 12 15 18 9" />
             </svg>
           </span>
-
+          
           {showRelationMenu && (
             <MenuPortal 
               isOpen={showRelationMenu} 
@@ -615,44 +579,6 @@ const SubMenuBar = ({
                     </button>
                   )}
                 </div>
-              </div>
-            </MenuPortal>
-          )}
-        </div>
-      )}
-
-      {/* Botón para mostrar leyenda */}
-      {showRelationLegend && (
-        <div
-          ref={legendButtonRef}
-          style={{
-            ...menuLabelStyle,
-            background: showLegendPopup ? '#e2e8f0' : 'transparent',
-          }}
-          onClick={(e) => handleMenuClick('legend', e)}
-          onMouseEnter={() => handleMenuHover('legend')}
-        >
-          <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <rect x="3" y="3" width="18" height="18" rx="2" />
-              <path d="M7 7h.01"/>
-              <path d="M11 7h6"/>
-              <path d="M7 12h.01"/>
-              <path d="M11 12h6"/>
-              <path d="M7 17h.01"/>
-              <path d="M11 17h6"/>
-            </svg>
-            Leyenda
-          </span>
-
-          {showLegendPopup && (
-            <MenuPortal 
-              isOpen={showLegendPopup} 
-              position={legendPopupPosition}
-              onClickOutside={() => setShowLegendPopup(false)}
-            >
-              <div ref={legendPopupRef} style={legendPopupStyle}>
-                <RelationshipsLegend />
               </div>
             </MenuPortal>
           )}

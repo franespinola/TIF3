@@ -1,8 +1,7 @@
-// filepath: c:\Users\frane\Desktop\TIF3\frontend\src\components\nodes\BaseNodeComponent.jsx
 import React, { useState } from 'react';
-import NodeHandles from './NodeHandles';
-import ResizeHandle from './ResizeHandle';
-import NodeTooltip from './NodeTooltip';
+import NodeHandles from '../NodeHandles';
+import ResizeHandle from '../ResizeHandle';
+import NodeTooltip from '../NodeTooltip';
 
 /**
  * @typedef {Object} BaseNodeComponentProps

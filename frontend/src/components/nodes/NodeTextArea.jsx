@@ -2,6 +2,7 @@ import React from 'react';
 
 /**
  * Componente reutilizable para entrada de texto multilínea en nodos
+ * Mejorado con soporte para todas las propiedades de formato de texto
  */
 function NodeTextArea({
   value,
@@ -12,7 +13,52 @@ function NodeTextArea({
   onKeyDown,
   fontSize = 16,
   color = '#000000',
+  fontFamily = 'Arial, sans-serif',
+  fontWeight = 'normal',
+  fontStyle = 'normal',
+  textDecoration = 'none',
+  textAlign = 'left',
+  bold = false,
+  italic = false,
+  underline = false,
 }) {
+  // Procesar las propiedades de estilo
+  const processedFontWeight = bold ? 'bold' : fontWeight;
+  const processedFontStyle = italic ? 'italic' : fontStyle;
+  const processedTextDecoration = underline ? 'underline' : textDecoration;
+
+  // Parsear textAlign cuando viene en formato compuesto (vertical-horizontal)
+  const parseTextAlign = () => {
+    if (textAlign && textAlign.includes('-')) {
+      const [, horizontalAlign] = textAlign.split('-');
+      return horizontalAlign || 'left';
+    }
+    return textAlign;
+  };
+
+  // Convertir fontSize si viene como '12pt' a píxeles
+  const getFontSize = () => {
+    if (typeof fontSize === 'string' && fontSize.endsWith('pt')) {
+      return parseInt(fontSize, 10) + 'px';
+    }
+    return typeof fontSize === 'number' ? `${fontSize}px` : fontSize;
+  };
+
+  // Estilos comunes para ambos modos (edición y visualización)
+  const commonStyles = {
+    width: '100%',
+    height: '100%',
+    fontSize: getFontSize(),
+    fontFamily,
+    color,
+    fontWeight: processedFontWeight,
+    fontStyle: processedFontStyle,
+    textDecoration: processedTextDecoration,
+    textAlign: parseTextAlign(),
+    boxSizing: 'border-box',
+    padding: 4,
+  };
+
   if (isEditing) {
     return (
       <textarea
@@ -22,15 +68,11 @@ function NodeTextArea({
         onBlur={onBlur}
         onKeyDown={onKeyDown}
         style={{
-          width: '100%',
-          height: '100%',
-          fontSize: fontSize,
-          color,
-          padding: 4,
+          ...commonStyles,
           border: '1px solid #ccc',
           borderRadius: 3,
           resize: 'none',
-          boxSizing: 'border-box',
+          outline: 'none',
         }}
       />
     );
@@ -39,19 +81,13 @@ function NodeTextArea({
       <div
         onDoubleClick={onDoubleClick}
         style={{
-          width: '100%',
-          height: '100%',
-          fontSize: fontSize,
-          color,
+          ...commonStyles,
           whiteSpace: 'pre-wrap',
           wordBreak: 'break-word',
-          textAlign: 'left',
-          padding: 4,
           cursor: 'text',
           overflow: 'auto',
-          fontFamily: 'Arial, sans-serif',
           userSelect: 'none',
-          boxSizing: 'border-box',
+          backgroundColor: 'transparent',
         }}
       >
         {value}

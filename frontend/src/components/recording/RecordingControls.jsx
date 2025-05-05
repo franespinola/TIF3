@@ -150,39 +150,6 @@ const RecordingControls = ({
     return `${mins}:${secs}`;
   };
 
-  // Componente para el indicador de grabación (pulso)
-  const RecordingIndicator = () => (
-    <div style={{
-      position: 'relative',
-      width: '12px',
-      height: '12px',
-    }}>
-      <div style={{
-        position: 'absolute',
-        width: '12px',
-        height: '12px',
-        borderRadius: '50%',
-        backgroundColor: colors.danger,
-        animation: 'pulsate 1.5s ease-out infinite',
-      }} />
-      <style jsx="true">{`
-        @keyframes pulsate {
-          0% {
-            transform: scale(0.8);
-            opacity: 1;
-          }
-          50% {
-            opacity: 1;
-          }
-          100% {
-            transform: scale(1.5);
-            opacity: 0;
-          }
-        }
-      `}</style>
-    </div>
-  );
-
   return (
     <div style={containerStyle}>
       <h3 style={headerStyle}>
@@ -268,5 +235,38 @@ const RecordingControls = ({
     </div>
   );
 };
+
+// Componente para el indicador de grabación (pulso)
+const RecordingIndicator = () => (
+  <div style={{
+    position: 'relative',
+    width: '12px',
+    height: '12px',
+  }}>
+    <div style={{
+      position: 'absolute',
+      width: '12px',
+      height: '12px',
+      borderRadius: '50%',
+      backgroundColor: '#e11d48',
+      animation: 'pulsate 1.5s ease-out infinite',
+    }} />
+    <style dangerouslySetInnerHTML={{ __html: `
+      @keyframes pulsate {
+        0% {
+          transform: scale(0.8);
+          opacity: 1;
+        }
+        50% {
+          opacity: 1;
+        }
+        100% {
+          transform: scale(1.5);
+          opacity: 0;
+        }
+      }
+    `}} />
+  </div>
+);
 
 export default RecordingControls;

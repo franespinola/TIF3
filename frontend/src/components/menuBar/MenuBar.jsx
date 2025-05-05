@@ -21,8 +21,6 @@ export default function MenuBar({
   setShowMinimap,
   showRelationEditor,
   setShowRelationEditor,
-  showRelationLegend,
-  setShowRelationLegend
 }) {
   const [showFileMenu, setShowFileMenu] = useState(false);
   const [showViewMenu, setShowViewMenu] = useState(false);
@@ -419,23 +417,6 @@ export default function MenuBar({
                       onChange={() => setShowRelationEditor(!showRelationEditor)}
                     />
                     Editor de Relaciones (sidebar)
-                  </label>
-                </div>
-
-                {/* Opción Leyenda de Relaciones (en sidebar) */}
-                <div
-                  style={checkboxItemStyle}
-                  onMouseEnter={dropdownItemHover}
-                  onMouseLeave={dropdownItemLeave}
-                >
-                  <label style={checkboxLabelStyle}>
-                    <input
-                      type="checkbox"
-                      style={checkboxStyle}
-                      checked={showRelationLegend}
-                      onChange={() => setShowRelationLegend(!showRelationLegend)}
-                    />
-                    Leyenda de Relaciones (sidebar)
                   </label>
                 </div>
               </div>

@@ -1,107 +1,223 @@
 import React from "react";
 import MiniIcon from "../sidebar/MiniIcon";
+import { useReactFlow } from "reactflow";
 
 /**
  * Componente que muestra la paleta de herramientas de anotación arrastrables
- * Organizado en 4 columnas con separación horizontal adecuada
+ * Con estilo inspirado en Lucidchart: más limpio y con mejor usabilidad
  */
 const AnnotationToolPalette = ({ nodes, activeDrawingTool, handleDrawingToolSelect }) => {
+  // Obtenemos la instancia de ReactFlow para centrar nodos al hacer click
+  const reactFlowInstance = useReactFlow();
+  
   // Verificar si un tipo de herramienta de anotación está activo
   const isToolActive = (type) => {
     return activeDrawingTool === type;
   };
 
-  // Contenedor principal con diseño de grid de 4 columnas
-  const gridContainerStyle = {
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr 1fr 1fr", // 4 columnas de igual ancho
-    columnGap: "15px", // Separación entre columnas (eje X) reducida
-    rowGap: "12px", // Separación entre filas (eje Y) reducida
-    width: "100%",
-    padding: "3px",
-    justifyContent: "center" // Centrar las columnas en el contenedor
+  // Separar los nodos por categoría
+  const basicNodes = nodes.filter(node => !node.category);
+  const flowchartNodes = nodes.filter(node => node.category === 'flowchart');
+
+  // Insertar un nodo directamente al hacer click (estilo Lucidchart)
+  const handleNodeClick = (item) => {
+    // Primero marcamos la herramienta como activa
+    handleDrawingToolSelect(item.type);
+    
+    // Luego insertamos el nodo en el centro de la vista actual
+    const { x, y, zoom } = reactFlowInstance.getViewport();
+    
+    // Calcular el centro visible del viewport
+    const centerX = x + (window.innerWidth / 2 - x) / zoom;
+    const centerY = y + (window.innerHeight / 2 - y) / zoom;
+    
+    // Crear un nuevo nodo con ID único
+    const newNodeId = `${item.type}_${Date.now()}`;
+    const newNode = {
+      id: newNodeId,
+      type: item.type,
+      position: { x: centerX, y: centerY },
+      data: { 
+        ...item.data,
+        // Agregar una flag que indica que debe activar la edición
+        initialEdit: true
+      },
+    };
+    
+    // Añadir el nodo al diagrama
+    reactFlowInstance.addNodes(newNode);
+    
+    // Centrar la vista en el nuevo nodo con una animación suave
+    reactFlowInstance.setCenter(centerX, centerY, { duration: 300 });
+    
+    // Seleccionar el nodo recién agregado y activar el modo de edición
+    setTimeout(() => {
+      // Seleccionamos el nodo
+      reactFlowInstance.setNodes((nodes) =>
+        nodes.map((node) =>
+          node.id === newNodeId
+            ? { ...node, selected: true }
+            : { ...node, selected: false }
+        )
+      );
+      
+      // Emitimos un evento personalizado que será detectado para activar la edición
+      const editEvent = new CustomEvent('activateNodeEdit', { detail: { nodeId: newNodeId } });
+      document.dispatchEvent(editEvent);
+    }, 100); // Un poco más de tiempo para que el nodo se renderice completamente
   };
 
-  // Estilos para los elementos del palette con estado activo
+  // Contenedor principal con flex-wrap para una disposición fluida
+  const flowchartContainerStyle = {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "8px",
+    width: "100%",
+    maxHeight: "300px",
+    overflowY: "auto",
+    padding: "4px",
+    scrollbarWidth: "thin",
+    scrollbarColor: "#cbd5e1 #f1f5f9",
+  };
+
+  // Estilos para los elementos de la paleta al estilo Lucidchart: limpios sin efectos de botón
   const paletteItemStyle = (isActive) => ({
-    padding: "6px", // Padding más reducido para adaptarse a 4 columnas
-    background: isActive ? "#c7f9e2" : "#f1f5f9",
+    padding: "8px",
+    background: isActive ? "rgba(0, 0, 0, 0.05)" : "transparent",
     cursor: "pointer",
-    borderRadius: "5px",
+    borderRadius: "4px",
     textAlign: "center",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
-    transition: "all 0.2s ease-in-out",
-    border: isActive ? "2px solid #059669" : "1px solid #cbd5e1",
-    boxShadow: isActive ? "0 0 8px rgba(16, 185, 129, 0.3)" : "0px 1px 3px rgba(0, 0, 0, 0.1)",
-    transform: isActive ? "translateY(-2px)" : "none",
-    height: "100%",
+    transition: "all 0.15s ease-in-out",
+    border: isActive ? "1px dashed #94a3b8" : "1px solid transparent",
+    boxShadow: "none",
     userSelect: "none",
-    margin: "1px" // Margen reducido para optimizar espacio
+    // Tamaño flexible basado en pantalla
+    width: "calc(25% - 8px)", // 4 columnas por defecto
+    "@media (maxWidth: 768px)": {
+      width: "calc(33.33% - 8px)", // 3 columnas en tablets
+    },
+    "@media (maxWidth: 480px)": {
+      width: "calc(50% - 8px)", // 2 columnas en móviles
+    },
   });
 
-  // Estilo para las etiquetas adaptado a 4 columnas (fuente más pequeña)
+  // Agregamos CSS en JS para soporte responsive
+  const getWidth = () => {
+    if (window.innerWidth <= 480) return "calc(50% - 8px)"; // 2 columnas
+    if (window.innerWidth <= 768) return "calc(33.33% - 8px)"; // 3 columnas
+    return "calc(25% - 8px)"; // 4 columnas
+  };
+
+  // Estilo para las etiquetas
   const labelStyle = (isActive) => ({
-    fontSize: "0.7rem", // Fuente más pequeña para adaptarse a 4 columnas
-    marginTop: "2px", // Reducido el margen superior
+    fontSize: "0.75rem",
+    marginTop: "4px",
     whiteSpace: "nowrap",
     overflow: "hidden",
     textOverflow: "ellipsis",
     maxWidth: "100%",
-    fontWeight: isActive ? "600" : "500",
-    color: isActive ? "#059669" : "inherit"
+    fontWeight: isActive ? "500" : "normal",
+    color: isActive ? "#475569" : "#64748b"
   });
 
+  // Estilos para los encabezados de sección
   const sectionHeaderStyle = {
-    fontSize: "1.1rem", // Ligeramente reducido
+    fontSize: "1rem",
     fontWeight: "600",
-    marginBottom: "8px", // Reducido margen
-    borderBottom: "2px solid #3b82f6",
-    paddingBottom: "4px",
-    color: "#3b82f6",
-    gridColumn: "1 / span 4" // El título ocupa las 4 columnas
+    marginBottom: "8px",
+    borderBottom: "1px solid #e2e8f0",
+    paddingBottom: "6px",
+    color: "#475569",
+    width: "100%",
+    marginTop: "15px"
+  };
+
+  // Primer encabezado sin margen superior
+  const firstSectionHeaderStyle = {
+    ...sectionHeaderStyle,
+    marginTop: 0
+  };
+
+  // Función para renderizar nodos en el contenedor flex
+  const renderNodes = (nodeList) => {
+    return nodeList.map((item, idx) => {
+      const isActive = isToolActive(item.type);
+      return (
+        <div
+          key={`drawing-${item.type}-${idx}`}
+          draggable
+          onDragStart={(e) =>
+            e.dataTransfer.setData("application/reactflow", JSON.stringify(item))
+          }
+          onClick={() => handleNodeClick(item)} // Usando la nueva función para insertar nodos
+          style={{
+            ...paletteItemStyle(isActive),
+            width: getWidth() // Aplicamos cálculo dinámico del ancho
+          }}
+          onMouseOver={(e) => {
+            if (!isActive) {
+              e.currentTarget.style.background = "rgba(0, 0, 0, 0.05)"; // Hover suave como solicitado
+            }
+          }}
+          onMouseOut={(e) => {
+            if (!isActive) {
+              e.currentTarget.style.background = "transparent";
+            }
+          }}
+        >
+          <MiniIcon type={item.type} isActive={isActive} />
+          <span style={labelStyle(isActive)}>
+            {item.label}
+          </span>
+        </div>
+      );
+    });
   };
 
   return (
     <div className="annotation-tool-palette" style={{ marginBottom: "14px" }}>
-      <h3 style={sectionHeaderStyle}>Herramientas de Anotación</h3>
-      <div style={gridContainerStyle}>
-        {nodes.map((item, idx) => {
-          const isActive = isToolActive(item.type);
-          return (
-            <div
-              key={`drawing-${idx}`}
-              draggable
-              onDragStart={(e) =>
-                e.dataTransfer.setData("application/reactflow", JSON.stringify(item))
-              }
-              onClick={() => handleDrawingToolSelect(item.type)}
-              style={paletteItemStyle(isActive)}
-              onMouseOver={(e) => {
-                if (!isActive) {
-                  e.currentTarget.style.background = "#e2e8f0";
-                  e.currentTarget.style.transform = "translateY(-1px)"; // Reducido de -2px a -1px
-                  e.currentTarget.style.boxShadow = "0px 2px 4px rgba(0, 0, 0, 0.1)"; // Efecto de sombra reducido
-                }
-              }}
-              onMouseOut={(e) => {
-                if (!isActive) {
-                  e.currentTarget.style.background = "#f1f5f9";
-                  e.currentTarget.style.transform = "none";
-                  e.currentTarget.style.boxShadow = "0px 1px 3px rgba(0, 0, 0, 0.1)";
-                }
-              }}
-            >
-              <MiniIcon type={item.type} isActive={isActive} />
-              <span style={labelStyle(isActive)}>
-                {item.label}
-              </span>
-            </div>
-          );
-        })}
+      {/* Sección de herramientas básicas de anotación */}
+      <h3 style={firstSectionHeaderStyle}>Herramientas de Anotación</h3>
+      <div style={flowchartContainerStyle}>
+        {renderNodes(basicNodes)}
       </div>
+
+      {/* Sección de formas para diagramas de flujo con estilo Lucidchart */}
+      <h3 style={sectionHeaderStyle}>Formas de Diagrama de Flujo</h3>
+      <div style={flowchartContainerStyle} className="flowchart-shapes-container">
+        {renderNodes(flowchartNodes)}
+      </div>
+
+      {/* Estilos CSS específicos para mejorar el scrollbar en diferentes navegadores */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        .flowchart-shapes-container::-webkit-scrollbar {
+          width: 6px;
+        }
+        .flowchart-shapes-container::-webkit-scrollbar-track {
+          background: #f1f5f9;
+        }
+        .flowchart-shapes-container::-webkit-scrollbar-thumb {
+          background: #cbd5e1;
+          border-radius: 3px;
+        }
+        .flowchart-shapes-container::-webkit-scrollbar-thumb:hover {
+          background: #94a3b8;
+        }
+        @media (max-width: 768px) {
+          .flowchart-shapes-container > div {
+            width: calc(33.33% - 8px);
+          }
+        }
+        @media (max-width: 480px) {
+          .flowchart-shapes-container > div {
+            width: calc(50% - 8px);
+          }
+        }
+      `}} />
     </div>
   );
 };

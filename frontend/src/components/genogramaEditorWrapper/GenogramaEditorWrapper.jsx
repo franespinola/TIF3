@@ -1,7 +1,6 @@
-import React, { useCallback, useState, useEffect } from "react";
+import React, { useCallback, useState, useEffect, useMemo } from "react";
 import ReactFlow, {
   Background,
-  Controls,
   Panel
 } from "reactflow";
 import "reactflow/dist/style.css";
@@ -30,18 +29,6 @@ const SUB_MENU_BAR_HEIGHT = 40;
 // Altura total de la barra superior (MenuBar + SubMenuBar)
 const TOTAL_MENU_HEIGHT = MENU_BAR_HEIGHT + SUB_MENU_BAR_HEIGHT;
 
-// Estilos para los elementos fijos en la parte inferior
-const FIXED_CONTROL_STYLES = {
-  position: 'absolute', // Cambiado de 'fixed' a 'absolute' para que se posicione respecto al contenedor del canvas
-  bottom: '20px',
-  left: '20px',
-  zIndex: 100,
-  background: 'rgba(255, 255, 255, 0.7)',
-  borderRadius: '4px',
-  padding: '5px',
-  boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)'
-};
-
 function GenogramaEditorWrapper() {
   // Estado para la conexión seleccionada
   const [selectedEdge, setSelectedEdge] = useState(null);
@@ -59,7 +46,6 @@ function GenogramaEditorWrapper() {
   const [showThemeVisualizer, setShowThemeVisualizer] = useState(false);
   const [showMinimap, setShowMinimap] = useState(false);
   const [showRelationEditor, setShowRelationEditor] = useState(false); // Nuevo estado para el editor de relaciones
-  const [showRelationLegend, setShowRelationLegend] = useState(false); // Nuevo estado para la leyenda de relaciones
   
   // Estado para los modos de visualización
   const [currentTheme, setCurrentTheme] = useState('default');
@@ -95,6 +81,24 @@ function GenogramaEditorWrapper() {
     updateEdgeRelation,
     updateNodeData
   } = useGenogramaState();
+  
+  // Función para actualizar los estilos visuales de un nodo
+  const updateNodeStyle = useCallback((nodeId, styleProps) => {
+    setNodes(nds => 
+      nds.map(node => {
+        if (node.id === nodeId) {
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              ...styleProps
+            }
+          };
+        }
+        return node;
+      })
+    );
+  }, [setNodes]);
   
   // Hook para Smart Guides con opciones configurables
   const {
@@ -250,6 +254,10 @@ function GenogramaEditorWrapper() {
     setIsClinicalTabsOpen(prev => !prev);
   }, []);
 
+  // Usando useMemo para asegurar que nodeTypes y edgeTypes no se recreen en cada renderizado
+  const memoizedNodeTypes = useMemo(() => nodeTypes, []);
+  const memoizedEdgeTypes = useMemo(() => edgeTypes, []);
+
   return (
     <>
       <MenuBar
@@ -269,8 +277,6 @@ function GenogramaEditorWrapper() {
         setShowMinimap={setShowMinimap}
         showRelationEditor={showRelationEditor}
         setShowRelationEditor={setShowRelationEditor}
-        showRelationLegend={showRelationLegend}
-        setShowRelationLegend={setShowRelationLegend}
       />
       <SubMenuBar 
         onRelate={onRelate}
@@ -279,6 +285,8 @@ function GenogramaEditorWrapper() {
         setNodes={setNodes}
         setEdges={setEdges}
         edges={edges}
+        selectedNode={selectedNode}
+        updateNodeStyle={updateNodeStyle}
       />
       <div style={{ 
         display: "flex", 
@@ -323,8 +331,8 @@ function GenogramaEditorWrapper() {
             onNodesChange={handleNodesChange}
             onEdgesChange={onEdgesChange}
             onConnect={handleConnect}
-            nodeTypes={nodeTypes}
-            edgeTypes={edgeTypes}
+            nodeTypes={memoizedNodeTypes}
+            edgeTypes={memoizedEdgeTypes}
             onNodeDrag={enableSmartGuides ? onNodeDrag : undefined}
             onNodeDragStop={enableSmartGuides ? onNodeDragStop : undefined}
             fitView
@@ -475,7 +483,6 @@ function GenogramaEditorWrapper() {
           toggleClinicalTabs={toggleClinicalTabsPanel}
           isClinicalTabsOpen={isClinicalTabsOpen}
           showRelationEditor={showRelationEditor}
-          showRelationLegend={showRelationLegend}
           onSidebarCollapse={setSidebarCollapsed} // Pasar el callback para actualizar el estado de colapso
         />
       </div>
