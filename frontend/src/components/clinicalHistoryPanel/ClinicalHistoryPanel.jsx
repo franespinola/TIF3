@@ -23,6 +23,112 @@ const ClinicalHistoryPanel = ({
     pastConsultations: [],
     notes: ''
   });
+
+  // Estados para animación
+  const [isExiting, setIsExiting] = useState(false);
+  const [visibility, setVisibility] = useState(isOpen);
+  
+  // Insertar estilos CSS para las animaciones
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.innerHTML = `
+      @keyframes historyPanelEnter {
+        from {
+          transform: translateX(-440px);
+          opacity: 0;
+          box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+          box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        }
+      }
+      
+      @keyframes historyPanelExit {
+        from {
+          transform: translateX(0);
+          opacity: 1;
+          box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        }
+        to {
+          transform: translateX(-440px);
+          opacity: 0;
+          box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+        }
+      }
+      
+      @keyframes buttonEnter {
+        from {
+          transform: translateX(-60px);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+      
+      @keyframes buttonExit {
+        from {
+          transform: translateX(0);
+          opacity: 1;
+        }
+        to {
+          transform: translateX(-60px);
+          opacity: 0;
+        }
+      }
+      
+      .history-panel-entering {
+        animation: historyPanelEnter 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+      
+      .history-panel-exiting {
+        animation: historyPanelExit 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+      
+      .history-button-entering {
+        animation: buttonEnter 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        animation-delay: 0.1s;
+      }
+      
+      .history-button-exiting {
+        animation: buttonExit 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+    `;
+    document.head.appendChild(style);
+    
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
+
+  // Este efecto maneja la visualización/ocultamiento del panel con animación
+  useEffect(() => {
+    if (isOpen) {
+      setVisibility(true);
+      setIsExiting(false);
+    } else if (visibility) {
+      setIsExiting(true);
+      const timer = setTimeout(() => {
+        setVisibility(false);
+      }, 250); // Duración de la animación de salida
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, visibility]);
+
+  // Función para manejar el cierre del panel con animación
+  const handleToggle = () => {
+    if (isOpen) {
+      setIsExiting(true);
+      const timer = setTimeout(() => {
+        onToggle();
+      }, 200); // Un poco menos que la duración de la animación para que se vea fluido
+    } else {
+      onToggle();
+    }
+  };
   
   // Actualizar los datos clínicos cuando cambia el nodo seleccionado
   useEffect(() => {
@@ -92,10 +198,10 @@ const ClinicalHistoryPanel = ({
   };
   
   // Si el panel está cerrado, solo mostrar un botón para abrirlo
-  if (!isOpen) {
+  if (!isOpen && !isExiting) {
     return (
       <div 
-        className="clinical-history-panel-closed"
+        className={`clinical-history-panel-closed ${isExiting ? 'history-button-exiting' : 'history-button-entering'}`}
         style={{
           position: 'absolute',
           left: 0,
@@ -108,7 +214,7 @@ const ClinicalHistoryPanel = ({
           cursor: 'pointer',
           transition: 'all 0.3s ease'
         }}
-        onClick={onToggle}
+        onClick={handleToggle}
       >
         <div style={{
           padding: '10px',
@@ -138,10 +244,13 @@ const ClinicalHistoryPanel = ({
     );
   }
   
+  // Si el panel no debería estar visible, no renderizar nada
+  if (!visibility && !isOpen) return null;
+  
   // Contenido del panel
   return (
     <div 
-      className="clinical-history-panel"
+      className={`clinical-history-panel ${isExiting ? 'history-panel-exiting' : 'history-panel-entering'}`}
       style={{
         position: 'absolute',
         left: 0,
@@ -168,7 +277,7 @@ const ClinicalHistoryPanel = ({
         color: 'white',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'space-between',
+        justifyContent: 'center',
         position: 'sticky',
         top: 0,
         zIndex: 10
@@ -180,25 +289,6 @@ const ClinicalHistoryPanel = ({
           </svg>
           <h3 style={{ margin: 0 }}>Historia Clínica</h3>
         </div>
-        
-        {/* Botón para cerrar el panel */}
-        <button 
-          onClick={onToggle}
-          style={{
-            background: 'none',
-            border: 'none',
-            color: 'white',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '4px'
-          }}
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M18 6L6 18M6 6l12 12"/>
-          </svg>
-        </button>
       </div>
       
       {/* Contenido del paciente */}

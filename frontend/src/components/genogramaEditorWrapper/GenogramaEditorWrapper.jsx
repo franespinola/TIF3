@@ -250,7 +250,7 @@ function GenogramaEditorWrapper() {
   }, [updateNodeData]);
   
   // Toggle para el panel de pestañas clínicas
-  const toggleClinicalTabsPanel = useCallback(() => {
+  const toggleClinicalTabs = useCallback(() => {
     setIsClinicalTabsOpen(prev => !prev);
   }, []);
 
@@ -312,7 +312,7 @@ function GenogramaEditorWrapper() {
           onSetNodes={setNodes}
           collapsed={sidebarCollapsed}
           onSidebarCollapse={setSidebarCollapsed}
-          toggleClinicalTabsPanel={toggleClinicalTabsPanel}
+          toggleClinicalTabs={toggleClinicalTabs}
           isClinicalTabsOpen={isClinicalTabsOpen}
           isRecording={isRecording}
           onRecordToggle={toggleRecording}

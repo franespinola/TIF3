@@ -20,6 +20,10 @@ const SessionNotesPanel = ({
   const [filter, setFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   
+  // Estados para animación
+  const [isExiting, setIsExiting] = useState(false);
+  const [visibility, setVisibility] = useState(isOpen);
+  
   // Cargar notas desde localStorage al inicio
   useEffect(() => {
     const savedNotes = localStorage.getItem('sessionNotes');
@@ -37,6 +41,129 @@ const SessionNotesPanel = ({
   useEffect(() => {
     localStorage.setItem('sessionNotes', JSON.stringify(notes));
   }, [notes]);
+  
+  // Insertar estilos CSS para las animaciones
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.innerHTML = `
+      @keyframes notesPanelEnter {
+        from {
+          transform: translateX(440px);
+          opacity: 0;
+          box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+          box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+        }
+      }
+      
+      @keyframes notesPanelExit {
+        from {
+          transform: translateX(0);
+          opacity: 1;
+          box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+        }
+        to {
+          transform: translateX(440px);
+          opacity: 0;
+          box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+        }
+      }
+      
+      @keyframes notesButtonEnter {
+        from {
+          transform: translateX(60px);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+      
+      @keyframes notesButtonExit {
+        from {
+          transform: translateX(0);
+          opacity: 1;
+        }
+        to {
+          transform: translateX(60px);
+          opacity: 0;
+        }
+      }
+      
+      .notes-panel-entering {
+        animation: notesPanelEnter 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+      
+      .notes-panel-exiting {
+        animation: notesPanelExit 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+      
+      .notes-button-entering {
+        animation: notesButtonEnter 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        animation-delay: 0.1s;
+      }
+      
+      .notes-button-exiting {
+        animation: notesButtonExit 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+      
+      .note-item-enter {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      
+      .note-item-enter-active {
+        opacity: 1;
+        transform: translateY(0);
+        transition: opacity 300ms, transform 300ms cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      
+      .note-item-exit {
+        opacity: 1;
+      }
+      
+      .note-item-exit-active {
+        opacity: 0;
+        transform: translateY(-10px);
+        transition: opacity 250ms, transform 250ms cubic-bezier(0.16, 1, 0.3, 1);
+      }
+    `;
+    document.head.appendChild(style);
+    
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
+  
+  // Este efecto maneja la visualización/ocultamiento del panel con animación
+  useEffect(() => {
+    if (isOpen) {
+      setVisibility(true);
+      setIsExiting(false);
+    } else if (visibility) {
+      setIsExiting(true);
+      const timer = setTimeout(() => {
+        setVisibility(false);
+      }, 250); // Duración de la animación de salida
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, visibility]);
+  
+  // Función para manejar el cierre del panel con animación
+  const handleToggle = () => {
+    if (isOpen) {
+      setIsExiting(true);
+      const timer = setTimeout(() => {
+        onToggle();
+      }, 200); // Un poco menos que la duración de la animación para que se vea fluido
+    } else {
+      onToggle();
+    }
+  };
   
   // Añadir una nueva nota
   const addNote = () => {
@@ -199,10 +326,10 @@ const SessionNotesPanel = ({
   };
   
   // Renderizado condicional si el panel está cerrado
-  if (!isOpen) {
+  if (!isOpen && !isExiting) {
     return (
       <div 
-        className="session-notes-panel-closed"
+        className={`session-notes-panel-closed ${isExiting ? 'notes-button-exiting' : 'notes-button-entering'}`}
         style={{
           position: 'absolute',
           right: 0,
@@ -215,7 +342,7 @@ const SessionNotesPanel = ({
           cursor: 'pointer',
           transition: 'all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
         }}
-        onClick={onToggle}
+        onClick={handleToggle}
       >
         <div style={{
           padding: '10px',
@@ -246,9 +373,12 @@ const SessionNotesPanel = ({
     );
   }
   
+  // Si el panel no debería estar visible, no renderizar nada
+  if (!visibility && !isOpen) return null;
+  
   return (
     <div 
-      className="session-notes-panel"
+      className={`session-notes-panel ${isExiting ? 'notes-panel-exiting' : 'notes-panel-entering'}`}
       style={{
         position: 'absolute',
         right: 0,
@@ -261,10 +391,8 @@ const SessionNotesPanel = ({
         zIndex: 1000,
         overflowY: 'auto',
         overflowX: 'hidden', // Evita scroll horizontal
-        transition: 'all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
         display: 'flex',
         flexDirection: 'column',
-        animation: 'slideInRight 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards',
         boxSizing: 'border-box', // Incluir padding y border en el ancho
         ...style // Aplicar estilos personalizados
       }}
@@ -276,7 +404,7 @@ const SessionNotesPanel = ({
         color: 'white',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'space-between',
+        justifyContent: 'center',
         position: 'sticky',
         top: 0,
         zIndex: 10
@@ -289,25 +417,6 @@ const SessionNotesPanel = ({
           </svg>
           <h3 style={{ margin: 0 }}>Notas de Sesión</h3>
         </div>
-        
-        {/* Botón para cerrar el panel */}
-        <button 
-          onClick={onToggle}
-          style={{
-            background: 'none',
-            border: 'none',
-            color: 'white',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '4px'
-          }}
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M18 6L6 18M6 6l12 12"/>
-          </svg>
-        </button>
       </div>
       
       {/* Área de entrada para añadir/editar nota */}

@@ -24,6 +24,11 @@ function MiniIcon({ type, isActive, size = 20 }) { // Añadida prop size con val
   const marginRight = Math.floor(size * 0.3); // Margen derecho proporcional
   const shadowSize = Math.max(3, Math.floor(size / 5)); // Tamaño de sombra proporcional
   
+  // Color unificado para todas las formas de diagrama de flujo
+  const flowchartStrokeColor = 'rgb(59, 130, 246)';
+  const flowchartActiveStrokeColor = 'rgb(29, 78, 216)';  // Versión más oscura para estado activo
+  const flowchartHoverShadowColor = 'rgba(59, 130, 246, 0.7)';
+  
   switch (type) {
     case "masculino":
       return (
@@ -494,15 +499,15 @@ function MiniIcon({ type, isActive, size = 20 }) { // Añadida prop size con val
           style={{ 
             marginRight,
             transform: scaleEffect,
-            filter: isHovered || isActive ? `drop-shadow(0 0 ${shadowSize}px rgba(249, 115, 22, 0.7))` : "none",
+            filter: isHovered || isActive ? `drop-shadow(0 0 ${shadowSize}px ${flowchartHoverShadowColor})` : "none",
             transition: "all 0.2s ease-in-out"
           }}
           {...iconProps}
         >
           <polygon
             points="12,2 22,12 12,22 2,12"
-            fill={isActive ? "#ffedd5" : "white"}
-            stroke={isActive ? "#c2410c" : "#f97316"}
+            fill={isActive ? "#e0f2fe" : "white"}
+            stroke={isActive ? flowchartActiveStrokeColor : flowchartStrokeColor}
             strokeWidth={isActive || isHovered ? "2" : "1.5"}
           />
         </svg>
@@ -517,7 +522,7 @@ function MiniIcon({ type, isActive, size = 20 }) { // Añadida prop size con val
           style={{ 
             marginRight,
             transform: scaleEffect,
-            filter: isHovered || isActive ? `drop-shadow(0 0 ${shadowSize}px rgba(79, 70, 229, 0.7))` : "none",
+            filter: isHovered || isActive ? `drop-shadow(0 0 ${shadowSize}px ${flowchartHoverShadowColor})` : "none",
             transition: "all 0.2s ease-in-out"
           }}
           {...iconProps}
@@ -527,8 +532,8 @@ function MiniIcon({ type, isActive, size = 20 }) { // Añadida prop size con val
             cy="12"
             rx="10"
             ry="7"
-            fill={isActive ? "#ede9fe" : "white"}
-            stroke={isActive ? "#4338ca" : "#4f46e5"}
+            fill={isActive ? "#e0f2fe" : "white"}
+            stroke={isActive ? flowchartActiveStrokeColor : flowchartStrokeColor}
             strokeWidth={isActive || isHovered ? "2" : "1.5"}
           />
         </svg>
@@ -543,7 +548,7 @@ function MiniIcon({ type, isActive, size = 20 }) { // Añadida prop size con val
           style={{ 
             marginRight,
             transform: scaleEffect,
-            filter: isHovered || isActive ? `drop-shadow(0 0 ${shadowSize}px rgba(16, 185, 129, 0.7))` : "none",
+            filter: isHovered || isActive ? `drop-shadow(0 0 ${shadowSize}px ${flowchartHoverShadowColor})` : "none",
             transition: "all 0.2s ease-in-out"
           }}
           {...iconProps}
@@ -555,8 +560,8 @@ function MiniIcon({ type, isActive, size = 20 }) { // Añadida prop size con val
             height="16"
             rx="6"
             ry="6"
-            fill={isActive ? "#d1fae5" : "white"}
-            stroke={isActive ? "#065f46" : "#10b981"}
+            fill={isActive ? "#e0f2fe" : "white"}
+            stroke={isActive ? flowchartActiveStrokeColor : flowchartStrokeColor}
             strokeWidth={isActive || isHovered ? "2" : "1.5"}
           />
         </svg>
@@ -571,15 +576,15 @@ function MiniIcon({ type, isActive, size = 20 }) { // Añadida prop size con val
           style={{ 
             marginRight,
             transform: scaleEffect,
-            filter: isHovered || isActive ? `drop-shadow(0 0 ${shadowSize}px rgba(96, 165, 250, 0.7))` : "none",
+            filter: isHovered || isActive ? `drop-shadow(0 0 ${shadowSize}px ${flowchartHoverShadowColor})` : "none",
             transition: "all 0.2s ease-in-out"
           }}
           {...iconProps}
         >
           <path
             d="M3,6 Q3,3 6,3 H18 Q21,3 21,6 Q21,9 18,9 H15 L12,13 L9,9 H6 Q3,9 3,6 Z"
-            fill={isActive ? "#dbeafe" : "white"}
-            stroke={isActive ? "#1e40af" : "#3b82f6"}
+            fill={isActive ? "#e0f2fe" : "white"}
+            stroke={isActive ? flowchartActiveStrokeColor : flowchartStrokeColor}
             strokeWidth={isActive || isHovered ? "2" : "1.5"}
           />
         </svg>
@@ -594,15 +599,15 @@ function MiniIcon({ type, isActive, size = 20 }) { // Añadida prop size con val
           style={{ 
             marginRight,
             transform: scaleEffect,
-            filter: isHovered || isActive ? `drop-shadow(0 0 ${shadowSize}px rgba(126, 34, 206, 0.7))` : "none",
+            filter: isHovered || isActive ? `drop-shadow(0 0 ${shadowSize}px ${flowchartHoverShadowColor})` : "none",
             transition: "all 0.2s ease-in-out"
           }}
           {...iconProps}
         >
           <polygon
             points="6,2 18,2 22,12 18,22 6,22 2,12"
-            fill={isActive ? "#f3e8ff" : "white"}
-            stroke={isActive ? "#7e22ce" : "#9333ea"}
+            fill={isActive ? "#e0f2fe" : "white"}
+            stroke={isActive ? flowchartActiveStrokeColor : flowchartStrokeColor}
             strokeWidth={isActive || isHovered ? "2" : "1.5"}
           />
         </svg>
@@ -617,15 +622,15 @@ function MiniIcon({ type, isActive, size = 20 }) { // Añadida prop size con val
           style={{ 
             marginRight,
             transform: scaleEffect,
-            filter: isHovered || isActive ? `drop-shadow(0 0 ${shadowSize}px rgba(20, 184, 166, 0.7))` : "none",
+            filter: isHovered || isActive ? `drop-shadow(0 0 ${shadowSize}px ${flowchartHoverShadowColor})` : "none",
             transition: "all 0.2s ease-in-out"
           }}
           {...iconProps}
         >
           <path
             d="M 5,7 V 17 C 5,19.5 12,19.5 19,17 V 7 C 19,4.5 12,4.5 5,7 Z"
-            fill={isActive ? "#ccfbf1" : "white"}
-            stroke={isActive ? "#0f766e" : "#14b8a6"}
+            fill={isActive ? "#e0f2fe" : "white"}
+            stroke={isActive ? flowchartActiveStrokeColor : flowchartStrokeColor}
             strokeWidth={isActive || isHovered ? "1.5" : "1"}
           />
           <ellipse
@@ -633,8 +638,8 @@ function MiniIcon({ type, isActive, size = 20 }) { // Añadida prop size con val
             cy="7"
             rx="7"
             ry="2.5"
-            fill={isActive ? "#ccfbf1" : "white"}
-            stroke={isActive ? "#0f766e" : "#14b8a6"}
+            fill={isActive ? "#e0f2fe" : "white"}
+            stroke={isActive ? flowchartActiveStrokeColor : flowchartStrokeColor}
             strokeWidth={isActive || isHovered ? "1.5" : "1"}
           />
           <ellipse
@@ -643,7 +648,7 @@ function MiniIcon({ type, isActive, size = 20 }) { // Añadida prop size con val
             rx="7"
             ry="2.5"
             fill="none"
-            stroke={isActive ? "#0f766e" : "#14b8a6"}
+            stroke={isActive ? flowchartActiveStrokeColor : flowchartStrokeColor}
             strokeWidth={isActive || isHovered ? "1.5" : "1"}
           />
         </svg>
@@ -658,7 +663,7 @@ function MiniIcon({ type, isActive, size = 20 }) { // Añadida prop size con val
           style={{ 
             marginRight,
             transform: scaleEffect,
-            filter: isHovered || isActive ? `drop-shadow(0 0 ${shadowSize}px rgba(37, 99, 235, 0.7))` : "none",
+            filter: isHovered || isActive ? `drop-shadow(0 0 ${shadowSize}px ${flowchartHoverShadowColor})` : "none",
             transition: "all 0.2s ease-in-out"
           }}
           {...iconProps}
@@ -666,12 +671,12 @@ function MiniIcon({ type, isActive, size = 20 }) { // Añadida prop size con val
           <path
             d="M 5,3 H 19 V 18 C 17,21 15,18 12,20 C 9,18 7,21 5,18 Z"
             fill={isActive ? "#e0f2fe" : "white"}
-            stroke={isActive ? "#1e40af" : "#2563eb"}
+            stroke={isActive ? flowchartActiveStrokeColor : flowchartStrokeColor}
             strokeWidth={isActive || isHovered ? "1.5" : "1"}
           />
           <path
             d="M 7,6 H 17 M 7,10 H 17 M 7,14 H 13"
-            stroke={isActive ? "#1e40af" : "#2563eb"}
+            stroke={isActive ? flowchartActiveStrokeColor : flowchartStrokeColor}
             strokeWidth="1"
             strokeLinecap="round"
           />
@@ -687,7 +692,7 @@ function MiniIcon({ type, isActive, size = 20 }) { // Añadida prop size con val
           style={{ 
             marginRight,
             transform: scaleEffect,
-            filter: isHovered || isActive ? `drop-shadow(0 0 ${shadowSize}px rgba(20, 83, 45, 0.7))` : "none",
+            filter: isHovered || isActive ? `drop-shadow(0 0 ${shadowSize}px ${flowchartHoverShadowColor})` : "none",
             transition: "all 0.2s ease-in-out"
           }}
           {...iconProps}
@@ -697,8 +702,8 @@ function MiniIcon({ type, isActive, size = 20 }) { // Añadida prop size con val
             y="4"
             width="20"
             height="16"
-            fill={isActive ? "#dcfce7" : "white"}
-            stroke={isActive ? "#14532d" : "#22c55e"}
+            fill={isActive ? "#e0f2fe" : "white"}
+            stroke={isActive ? flowchartActiveStrokeColor : flowchartStrokeColor}
             strokeWidth={isActive || isHovered ? "1.5" : "1"}
           />
           <line
@@ -706,7 +711,7 @@ function MiniIcon({ type, isActive, size = 20 }) { // Añadida prop size con val
             y1="10"
             x2="22"
             y2="10"
-            stroke={isActive ? "#14532d" : "#22c55e"}
+            stroke={isActive ? flowchartActiveStrokeColor : flowchartStrokeColor}
             strokeWidth={isActive || isHovered ? "1.5" : "1"}
           />
           <line
@@ -714,7 +719,7 @@ function MiniIcon({ type, isActive, size = 20 }) { // Añadida prop size con val
             y1="4"
             x2="12"
             y2="20"
-            stroke={isActive ? "#14532d" : "#22c55e"}
+            stroke={isActive ? flowchartActiveStrokeColor : flowchartStrokeColor}
             strokeWidth={isActive || isHovered ? "1.5" : "1"}
           />
         </svg>
@@ -729,15 +734,15 @@ function MiniIcon({ type, isActive, size = 20 }) { // Añadida prop size con val
           style={{ 
             marginRight,
             transform: scaleEffect,
-            filter: isHovered || isActive ? `drop-shadow(0 0 ${shadowSize}px rgba(234, 88, 12, 0.7))` : "none",
+            filter: isHovered || isActive ? `drop-shadow(0 0 ${shadowSize}px ${flowchartHoverShadowColor})` : "none",
             transition: "all 0.2s ease-in-out"
           }}
           {...iconProps}
         >
           <polygon
             points="12,3 20,20 4,20"
-            fill={isActive ? "#ffedd5" : "white"}
-            stroke={isActive ? "#9a3412" : "#ea580c"}
+            fill={isActive ? "#e0f2fe" : "white"}
+            stroke={isActive ? flowchartActiveStrokeColor : flowchartStrokeColor}
             strokeWidth={isActive || isHovered ? "2" : "1.5"}
           />
         </svg>
@@ -752,7 +757,7 @@ function MiniIcon({ type, isActive, size = 20 }) { // Añadida prop size con val
           style={{ 
             marginRight,
             transform: scaleEffect,
-            filter: isHovered || isActive ? `drop-shadow(0 0 ${shadowSize}px rgba(29, 78, 216, 0.7))` : "none",
+            filter: isHovered || isActive ? `drop-shadow(0 0 ${shadowSize}px ${flowchartHoverShadowColor})` : "none",
             transition: "all 0.2s ease-in-out"
           }}
           {...iconProps}
@@ -761,8 +766,8 @@ function MiniIcon({ type, isActive, size = 20 }) { // Añadida prop size con val
             cx="12"
             cy="12"
             r="9"
-            fill={isActive ? "#dbeafe" : "white"}
-            stroke={isActive ? "#1e40af" : "#1d4ed8"}
+            fill={isActive ? "#e0f2fe" : "white"}
+            stroke={isActive ? flowchartActiveStrokeColor : flowchartStrokeColor}
             strokeWidth={isActive || isHovered ? "1.5" : "1"}
           />
           <line
@@ -770,7 +775,7 @@ function MiniIcon({ type, isActive, size = 20 }) { // Añadida prop size con val
             y1="6"
             x2="12"
             y2="18"
-            stroke={isActive ? "#1e40af" : "#1d4ed8"}
+            stroke={isActive ? flowchartActiveStrokeColor : flowchartStrokeColor}
             strokeWidth={isActive || isHovered ? "2" : "1.5"}
           />
           <line
@@ -778,7 +783,7 @@ function MiniIcon({ type, isActive, size = 20 }) { // Añadida prop size con val
             y1="12"
             x2="18"
             y2="12"
-            stroke={isActive ? "#1e40af" : "#1d4ed8"}
+            stroke={isActive ? flowchartActiveStrokeColor : flowchartStrokeColor}
             strokeWidth={isActive || isHovered ? "2" : "1.5"}
           />
         </svg>
@@ -793,7 +798,7 @@ function MiniIcon({ type, isActive, size = 20 }) { // Añadida prop size con val
           style={{ 
             marginRight,
             transform: scaleEffect,
-            filter: isHovered || isActive ? `drop-shadow(0 0 ${shadowSize}px rgba(220, 38, 38, 0.7))` : "none",
+            filter: isHovered || isActive ? `drop-shadow(0 0 ${shadowSize}px ${flowchartHoverShadowColor})` : "none",
             transition: "all 0.2s ease-in-out"
           }}
           {...iconProps}
@@ -802,8 +807,8 @@ function MiniIcon({ type, isActive, size = 20 }) { // Añadida prop size con val
             cx="12"
             cy="12"
             r="9"
-            fill={isActive ? "#fee2e2" : "white"}
-            stroke={isActive ? "#991b1b" : "#dc2626"}
+            fill={isActive ? "#e0f2fe" : "white"}
+            stroke={isActive ? flowchartActiveStrokeColor : flowchartStrokeColor}
             strokeWidth={isActive || isHovered ? "1.5" : "1"}
           />
           <line
@@ -811,7 +816,7 @@ function MiniIcon({ type, isActive, size = 20 }) { // Añadida prop size con val
             y1="7"
             x2="17"
             y2="17"
-            stroke={isActive ? "#991b1b" : "#dc2626"}
+            stroke={isActive ? flowchartActiveStrokeColor : flowchartStrokeColor}
             strokeWidth={isActive || isHovered ? "2" : "1.5"}
           />
           <line
@@ -819,7 +824,7 @@ function MiniIcon({ type, isActive, size = 20 }) { // Añadida prop size con val
             y1="7"
             x2="7"
             y2="17"
-            stroke={isActive ? "#991b1b" : "#dc2626"}
+            stroke={isActive ? flowchartActiveStrokeColor : flowchartStrokeColor}
             strokeWidth={isActive || isHovered ? "2" : "1.5"}
           />
         </svg>
@@ -834,7 +839,7 @@ function MiniIcon({ type, isActive, size = 20 }) { // Añadida prop size con val
           style={{ 
             marginRight,
             transform: scaleEffect,
-            filter: isHovered || isActive ? `drop-shadow(0 0 ${shadowSize}px rgba(8, 145, 178, 0.7))` : "none",
+            filter: isHovered || isActive ? `drop-shadow(0 0 ${shadowSize}px ${flowchartHoverShadowColor})` : "none",
             transition: "all 0.2s ease-in-out"
           }}
           {...iconProps}
@@ -844,13 +849,13 @@ function MiniIcon({ type, isActive, size = 20 }) { // Añadida prop size con val
             y1="12"
             x2="17"
             y2="12"
-            stroke={isActive ? "#155e75" : "#0891b2"}
+            stroke={isActive ? flowchartActiveStrokeColor : flowchartStrokeColor}
             strokeWidth={isActive || isHovered ? "2" : "1.5"}
           />
           <polygon
             points="17,8 21,12 17,16"
-            fill={isActive ? "#cffafe" : "white"}
-            stroke={isActive ? "#155e75" : "#0891b2"}
+            fill={isActive ? "#e0f2fe" : "white"}
+            stroke={isActive ? flowchartActiveStrokeColor : flowchartStrokeColor}
             strokeWidth={isActive || isHovered ? "2" : "1.5"}
           />
         </svg>
@@ -865,7 +870,7 @@ function MiniIcon({ type, isActive, size = 20 }) { // Añadida prop size con val
           style={{ 
             marginRight,
             transform: scaleEffect,
-            filter: isHovered || isActive ? `drop-shadow(0 0 ${shadowSize}px rgba(124, 58, 237, 0.7))` : "none",
+            filter: isHovered || isActive ? `drop-shadow(0 0 ${shadowSize}px ${flowchartHoverShadowColor})` : "none",
             transition: "all 0.2s ease-in-out"
           }}
           {...iconProps}
@@ -873,7 +878,7 @@ function MiniIcon({ type, isActive, size = 20 }) { // Añadida prop size con val
           <path
             d="M 17,4 Q 12,4 12,12 Q 12,20 17,20"
             fill="none"
-            stroke={isActive ? "#5b21b6" : "#7c3aed"}
+            stroke={isActive ? flowchartActiveStrokeColor : flowchartStrokeColor}
             strokeWidth={isActive || isHovered ? "3" : "2.5"}
           />
         </svg>
@@ -888,7 +893,7 @@ function MiniIcon({ type, isActive, size = 20 }) { // Añadida prop size con val
           style={{ 
             marginRight,
             transform: scaleEffect,
-            filter: isHovered || isActive ? `drop-shadow(0 0 ${shadowSize}px rgba(234, 179, 8, 0.7))` : "none",
+            filter: isHovered || isActive ? `drop-shadow(0 0 ${shadowSize}px ${flowchartHoverShadowColor})` : "none",
             transition: "all 0.2s ease-in-out"
           }}
           {...iconProps}
@@ -898,13 +903,13 @@ function MiniIcon({ type, isActive, size = 20 }) { // Añadida prop size con val
             y1="4"
             x2="5"
             y2="20"
-            stroke={isActive ? "#854d0e" : "#eab308"}
+            stroke={isActive ? flowchartActiveStrokeColor : flowchartStrokeColor}
             strokeWidth={isActive || isHovered ? "2" : "1.5"}
           />
           <path
             d="M 5,4 H 19 L 16,12 L 19,20 H 5"
-            fill={isActive ? "#fef9c3" : "white"}
-            stroke={isActive ? "#854d0e" : "#eab308"}
+            fill={isActive ? "#e0f2fe" : "white"}
+            stroke={isActive ? flowchartActiveStrokeColor : flowchartStrokeColor}
             strokeWidth={isActive || isHovered ? "1.5" : "1"}
           />
         </svg>
