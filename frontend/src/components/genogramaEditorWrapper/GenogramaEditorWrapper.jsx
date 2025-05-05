@@ -291,38 +291,73 @@ function GenogramaEditorWrapper() {
       <div style={{ 
         display: "flex", 
         height: `calc(100vh - ${TOTAL_MENU_HEIGHT}px)`,
-        marginTop: `${TOTAL_MENU_HEIGHT}px`, // Cambiar paddingTop por marginTop
-        boxSizing: "border-box", // Asegurar que padding no afecte el tamaño total
-        overflow: "hidden", // Evitar scroll en este contenedor
-        position: "relative" // Mantener el posicionamiento relativo
+        position: "absolute", /* Cambiado de relative a absolute para evitar espacios */
+        top: `${TOTAL_MENU_HEIGHT}px`, /* Usar top en lugar de marginTop */
+        left: 0,
+        right: 0,
+        bottom: 0,
+        boxSizing: "border-box",
+        overflow: "hidden" /* Prevenir cualquier desbordamiento */
       }}>
-        <ClinicalTabsPanel
-          selectedNode={selectedNode}
-          onUpdateNode={handleUpdateNode}
-          isOpen={isClinicalTabsOpen}
-          onClose={() => setIsClinicalTabsOpen(false)}
-          patientName={patientName}
+        <Sidebar
+          onRelate={onRelate}
+          updateEdgeRelation={updateEdgeRelation}
+          updateNodeData={updateNodeData}
           nodes={nodes}
           edges={edges}
-          style={{ right: 0 }} // Posicionarlo a la derecha
+          selectedNode={selectedNode}
+          selectedEdge={selectedEdge}
+          handleUpdateNode={handleUpdateNode}
+          onUpdateNodeStyle={updateNodeStyle}
+          onSetNodes={setNodes}
+          collapsed={sidebarCollapsed}
+          onSidebarCollapse={setSidebarCollapsed}
+          toggleClinicalTabsPanel={toggleClinicalTabsPanel}
+          isClinicalTabsOpen={isClinicalTabsOpen}
+          isRecording={isRecording}
+          onRecordToggle={toggleRecording}
+          patientName={patientName}
+          onPatientNameChange={setPatientName}
+          activeTool={activeTool}
+          toggleTool={toggleTool}
+          drawingColor={drawingColor}
+          setDrawingColor={setDrawingColor}
+          strokeWidth={strokeWidth}
+          setStrokeWidth={setStrokeWidth}
+          enableSmartGuides={enableSmartGuides}
+          onToggleSmartGuides={toggleSmartGuides}
+          guideOptions={guideOptions}
+          updateGuideOptions={updateGuideOptions}
+          onExportDrawing={handleExportImage}
+          onImportJSON={onImportJSON}
+          onExportJSON={onExportJSON}
+          onExportCSV={onExportCSV}
+          onExportPNG={onExportPNG}
+          onExportJPG={onExportJPG}
+          showRelationEditor={showRelationEditor}
         />
         
         <div
           id="flowWrapper"
           style={{ 
             flexGrow: 1,
+            display: "flex", /* Añadido display flex para asegurar que ReactFlow ocupe todo el espacio */
             height: "100%",
             position: "relative",
-            paddingLeft: sidebarCollapsed ? "60px" : "500px", // Ajusta el padding según el estado del sidebar
-            paddingRight: isClinicalTabsOpen ? "440px" : "0", // Actualizado a 440px para coincidir con el nuevo ancho del panel
-            transition: "padding-left 0.3s ease, padding-right 0.3s ease", // Transición suave para ambos paddings
-            boxSizing: "border-box", // Garantiza que los paddings no afecten el tamaño total
-            overflow: "hidden" // Previene scroll dentro del contenedor del canvas
+            paddingRight: isClinicalTabsOpen ? "440px" : "0", 
+            transition: "padding-right 0.3s ease", 
+            boxSizing: "border-box",
+            overflow: "hidden"
           }}
           onDrop={onDrop}
           onDragOver={onDragOver}
         >
           <ReactFlow
+            style={{
+              width: "100%", /* Asegurar que ReactFlow ocupe todo el ancho */
+              height: "100%", /* Asegurar que ReactFlow ocupe toda la altura */
+              background: "#f8f8f8" /* Un color de fondo para mejor visualización */
+            }}
             nodes={nodes.map((node) => ({
               ...node,
               data: { ...node.data, onEdit: handleEditLabel },
@@ -455,35 +490,15 @@ function GenogramaEditorWrapper() {
           </ReactFlow>
         </div>
         
-        <Sidebar
-          onRelate={onRelate}
-          updateEdgeRelation={updateEdgeRelation}
-          selectedEdge={selectedEdge}
-          onImportJSON={onImportJSON}
-          onExportJSON={onExportJSON}
-          onExportCSV={onExportCSV}
-          onExportPNG={onExportPNG}
-          onExportJPG={onExportJPG}
-          isRecording={isRecording}
-          onRecordToggle={toggleRecording}
+        <ClinicalTabsPanel
+          selectedNode={selectedNode}
+          onUpdateNode={handleUpdateNode}
+          isOpen={isClinicalTabsOpen}
+          onClose={() => setIsClinicalTabsOpen(false)}
           patientName={patientName}
-          onPatientNameChange={setPatientName}
-          activeTool={activeTool}
-          toggleTool={toggleTool}
-          drawingColor={drawingColor}
-          setDrawingColor={setDrawingColor}
-          strokeWidth={strokeWidth}
-          setStrokeWidth={setStrokeWidth}
-          onExportDrawing={handleExportImage}
-          enableSmartGuides={enableSmartGuides}
-          onToggleSmartGuides={toggleSmartGuides}
-          guideOptions={guideOptions}
-          updateGuideOptions={updateGuideOptions}
-          // Añadir toggler para el panel de pestañas clínicas
-          toggleClinicalTabs={toggleClinicalTabsPanel}
-          isClinicalTabsOpen={isClinicalTabsOpen}
-          showRelationEditor={showRelationEditor}
-          onSidebarCollapse={setSidebarCollapsed} // Pasar el callback para actualizar el estado de colapso
+          nodes={nodes}
+          edges={edges}
+          style={{ right: 0 }} // Posicionarlo a la derecha
         />
       </div>
     </>
