@@ -10,7 +10,6 @@ const SidebarPanels = ({
   // Estilo para botones de paneles laterales
   const lateralPanelButtonStyle = {
     width: "100%",
-    padding: "8px",
     border: "none",
     borderRadius: "4px",
     cursor: "pointer",

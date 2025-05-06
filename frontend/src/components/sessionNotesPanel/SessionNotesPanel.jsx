@@ -10,7 +10,6 @@ const SessionNotesPanel = ({
   onToggle, 
   selectedNode, 
   nodes, 
-  edges,
   patientName,
   style = {} // Nuevo prop para estilos personalizados
 }) => {
@@ -297,11 +296,6 @@ const SessionNotesPanel = ({
         return true;
     }
   });
-  
-  // Encontrar el nodo asociado a una nota
-  const findNodeById = (nodeId) => {
-    return nodes.find(node => node.id === nodeId);
-  };
   
   // Obtener color de fondo según tipo de nodo
   const getNodeColor = (nodeType) => {

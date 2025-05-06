@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react';
-import { Position } from 'reactflow';
 import BaseNodeComponent from '../BaseNodeComponent';
 import NodeTextInput from '../NodeTextInput';
 import useNodeEditor from '../../../hooks/useNodeEditor';

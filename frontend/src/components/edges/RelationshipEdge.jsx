@@ -29,7 +29,6 @@ function RelationshipEdge(props) {
     markerEnd = "none", 
     markerStart = "none", 
     strokeWidth: customStrokeWidth, 
-    autoConnect = true 
   } = data;
 
   // Log para depuración si es necesario
@@ -44,7 +43,7 @@ function RelationshipEdge(props) {
       customStrokeWidth,
       data 
     });
-  }, [id, relType, edgeType, data]);
+  }, [id, relType, edgeType, strokeType, connectionType, markerEnd, markerStart, customStrokeWidth, data]);
 
   let edgePath = "";
   let strokeColor = "#555";
@@ -97,6 +96,9 @@ function RelationshipEdge(props) {
       case "circle":
         finalMarkerStart = "url(#edge-circle-start)";
         break;
+      default:
+        console.log(`Tipo de marcador de inicio no reconocido: ${markerStart}`);
+        break;
     }
   }
 
@@ -107,6 +109,9 @@ function RelationshipEdge(props) {
         break;
       case "circle":
         finalMarkerEnd = "url(#edge-circle-end)";
+        break;
+      default:
+        console.log(`Tipo de marcador de fin no reconocido: ${markerEnd}`);
         break;
     }
   }
@@ -124,6 +129,9 @@ function RelationshipEdge(props) {
       break;
     case "doubleLines":
       // Se maneja en extraElements para líneas dobles
+      break;
+    default:
+      // Tipo de trazo sólido por defecto (no requiere strokeDasharray)
       break;
   }
 

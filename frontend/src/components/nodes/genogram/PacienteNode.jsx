@@ -16,7 +16,7 @@ const PacienteNode = ({ data, id, selected }) => {
   const defaultSize = data?.size || 70;
   
   // Usar el hook para gestionar el tamaño
-  const [size, resizeHandleRef, isResizing, setSize] = useResizable(
+  const [size, resizeHandleRef] = useResizable(
     id, 
     { width: defaultSize, height: defaultSize },
     50, // min size

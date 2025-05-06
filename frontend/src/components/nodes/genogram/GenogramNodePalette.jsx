@@ -15,12 +15,10 @@ const GenogramNodePalette = ({ nodes }) => {
     padding: "1px" // Minimizado el padding
   };
 
-  // Estilos para los elementos del palette como botones - Más compactos
+  // Estilos para los elementos del palette - Sin estilo de botón
   const paletteItemStyle = {
     padding: "5px", // Reducido más
-    background: "#f1f5f9",
     cursor: "grab",
-    borderRadius: "5px", // Reducido de 6px a 5px
     textAlign: "center",
     display: "flex",
     flexDirection: "column",
@@ -28,8 +26,6 @@ const GenogramNodePalette = ({ nodes }) => {
     justifyContent: "center",
     transition: "all 0.2s ease-in-out",
     height: "100%",
-    border: "1px solid #cbd5e1",
-    boxShadow: "0px 1px 2px rgba(0, 0, 0, 0.1)", // Sombra más sutil
     userSelect: "none",
     margin: "0" // Eliminado el margen
   };
@@ -67,14 +63,10 @@ const GenogramNodePalette = ({ nodes }) => {
             }
             style={{...paletteItemStyle}}
             onMouseOver={(e) => {
-              e.currentTarget.style.background = "#e2e8f0";
               e.currentTarget.style.transform = "translateY(-1px)";
-              e.currentTarget.style.boxShadow = "0px 1px 3px rgba(0, 0, 0, 0.1)";
             }}
             onMouseOut={(e) => {
-              e.currentTarget.style.background = "#f1f5f9";
               e.currentTarget.style.transform = "none";
-              e.currentTarget.style.boxShadow = "0px 1px 2px rgba(0, 0, 0, 0.1)";
             }}
           >
             <MiniIcon type={item.type} size={22} /> {/* Reducido el tamaño del ícono si MiniIcon acepta props de tamaño */}

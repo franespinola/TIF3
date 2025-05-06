@@ -14,7 +14,6 @@ const EmbarazoNode = ({ data, id, selected }) => {
   const {
     isEditing, 
     value: label, 
-    handleDoubleClick, 
     handleChange, 
     handleBlur, 
     handleKeyDown 

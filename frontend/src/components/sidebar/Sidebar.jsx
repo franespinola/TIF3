@@ -199,26 +199,12 @@ function Sidebar({
     transition: "all 0.2s ease",
   });
 
-  // Estilo para cabecera de sección - Tamaño de fuente reducido para móviles
-  const sectionHeaderStyle = (expanded) => ({
-    padding: screenWidth <= 768 ? "8px 10px" : "10px 15px",
-    backgroundColor: expanded ? "#f1f5f9" : "#ffffff",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    cursor: "pointer",
+  // Clase CSS para encabezados responsive
+  const headerStyle = {
+    fontSize: screenWidth <= 768 ? "14px" : "16px",
     fontWeight: "600",
-    fontSize: screenWidth <= 768 ? "13px" : "14px",
-    borderLeft: expanded ? "3px solid #3b82f6" : "3px solid transparent",
-    transition: "all 0.2s ease",
-    color: expanded ? "#3b82f6" : "#475569",
-  });
-
-  // Estilo para el contenido de las secciones - Padding reducido
-  const sectionContentStyle = {
-    padding: screenWidth <= 768 ? "12px" : "15px",
-    backgroundColor: "#ffffff",
-    borderTop: "1px solid #e2e8f0",
+    marginBottom: screenWidth <= 768 ? "12px" : "15px",
+    color: "#1e40af",
   };
 
   // Estilo para iconos en la barra lateral - Tamaño reducido
@@ -244,14 +230,6 @@ function Sidebar({
     width: "70%", // Reducido de 80%
     height: "1px",
     backgroundColor: "#e2e8f0",
-  };
-
-  // Clase CSS para encabezados responsive
-  const headerStyle = {
-    fontSize: screenWidth <= 768 ? "14px" : "16px",
-    fontWeight: "600",
-    marginBottom: screenWidth <= 768 ? "12px" : "15px",
-    color: "#1e40af",
   };
 
   // Mostrar tooltip al pasar el mouse
@@ -319,7 +297,7 @@ function Sidebar({
     switch (expandedSection) {
       case "drawing":
         return (
-          <>
+          <div style={sectionStyle(true)}>
             <h2 style={headerStyle}>Herramientas de dibujo</h2>
             <DrawingTools
               activeTool={activeTool}
@@ -329,29 +307,29 @@ function Sidebar({
               strokeWidth={strokeWidth}
               setStrokeWidth={setStrokeWidth}
             />
-          </>
+          </div>
         );
       case "figuras":
         return (
-          <>
+          <div style={sectionStyle(true)}>
             <h2 style={headerStyle}>Figuras</h2>
             <GenogramNodePalette nodes={genogramaNodes} />
-          </>
+          </div>
         );
       case "diagramas":
         return (
-          <>
+          <div style={sectionStyle(true)}>
             <h2 style={headerStyle}>Diagramas de flujo</h2>
             <AnnotationToolPalette
               nodes={drawingNodes}
               activeDrawingTool={activeDrawingTool}
               handleDrawingToolSelect={handleDrawingToolSelect}
             />
-          </>
+          </div>
         );
       case "relaciones":
         return (
-          <>
+          <div style={sectionStyle(true)}>
             <h2 style={headerStyle}>Gestor de relaciones</h2>
             <RelationshipManager
               source={source}
@@ -365,11 +343,11 @@ function Sidebar({
               selectedEdge={selectedEdge}
               relationshipTypes={relationshipTypes}
             />
-          </>
+          </div>
         );
       case "config":
         return (
-          <>
+          <div style={sectionStyle(true)}>
             <h2 style={headerStyle}>Configuración</h2>
             <SmartGuidesConfig
               enableSmartGuides={enableSmartGuides}
@@ -383,11 +361,11 @@ function Sidebar({
                 <ExportImageButton onExportDrawing={onExportDrawing} />
               </div>
             )}
-          </>
+          </div>
         );
       case "grabacion":
         return (
-          <>
+          <div style={sectionStyle(true)}>
             <h2 style={headerStyle}>Grabación de audio</h2>
             <RecordingControls
               isRecording={isRecording}
@@ -395,7 +373,7 @@ function Sidebar({
               patientName={patientName}
               onPatientNameChange={onPatientNameChange}
             />
-          </>
+          </div>
         );
       default:
         return (

@@ -17,7 +17,7 @@ const FallecidoMNode = ({ data, id, selected }) => {
   const defaultSize = data?.size || 65;
   
   // Usar el hook para gestionar el tamaño
-  const [size, resizeHandleRef, isResizing, setSize] = useResizable(
+  const [size, resizeHandleRef] = useResizable(
     id, 
     { width: defaultSize, height: defaultSize },
     45, // min width

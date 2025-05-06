@@ -93,7 +93,7 @@ export default function useGenogramaState() {
       ]);
       showToast(`✔ Relación '${relType}' creada entre ${source} y ${target}`);
     },
-    [nodes, setEdges, setNodes, showToast]
+    [nodes, setEdges, showToast]
   );
 
   const updateEdgeRelation = useCallback(

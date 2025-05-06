@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react';
-import { getBezierPath, getSmoothStepPath } from 'reactflow';
 import { createRoundedWavePath, createZigZagPath } from "../../utils/pathUtils";
 
 /**
@@ -8,14 +7,10 @@ import { createRoundedWavePath, createZigZagPath } from "../../utils/pathUtils";
  */
 const PartnerEdge = ({ 
   id,
-  source,
-  target,
   sourceX,
   sourceY,
   targetX,
   targetY,
-  sourcePosition,
-  targetPosition,
   style = {},
   data,
   markerEnd,
