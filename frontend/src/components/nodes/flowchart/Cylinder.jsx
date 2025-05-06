@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import { Handle, Position, useUpdateNodeInternals } from 'reactflow';
 import ResizableNode from '../ResizableNode';
 import EditableText from '../../text/EditableText';
@@ -10,19 +10,43 @@ const Cylinder = ({ id, data, selected }) => {
     height: data.height || 90,
   });
   const updateNodeInternals = useUpdateNodeInternals();
-  const [text, setText] = useState(data.text || 'Base de datos');
+  const [text, setText] = useState(data.text || data.label || 'Base de datos');
+
+  useEffect(() => {
+    // Actualizar texto cuando cambien los datos externos
+    if (data?.text !== undefined && data.text !== text) {
+      setText(data.text);
+    } else if (data?.label !== undefined && data.label !== text) {
+      setText(data.label);
+    }
+  }, [data?.text, data?.label, text]);
 
   const onResize = useCallback((newDimensions) => {
     setDimensions(newDimensions);
-    data.width = newDimensions.width;
-    data.height = newDimensions.height;
+    // Guardar el tamaño en data para que persista
+    if (data) {
+      data.width = newDimensions.width;
+      data.height = newDimensions.height;
+    }
     updateNodeInternals(id);
   }, [data, id, updateNodeInternals]);
 
   const onTextChange = useCallback((newText) => {
     setText(newText);
-    data.text = newText;
-  }, [data]);
+    if (data) {
+      data.text = newText;
+      // También actualizar label para mantener consistencia
+      data.label = newText;
+      // Si hay una función onEdit, llamarla
+      if (data.onEdit) {
+        data.onEdit(id, newText, {
+          ...data,
+          text: newText,
+          label: newText
+        });
+      }
+    }
+  }, [data, id]);
 
   // Obtener dimensiones
   const width = dimensions.width;
@@ -31,6 +55,13 @@ const Cylinder = ({ id, data, selected }) => {
   // Parámetros para el cilindro
   const ellipseHeight = Math.min(height * 0.2, 20); // Altura de la elipse superior e inferior
   const cylinderBodyHeight = height - ellipseHeight; // Altura del cuerpo del cilindro
+
+  // Obtener los estilos aplicables
+  const stroke = data?.stroke || 'rgb(59, 130, 246)'; // Color azul estandarizado
+  const fill = data?.fill || 'white';
+  const strokeWidth = data?.strokeWidth || 1.5;
+  const textColor = data?.textColor || '#000000';
+  const fontSize = data?.fontSize || 14;
 
   return (
     <div style={{ position: 'relative' }}>
@@ -53,9 +84,9 @@ const Cylinder = ({ id, data, selected }) => {
                 V ${ellipseHeight/2} 
                 C ${width-1},${ellipseHeight*0.1} ${width*0.75},0 ${width/2},0 
                 C ${width*0.25},0 1,${ellipseHeight*0.1} 1,${ellipseHeight/2} Z`}
-            fill={data.fill || 'white'}
-            stroke={data.stroke || '#14B8A6'}
-            strokeWidth={data.strokeWidth || 1.5}
+            fill={fill}
+            stroke={stroke}
+            strokeWidth={strokeWidth}
           />
           
           {/* Elipse superior (para dar efecto 3D) */}
@@ -64,9 +95,9 @@ const Cylinder = ({ id, data, selected }) => {
             cy={ellipseHeight/2}
             rx={width/2 - 1}
             ry={ellipseHeight/2}
-            fill={data.fill || 'white'}
-            stroke={data.stroke || '#14B8A6'}
-            strokeWidth={data.strokeWidth || 1.5}
+            fill={fill}
+            stroke={stroke}
+            strokeWidth={strokeWidth}
           />
         </svg>
         <div
@@ -88,12 +119,12 @@ const Cylinder = ({ id, data, selected }) => {
           <EditableText
             text={text}
             onChange={onTextChange}
-            color={data.textColor || '#000000'}
-            fontSize={data.fontSize || 12}
-            bold={data.bold}
-            italic={data.italic}
-            underline={data.underline}
-            textAlign={data.textAlign || 'center'}
+            color={textColor}
+            fontSize={fontSize || 12}
+            bold={data?.bold}
+            italic={data?.italic}
+            underline={data?.underline}
+            textAlign={data?.textAlign || 'center'}
             size={Math.min(width, height - ellipseHeight) * 0.9}
             pointerEvents="auto"
           />

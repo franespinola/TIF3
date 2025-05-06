@@ -70,13 +70,13 @@ function MiniIcon({ type, isActive, size = 20 }) { // Añadida prop size con val
           style={{
             width: size,
             height: size,
-            background: "#fee2e2",
-            border: `${borderSize}px solid #7f1d1d`,
+            background: "rgb(221, 214, 254)",
+            border: `${borderSize}px solid rgb(79, 70, 229)`,
             position: "relative",
             marginRight,
             transform: scaleEffect,
             transition: "all 0.2s ease-in-out",
-            boxShadow: isHovered ? `0 0 ${shadowSize}px rgba(127, 29, 29, 0.5)` : "none",
+            boxShadow: isHovered ? `0 0 ${shadowSize}px rgba(79, 70, 229, 0.5)` : "none",
             display: "flex",
             justifyContent: "center",
             alignItems: "center"
@@ -84,28 +84,31 @@ function MiniIcon({ type, isActive, size = 20 }) { // Añadida prop size con val
         >
           <div style={{
             position: "absolute",
-            width: "100%",
+            width: "100%", 
             height: "100%",
             display: "flex",
             justifyContent: "center",
-            alignItems: "center"
+            alignItems: "center",
+            transform: "rotate(0deg)" // Aseguramos que no hay rotación adicional
           }}>
             <div
               style={{
                 width: borderSize,
-                height: size * 1.4,
-                background: "#7f1d1d",
+                height: "141%", // Usa porcentaje para asegurar la diagonal completa
+                background: "rgb(79, 70, 229)",
                 position: "absolute",
-                transform: "rotate(45deg)",
+                transform: "rotate(45deg)", // 45 grados exactos
+                transformOrigin: "center center" // Asegura rotación desde el centro
               }}
             />
             <div
               style={{
                 width: borderSize,
-                height: size * 1.4,
-                background: "#7f1d1d",
+                height: "141%", // √2 ≈ 1.414, para asegurar que alcanza las esquinas
+                background: "rgb(79, 70, 229)",
                 position: "absolute",
-                transform: "rotate(-45deg)",
+                transform: "rotate(-45deg)", // -45 grados exactos
+                transformOrigin: "center center" // Asegura rotación desde el centro
               }}
             />
           </div>
@@ -120,12 +123,12 @@ function MiniIcon({ type, isActive, size = 20 }) { // Añadida prop size con val
             height: size,
             borderRadius: "50%",
             background: "#fff1f2",
-            border: `${borderSize}px solid #be123c`,
+            border: `${borderSize}px solid rgb(190, 24, 93)`,
             position: "relative",
             marginRight,
             transform: scaleEffect,
             transition: "all 0.2s ease-in-out",
-            boxShadow: isHovered ? `0 0 ${shadowSize}px rgba(190, 18, 60, 0.5)` : "none",
+            boxShadow: isHovered ? `0 0 ${shadowSize}px rgba(190, 24, 93, 0.5)` : "none",
             display: "flex",
             justifyContent: "center",
             alignItems: "center"
@@ -133,28 +136,31 @@ function MiniIcon({ type, isActive, size = 20 }) { // Añadida prop size con val
         >
           <div style={{
             position: "absolute",
-            width: "100%",
+            width: "100%", 
             height: "100%",
             display: "flex",
             justifyContent: "center",
-            alignItems: "center"
+            alignItems: "center",
+            transform: "rotate(0deg)" // Aseguramos que no hay rotación adicional
           }}>
             <div
               style={{
                 width: borderSize,
-                height: size * 1.4,
-                background: "#be123c",
+                height: "90%", // Reducido del 141% a 90% para mantenerlo dentro del círculo
+                background: "rgb(190, 24, 93)",
                 position: "absolute",
                 transform: "rotate(45deg)",
+                transformOrigin: "center center"
               }}
             />
             <div
               style={{
                 width: borderSize,
-                height: size * 1.4,
-                background: "#be123c",
+                height: "90%", // Reducido del 141% a 90% para mantenerlo dentro del círculo
+                background: "rgb(190, 24, 93)",
                 position: "absolute",
                 transform: "rotate(-45deg)",
+                transformOrigin: "center center"
               }}
             />
           </div>

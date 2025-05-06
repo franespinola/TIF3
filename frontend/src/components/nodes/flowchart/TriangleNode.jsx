@@ -8,15 +8,21 @@ export default function TriangleNode({ data, id, selected }) {
   // Valores por defecto si no se proporcionan en data
   const width = data?.width || 100;
   const height = data?.height || 80;
-  const stroke = data?.stroke || '#000000';
+  const stroke = data?.stroke || 'rgb(59, 130, 246)'; // Color azul estandarizado
   const fill = data?.fill || 'white';
-  const strokeWidth = data?.strokeWidth || 1;
-  const orientation = data?.orientation || 'down'; // down, up, left, right
+  const strokeWidth = data?.strokeWidth || 1.5;
+  const textColor = data?.textColor || '#000000';
+  const fontSize = data?.fontSize || 14;
+  const direction = data?.direction || 'down'; // down, up, left, right
   
   // Usar el hook de edición de nodos
   const onSave = (newLabel) => {
     if (data?.onEdit) {
-      data.onEdit(id, newLabel);
+      data.onEdit(id, newLabel, {
+        ...data,
+        label: newLabel,
+        text: newLabel // Para mantener consistencia
+      });
     }
   };
   
@@ -27,7 +33,7 @@ export default function TriangleNode({ data, id, selected }) {
     handleChange, 
     handleBlur, 
     handleKeyDown 
-  } = useNodeEditor(data?.label || "", onSave);
+  } = useNodeEditor(data?.label || data?.text || "", onSave);
 
   // Usar el hook de redimensionamiento
   const [size, resizeHandleRef, isResizing, setSize] = useResizable(
@@ -56,98 +62,106 @@ export default function TriangleNode({ data, id, selected }) {
   // Determinar si los handles son conectables
   const isConnectable = data?.isConnectable !== false;
 
-  // Calcular puntos del triángulo según la orientación
+  // Calcular los puntos del triángulo según la dirección
   const getTrianglePoints = () => {
     const w = size.width;
     const h = size.height;
     
-    switch(orientation) {
+    switch (direction) {
       case 'up':
-        return [
-          [w / 2, 0],       // top
-          [w, h],           // bottom-right
-          [0, h]            // bottom-left
-        ].map(point => point.join(',')).join(' ');
-        
-      case 'right':
-        return [
-          [w, h / 2],       // right-middle
-          [0, h],           // bottom-left
-          [0, 0]            // top-left
-        ].map(point => point.join(',')).join(' ');
-        
+        return `${w/2},${strokeWidth} ${w-strokeWidth},${h-strokeWidth} ${strokeWidth},${h-strokeWidth}`;
       case 'left':
-        return [
-          [0, h / 2],       // left-middle
-          [w, 0],           // top-right
-          [w, h]            // bottom-right
-        ].map(point => point.join(',')).join(' ');
-        
+        return `${strokeWidth},${h/2} ${w-strokeWidth},${strokeWidth} ${w-strokeWidth},${h-strokeWidth}`;
+      case 'right':
+        return `${w-strokeWidth},${h/2} ${strokeWidth},${strokeWidth} ${strokeWidth},${h-strokeWidth}`;
       case 'down':
       default:
-        return [
-          [0, 0],           // top-left
-          [w, 0],           // top-right
-          [w / 2, h]        // bottom-middle
-        ].map(point => point.join(',')).join(' ');
+        return `${w/2},${h-strokeWidth} ${w-strokeWidth},${strokeWidth} ${strokeWidth},${strokeWidth}`;
     }
   };
 
-  // Ajustar posicionamiento del texto según la orientación
+  // Ajustar la posición del texto según la dirección del triángulo
   const getTextPosition = () => {
-    switch(orientation) {
+    switch (direction) {
       case 'up':
-        return { paddingTop: '50%', paddingBottom: '10%' };
+        return { paddingTop: '0', paddingBottom: '30%' };
+      case 'left':
+        return { paddingLeft: '0', paddingRight: '30%' };
+      case 'right':
+        return { paddingLeft: '30%', paddingRight: '0' };
       case 'down':
-        return { paddingTop: '10%', paddingBottom: '50%' };
       default:
-        return {};
+        return { paddingTop: '30%', paddingBottom: '0' };
     }
   };
+
+  const textPosition = getTextPosition();
 
   return (
     <BaseNodeComponent
       selected={selected}
       resizeHandleRef={resizeHandleRef}
       isConnectable={isConnectable}
+      data={data}
+      nodeType="triangle"
+      nodeStyles={{
+        width: size.width,
+        height: size.height,
+        position: "relative"
+      }}
     >
-      <svg width={size.width} height={size.height}>
-        <polygon
-          points={getTrianglePoints()}
-          stroke={stroke}
-          strokeWidth={strokeWidth}
-          fill={fill}
-        />
-      </svg>
-      
-      <div
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          pointerEvents: 'none',
-          ...getTextPosition()
-        }}
-      >
-        {/* Componente para la entrada de texto */}
-        <NodeTextInput
-          value={label}
-          isEditing={isEditing}
-          onDoubleClick={handleDoubleClick}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          onKeyDown={handleKeyDown}
-          labelStyle={{
-            padding: '0 10px',
-            textAlign: 'center',
-            pointerEvents: 'all'
+      <div style={{ 
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        position: 'relative'
+      }}>
+        <svg width={size.width} height={size.height} style={{ position: 'absolute', top: 0, left: 0 }}>
+          <polygon
+            points={getTrianglePoints()}
+            stroke={stroke}
+            strokeWidth={strokeWidth}
+            fill={fill}
+          />
+        </svg>
+        
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: '10px',
+            ...textPosition,
+            zIndex: 1
           }}
-        />
+        >
+          {/* Componente para la entrada de texto */}
+          <NodeTextInput
+            value={label}
+            isEditing={isEditing}
+            onDoubleClick={handleDoubleClick}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
+            labelStyle={{
+              color: textColor,
+              fontSize: fontSize,
+              textAlign: 'center',
+              width: '100%',
+              height: '100%',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center'
+            }}
+          />
+        </div>
       </div>
     </BaseNodeComponent>
   );

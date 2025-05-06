@@ -27,85 +27,35 @@ const activeTabStyle = {
 // Componente principal
 const ClinicalTabsPanel = ({ selectedNode, onUpdateNode, isOpen, onClose, nodes, edges, patientName }) => {
   const [activeTab, setActiveTab] = useState('history');
-  const [isExiting, setIsExiting] = useState(false);
-  const [visibility, setVisibility] = useState(isOpen);
+  const [visible, setVisible] = useState(isOpen);
   
-  // Este efecto maneja la animación de entrada y salida del panel
-  useEffect(() => {
-    // Inserta estilos CSS para las animaciones
-    const style = document.createElement('style');
-    style.innerHTML = `
-      @keyframes panelEnter {
-        from {
-          transform: translateX(440px);
-          opacity: 0;
-          box-shadow: 0 0 0 rgba(0, 0, 0, 0);
-        }
-        to {
-          transform: translateX(0);
-          opacity: 1;
-          box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
-        }
-      }
-      
-      @keyframes panelExit {
-        from {
-          transform: translateX(0);
-          opacity: 1;
-          box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
-        }
-        to {
-          transform: translateX(440px);
-          opacity: 0;
-          box-shadow: 0 0 0 rgba(0, 0, 0, 0);
-        }
-      }
-      
-      .panel-entering {
-        animation: panelEnter 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-      }
-      
-      .panel-exiting {
-        animation: panelExit 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-      }
-    `;
-    document.head.appendChild(style);
-    
-    return () => {
-      document.head.removeChild(style);
-    };
-  }, []);
-
-  // Este efecto maneja la visualización/ocultamiento del panel con animación
+  // Manejar el cambio de isOpen con animación
   useEffect(() => {
     if (isOpen) {
-      setVisibility(true);
-      setIsExiting(false);
-    } else if (visibility) {
-      setIsExiting(true);
+      // Cuando se abre, primero hacer visible y luego aplicar transición
+      setVisible(true);
+    } else if (visible) {
+      // Cuando se cierra, escuchar el fin de la transición antes de quitar del DOM
       const timer = setTimeout(() => {
-        setVisibility(false);
-      }, 250); // Duración de la animación de salida
+        setVisible(false);
+      }, 300); // Esperar a que termine la transición
       return () => clearTimeout(timer);
     }
-  }, [isOpen, visibility]);
+  }, [isOpen, visible]);
 
-  // Función para manejar el cierre del panel con animación
+  // Cierre inmediato al hacer clic en X
   const handleClose = () => {
-    setIsExiting(true);
-    const timer = setTimeout(() => {
-      onClose();
-    }, 200); // Un poco menos que la duración de la animación para que se vea fluido
-    return () => clearTimeout(timer);
+    // Llamar inmediatamente al onClose para actualizar el estado en el componente padre
+    onClose();
   };
 
-  // Si el panel no está visible, no renderizar nada
-  if (!visibility) return null;
-
-  // Estilo dinámico para el contenedor del panel, aplicando la clase de animación apropiada
-  const dynamicPanelStyle = {
+  // No renderizar si no está visible
+  if (!visible && !isOpen) return null;
+  
+  // Estilo base para el panel
+  const panelStyle = {
     position: 'fixed',
-    top: '88px', // MenuBar (48px) + SubMenuBar (40px)
+    top: '88px',
     right: 0,
     width: '440px',
     height: 'calc(100vh - 88px)',
@@ -116,7 +66,14 @@ const ClinicalTabsPanel = ({ selectedNode, onUpdateNode, isOpen, onClose, nodes,
     zIndex: 999,
     boxSizing: 'border-box',
     overflow: 'hidden',
-    className: isExiting ? 'panel-exiting' : 'panel-entering',
+    transform: isOpen ? 'translateX(0)' : 'translateX(440px)',
+    opacity: isOpen ? 1 : 0,
+    boxShadow: isOpen ? '-2px 0 10px rgba(0, 0, 0, 0.1)' : 'none',
+    transition: 'transform 300ms ease-out, opacity 300ms ease-out, box-shadow 300ms ease-out',
+    willChange: 'transform, opacity', // Ayuda a optimizar la animación
+    backfaceVisibility: 'hidden', // Reduce problemas de renderizado
+    WebkitBackfaceVisibility: 'hidden',
+    pointerEvents: isOpen ? 'auto' : 'none',
   };
 
   // Estilos para el contenedor de pestañas
@@ -131,7 +88,7 @@ const ClinicalTabsPanel = ({ selectedNode, onUpdateNode, isOpen, onClose, nodes,
     boxSizing: 'border-box',
   };
 
-  // Estilos para el contenedor del contenido
+  // Estilos para el contenedor del contenido con transición separada
   const contentStyle = {
     flex: 1,
     overflowY: 'auto',
@@ -140,13 +97,12 @@ const ClinicalTabsPanel = ({ selectedNode, onUpdateNode, isOpen, onClose, nodes,
     position: 'relative',
     width: '100%',
     boxSizing: 'border-box',
+    opacity: isOpen ? 1 : 0,
+    transition: 'opacity 250ms ease-out',
   };
 
   return (
-    <div 
-      style={dynamicPanelStyle}
-      className={isExiting ? 'panel-exiting' : 'panel-entering'}
-    >
+    <div style={panelStyle}>
       <div style={tabHeaderContainerStyle}>
         <div
           style={activeTab === 'history' ? activeTabStyle : tabStyle}

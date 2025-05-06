@@ -8,8 +8,20 @@ import ReactDOM from 'react-dom';
  * @param {{ top: number, left: number }} position
  * @param {Function} onClickOutside - Callback opcional que se invoca cuando se hace clic fuera del menú
  * @param {number} closeDelay - Retraso en ms antes de cerrar el menú al salir (default: 300)
+ * @param {boolean} isSubmenu - Indica si es un submenú para aplicar comportamiento específico
+ * @param {Function} onMouseEnter - Callback opcional que se invoca cuando el mouse entra al menú
+ * @param {Function} onMouseLeave - Callback opcional que se invoca cuando el mouse sale del menú
  */
-const MenuPortal = ({ children, isOpen, position, onClickOutside, closeDelay = 300 }) => {
+const MenuPortal = ({ 
+  children, 
+  isOpen, 
+  position, 
+  onClickOutside, 
+  closeDelay = 300,
+  isSubmenu = false,
+  onMouseEnter,
+  onMouseLeave
+}) => {
   const [portalContainer, setPortalContainer] = useState(null);
   const menuRef = useRef(null);
   const closeTimerRef = useRef(null);
@@ -26,7 +38,8 @@ const MenuPortal = ({ children, isOpen, position, onClickOutside, closeDelay = 3
       // Añadir una referencia a este menú y su callback de cierre
       const menuInfo = {
         ref: menuRef,
-        onClose: onClickOutside
+        onClose: onClickOutside,
+        isSubmenu: isSubmenu
       };
       window._activeMenus.add(menuInfo);
 
@@ -37,7 +50,7 @@ const MenuPortal = ({ children, isOpen, position, onClickOutside, closeDelay = 3
         }
       };
     }
-  }, [isOpen, onClickOutside]);
+  }, [isOpen, onClickOutside, isSubmenu]);
 
   useEffect(() => {
     if (isOpen) {
@@ -54,8 +67,19 @@ const MenuPortal = ({ children, isOpen, position, onClickOutside, closeDelay = 3
   // Efecto para manejar clicks fuera del menú
   useEffect(() => {
     const handleClickOutside = (event) => {
-      // Solo cerramos si el clic fue fuera del menú
-      if (isOpen && menuRef.current && !menuRef.current.contains(event.target)) {
+      // Verificar si el clic fue dentro de algún menú activo
+      let clickedInAnyMenu = false;
+      
+      if (window._activeMenus) {
+        window._activeMenus.forEach(menu => {
+          if (menu.ref.current && menu.ref.current.contains(event.target)) {
+            clickedInAnyMenu = true;
+          }
+        });
+      }
+
+      // Solo cerramos si el clic fue fuera de todos los menús
+      if (isOpen && !clickedInAnyMenu) {
         // Si se proporcionó un callback onClickOutside, llamarlo
         if (typeof onClickOutside === 'function') {
           onClickOutside();
@@ -82,11 +106,20 @@ const MenuPortal = ({ children, isOpen, position, onClickOutside, closeDelay = 3
       clearTimeout(closeTimerRef.current);
     }
     
-    closeTimerRef.current = setTimeout(() => {
-      if (!mouseInsideMenu && typeof onClickOutside === 'function') {
-        onClickOutside();
-      }
-    }, closeDelay);
+    // Solo iniciamos el temporizador si no es un submenú
+    // Los submenús tienen un manejo especial para evitar cierres prematuros
+    if (!isSubmenu) {
+      closeTimerRef.current = setTimeout(() => {
+        if (!mouseInsideMenu && typeof onClickOutside === 'function') {
+          onClickOutside();
+        }
+      }, closeDelay);
+    }
+    
+    // Si hay un callback específico para onMouseLeave, lo llamamos
+    if (typeof onMouseLeave === 'function') {
+      onMouseLeave();
+    }
   };
 
   // Al entrar al menú, cancelamos cualquier temporizador de cierre
@@ -95,6 +128,11 @@ const MenuPortal = ({ children, isOpen, position, onClickOutside, closeDelay = 3
     if (closeTimerRef.current) {
       clearTimeout(closeTimerRef.current);
       closeTimerRef.current = null;
+    }
+    
+    // Si hay un callback específico para onMouseEnter, lo llamamos
+    if (typeof onMouseEnter === 'function') {
+      onMouseEnter();
     }
   };
 

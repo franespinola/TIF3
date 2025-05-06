@@ -15,33 +15,15 @@ import NodeTooltip from './NodeTooltip';
  * @property {Object} [data={}] - Datos del nodo para el tooltip
  * @property {string} [nodeType='default'] - Tipo de nodo
  * @property {boolean} [showTooltip=true] - Si se debe mostrar el tooltip al pasar el cursor
+ * @property {React.ReactNode} [labelContent=null] - Contenido de la etiqueta que se mostrará por fuera del nodo
  */
 
 /**
  * Componente base para nodos que proporciona funcionalidad común
- * como handles y control de redimensionamiento. Puede ser utilizado como
- * base para todos los tipos de nodos, proporcionando una estructura consistente.
+ * como handles y control de redimensionamiento.
  * 
  * @param {BaseNodeComponentProps} props - Propiedades del componente 
  * @returns {JSX.Element} - Componente renderizado
- * 
- * @example
- * // Uso básico
- * <BaseNodeComponent selected={selected} resizeHandleRef={resizeHandleRef}>
- *   <svg width={100} height={80}>
- *     <rect x="0" y="0" width={100} height={80} fill="blue" />
- *   </svg>
- * </BaseNodeComponent>
- * 
- * @example
- * // Con estilos personalizados
- * <BaseNodeComponent 
- *   selected={selected} 
- *   resizeHandleRef={resizeHandleRef}
- *   nodeStyles={{ background: '#f0f0f0', padding: 5 }}
- * >
- *   <p>Contenido del nodo</p>
- * </BaseNodeComponent>
  */
 function BaseNodeComponent({
   children,
@@ -53,6 +35,7 @@ function BaseNodeComponent({
   data = {},
   nodeType = 'default',
   showTooltip = true,
+  labelContent = null,
 }) {
   // Estado para controlar cuándo mostrar el tooltip
   const [isTooltipVisible, setIsTooltipVisible] = useState(false);
@@ -87,55 +70,102 @@ function BaseNodeComponent({
   
   // Añadir indicador de información adicional si hay datos
   const hasAdditionalInfo = data?.profession || data?.info || data?.age;
+
+  // Lógica para solo permitir selección en el borde
+  const childrenWithPointerEvents = React.Children.map(children, child => {
+    if (React.isValidElement(child)) {
+      return React.cloneElement(child, {
+        style: {
+          ...child.props.style,
+          pointerEvents: 'none' // Asegura que todos los hijos no respondan a clics para selección
+        }
+      });
+    }
+    return child;
+  });
   
+  // Estructura principal del nodo visual
   return (
-    <div 
-      style={baseStyle}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      className={`node-component ${selected ? 'node-selected' : ''}`}
-    >
-      {children}
-      
-      {/* Indicador visual mejorado para información adicional */}
-      {hasAdditionalInfo && showTooltip && (
+    <>
+      {/* El nodo visual principal - será el único elemento considerado para selección */}
+      <div 
+        style={baseStyle}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        className={`node-component ${selected ? 'node-selected' : ''}`}
+        data-nodrag="true" // Evita que el arrastrar sobre el nodo mueva el canvas
+      >
+        {/* Contenido del nodo */}
         <div style={{
-          position: 'absolute',
-          top: -5,
-          right: -5,
-          width: 14,
-          height: 14,
-          borderRadius: '50%',
-          backgroundColor: nodeType === 'masculino' ? '#2563eb' : 
-                          nodeType === 'femenino' ? '#db2777' : 
-                          nodeType === 'paciente' ? '#047857' : '#3b82f6',
-          border: '2px solid white',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
-          zIndex: 5,
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
+          position: 'relative',
+          width: '100%',
+          height: '100%',
+          pointerEvents: 'none',
         }}>
-          <span style={{ 
-            color: 'white', 
-            fontSize: '9px', 
-            fontWeight: 'bold',
-            lineHeight: 1 
-          }}>i</span>
+          {childrenWithPointerEvents}
+        </div>
+        
+        {/* Indicador visual para información adicional */}
+        {hasAdditionalInfo && showTooltip && (
+          <div style={{
+            position: 'absolute',
+            top: -5,
+            right: -5,
+            width: 14,
+            height: 14,
+            borderRadius: '50%',
+            backgroundColor: nodeType === 'masculino' ? '#2563eb' : 
+                            nodeType === 'femenino' ? '#db2777' : 
+                            nodeType === 'paciente' ? '#047857' : '#3b82f6',
+            border: '2px solid white',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+            zIndex: 5,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            pointerEvents: 'none',
+          }}>
+            <span style={{ 
+              color: 'white', 
+              fontSize: '9px', 
+              fontWeight: 'bold',
+              lineHeight: 1 
+            }}>i</span>
+          </div>
+        )}
+        
+        {/* Tooltip con información detallada */}
+        {showTooltip && <NodeTooltip show={isTooltipVisible} data={data} nodeType={nodeType} />}
+        
+        {/* Handles reutilizables para conexiones */}
+        <NodeHandles isConnectable={isConnectable} />
+        
+        {/* Control de redimensionamiento condicional */}
+        {selected && showResizeHandle && (
+          <ResizeHandle resizeHandleRef={resizeHandleRef} />
+        )}
+      </div>
+
+      {/* Contenido de etiqueta separado completamente del nodo para no afectar la selección */}
+      {labelContent && (
+        <div
+          style={{
+            position: 'absolute',
+            top: '100%', // Posicionado debajo del nodo
+            left: '50%',
+            transform: 'translateX(-50%)', // Centrado
+            marginTop: '6px',
+            pointerEvents: 'none', // No responde a eventos de mouse
+            userSelect: 'none', // No se puede seleccionar el texto
+            zIndex: -1, // Por detrás del nodo para evitar interferir con la selección
+          }}
+          className="node-label"
+          data-nodrag="true"
+        >
+          {labelContent}
         </div>
       )}
-      
-      {/* Tooltip con información detallada */}
-      {showTooltip && <NodeTooltip show={isTooltipVisible} data={data} nodeType={nodeType} />}
-      
-      {/* Handles reutilizables para conexiones */}
-      <NodeHandles isConnectable={isConnectable} />
-      
-      {/* Control de redimensionamiento condicional */}
-      {selected && showResizeHandle && (
-        <ResizeHandle resizeHandleRef={resizeHandleRef} />
-      )}
-    </div>
+    </>
   );
 }
 

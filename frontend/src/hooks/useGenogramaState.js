@@ -128,9 +128,44 @@ export default function useGenogramaState() {
         x: event.clientX, 
         y: event.clientY 
       });
-      const newNode = { id: String(idCounter), type: data.type, position, data: { label: data.label } };
+      
+      // Crear ID único para el nuevo nodo
+      const newNodeId = `${data.type}_${Date.now()}_${idCounter}`;
+      
+      // Crear el nodo manteniendo todos los datos originales (no solo el label)
+      // y agregando initialEdit para activar la edición automáticamente
+      const newNode = { 
+        id: newNodeId, 
+        type: data.type, 
+        position, 
+        data: { 
+          ...data.data, // Incluir todos los datos originales
+          label: data.label,
+          initialEdit: true // Agregar flag para activar edición
+        }
+      };
+      
       setNodes((nds) => nds.concat(newNode));
       setIdCounter((prev) => prev + 1);
+
+      // Emitir el evento personalizado para activar la edición
+      // Igual que en el método handleNodeClick de AnnotationToolPalette.jsx
+      setTimeout(() => {
+        // Seleccionar el nodo recién creado
+        setNodes((nodes) =>
+          nodes.map((node) =>
+            node.id === newNodeId
+              ? { ...node, selected: true }
+              : { ...node, selected: false }
+          )
+        );
+        
+        // Emitir evento para activar la edición
+        const editEvent = new CustomEvent('activateNodeEdit', { 
+          detail: { nodeId: newNodeId } 
+        });
+        document.dispatchEvent(editEvent);
+      }, 100);
     },
     [idCounter, setNodes, screenToFlowPosition]
   );

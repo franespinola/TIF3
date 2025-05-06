@@ -14,19 +14,38 @@ const Comment = ({ id, data, selected }) => {
 
   const onResize = useCallback((newDimensions) => {
     setDimensions(newDimensions);
-    data.width = newDimensions.width;
-    data.height = newDimensions.height;
+    // Guardar el tamaño en data para que persista
+    if (data) {
+      data.width = newDimensions.width;
+      data.height = newDimensions.height;
+    }
     updateNodeInternals(id);
   }, [data, id, updateNodeInternals]);
 
   const onTextChange = useCallback((newText) => {
     setText(newText);
-    data.text = newText;
-  }, [data]);
+    if (data) {
+      data.text = newText;
+      // Si hay una función onEdit, llamarla
+      if (data.onEdit) {
+        data.onEdit(id, newText, {
+          ...data,
+          text: newText
+        });
+      }
+    }
+  }, [data, id]);
 
   // Obtener dimensiones
   const width = dimensions.width;
   const height = dimensions.height;
+  
+  // Obtener los estilos aplicables
+  const stroke = data?.stroke || 'rgb(59, 130, 246)'; // Color azul estandarizado
+  const fill = data?.fill || '#F5F5F5';
+  const strokeWidth = data?.strokeWidth || 1.5;
+  const textColor = data?.textColor || '#000000';
+  const fontSize = data?.fontSize || 14;
   
   // Crear path para la forma de comentario (bocadillo)
   const pointerSize = Math.min(15, height * 0.2);
@@ -62,9 +81,9 @@ const Comment = ({ id, data, selected }) => {
         <svg width={width} height={height} style={{ display: 'block' }}>
           <path
             d={d}
-            fill={data.fill || '#F5F5F5'}
-            stroke={data.stroke || '#3B82F6'}
-            strokeWidth={data.strokeWidth || 1.5}
+            fill={fill}
+            stroke={stroke}
+            strokeWidth={strokeWidth}
           />
         </svg>
         <div
@@ -85,8 +104,8 @@ const Comment = ({ id, data, selected }) => {
           <EditableText
             text={text}
             onChange={onTextChange}
-            color={data.textColor || '#1E40AF'}
-            fontSize={data.fontSize || 12}
+            color={textColor}
+            fontSize={fontSize || 12}
             bold={data.bold}
             italic={data.italic || true}
             underline={data.underline}
@@ -102,19 +121,19 @@ const Comment = ({ id, data, selected }) => {
         type="target"
         position={Position.Top}
         id="top"
-        style={{ background: '#3B82F6', width: 8, height: 8 }}
+        style={{ background: '#555', width: 8, height: 8 }}
       />
       <Handle
         type="source"
         position={Position.Left}
         id="left"
-        style={{ background: '#3B82F6', width: 8, height: 8 }}
+        style={{ background: '#555', width: 8, height: 8 }}
       />
       <Handle
         type="source"
         position={Position.Right}
         id="right"
-        style={{ background: '#3B82F6', width: 8, height: 8 }}
+        style={{ background: '#555', width: 8, height: 8 }}
       />
 
       {/* Control de redimensionamiento */}

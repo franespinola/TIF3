@@ -1,16 +1,16 @@
 import React, { useCallback, useState } from 'react';
-import { useUpdateNodeInternals } from 'reactflow';
+import { Handle, Position, useUpdateNodeInternals } from 'reactflow';
 import ResizableNode from '../ResizableNode';
 import EditableText from '../../text/EditableText';
 import FlowchartNodeBase from './FlowchartNodeBase';
 
-const Hexagon = ({ id, data, selected }) => {
+const Flag = ({ id, data, selected }) => {
   const [dimensions, setDimensions] = useState({
-    width: data.width || 120,
-    height: data.height || 60,
+    width: data.width || 100,
+    height: data.height || 80,
   });
   const updateNodeInternals = useUpdateNodeInternals();
-  const [text, setText] = useState(data.text || data.label || 'Preparación');
+  const [text, setText] = useState(data.text || data.label || 'Bandera');
 
   // Obtener los estilos aplicables con valores por defecto consistentes
   const stroke = data?.stroke || 'rgb(59, 130, 246)'; // Color azul estandarizado
@@ -49,32 +49,27 @@ const Hexagon = ({ id, data, selected }) => {
   const width = dimensions.width;
   const height = dimensions.height;
   
-  // Calculate hexagon points
-  const sideLength = height / 2; // H/2 for the horizontal sides
-  const points = [
-    [sideLength, 0], // top left
-    [width - sideLength, 0], // top right
-    [width, height / 2], // right
-    [width - sideLength, height], // bottom right
-    [sideLength, height], // bottom left
-    [0, height / 2], // left
-  ].map(point => point.join(',')).join(' ');
+  // Crear el path para la bandera
+  const poleWidth = Math.min(width * 0.1, 10); // Ancho del mástil
+  const flagPath = {
+    pole: `M${poleWidth/2},1 V${height-1}`,
+    flag: `M${poleWidth},${strokeWidth} H${width-strokeWidth} L${width-poleWidth},${height/2} L${width-strokeWidth},${height-strokeWidth} H${poleWidth} Z`
+  };
 
   // Vista previa para el tooltip
   const tooltipPreview = (
     <svg width={width * 0.7} height={height * 0.7} style={{ display: 'block' }}>
-      <polygon
-        points={[
-          [sideLength * 0.7, 0], 
-          [width * 0.7 - sideLength * 0.7, 0], 
-          [width * 0.7, height * 0.7 / 2], 
-          [width * 0.7 - sideLength * 0.7, height * 0.7], 
-          [sideLength * 0.7, height * 0.7], 
-          [0, height * 0.7 / 2]
-        ].map(point => point.join(',')).join(' ')}
+      <path
+        d={`M${poleWidth*0.7},${strokeWidth} H${width*0.7-strokeWidth} L${width*0.7-poleWidth*0.7},${height*0.7/2} L${width*0.7-strokeWidth},${height*0.7-strokeWidth} H${poleWidth*0.7} Z`}
         fill={fill}
         stroke={stroke}
         strokeWidth={strokeWidth}
+      />
+      <path
+        d={`M${poleWidth*0.7/2},1 V${height*0.7-1}`}
+        stroke={stroke}
+        strokeWidth={strokeWidth * 2}
+        fill="none"
       />
     </svg>
   );
@@ -83,14 +78,14 @@ const Hexagon = ({ id, data, selected }) => {
     <FlowchartNodeBase
       id={id}
       selected={selected}
-      nodeType="hexagon"
+      nodeType="flag"
       data={data}
       tooltipPreview={tooltipPreview}
       onResize={onResize}
       dimensions={dimensions}
       minWidth={60}
-      minHeight={40}
-      description="Indica una operación de preparación o inicialización en el proceso."
+      minHeight={60}
+      description="Representa una bandera o indicador en el proceso."
     >
       <ResizableNode
         id={id}
@@ -98,15 +93,21 @@ const Hexagon = ({ id, data, selected }) => {
         width={dimensions.width}
         height={dimensions.height}
         minWidth={60}
-        minHeight={40}
+        minHeight={60}
         selected={selected}
       >
         <svg width={width} height={height} style={{ display: 'block' }}>
-          <polygon
-            points={points}
+          <path
+            d={flagPath.flag}
             fill={fill}
             stroke={stroke}
             strokeWidth={strokeWidth}
+          />
+          <path
+            d={flagPath.pole}
+            stroke={stroke}
+            strokeWidth={strokeWidth * 2}
+            fill="none"
           />
         </svg>
         <div
@@ -120,6 +121,7 @@ const Hexagon = ({ id, data, selected }) => {
             justifyContent: 'center',
             alignItems: 'center',
             padding: '10px',
+            paddingLeft: poleWidth + 10, // Añadir padding para evitar texto sobre el mástil
             zIndex: 1,
             pointerEvents: 'none',
           }}
@@ -129,10 +131,10 @@ const Hexagon = ({ id, data, selected }) => {
             onChange={onTextChange}
             color={textColor}
             fontSize={fontSize}
-            bold={data.bold}
-            italic={data.italic}
-            underline={data.underline}
-            textAlign={data.textAlign || 'center'}
+            bold={data?.bold}
+            italic={data?.italic}
+            underline={data?.underline}
+            textAlign={data?.textAlign || 'center'}
             size={Math.min(width * 0.8, height * 0.8)}
             pointerEvents="auto"
           />
@@ -142,4 +144,4 @@ const Hexagon = ({ id, data, selected }) => {
   );
 };
 
-export default Hexagon;
+export default Flag;

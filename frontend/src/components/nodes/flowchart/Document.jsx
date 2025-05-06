@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import { Handle, Position, useUpdateNodeInternals } from 'reactflow';
 import ResizableNode from '../ResizableNode';
 import EditableText from '../../text/EditableText';
@@ -10,19 +10,43 @@ const Document = ({ id, data, selected }) => {
     height: data.height || 100,
   });
   const updateNodeInternals = useUpdateNodeInternals();
-  const [text, setText] = useState(data.text || 'Documento');
+  const [text, setText] = useState(data.text || data.label || 'Documento');
+
+  // Actualizar texto cuando cambien los datos externos
+  useEffect(() => {
+    if (data?.text !== undefined && data.text !== text) {
+      setText(data.text);
+    } else if (data?.label !== undefined && data.label !== text) {
+      setText(data.label);
+    }
+  }, [data?.text, data?.label, text]);
 
   const onResize = useCallback((newDimensions) => {
     setDimensions(newDimensions);
-    data.width = newDimensions.width;
-    data.height = newDimensions.height;
+    // Guardar el tamaño en data para que persista
+    if (data) {
+      data.width = newDimensions.width;
+      data.height = newDimensions.height;
+    }
     updateNodeInternals(id);
   }, [data, id, updateNodeInternals]);
 
   const onTextChange = useCallback((newText) => {
     setText(newText);
-    data.text = newText;
-  }, [data]);
+    if (data) {
+      data.text = newText;
+      // También actualizar label para mantener consistencia
+      data.label = newText;
+      // Si hay una función onEdit, llamarla
+      if (data.onEdit) {
+        data.onEdit(id, newText, {
+          ...data,
+          text: newText,
+          label: newText
+        });
+      }
+    }
+  }, [data, id]);
 
   // Obtener dimensiones
   const width = dimensions.width;
@@ -30,6 +54,13 @@ const Document = ({ id, data, selected }) => {
   
   // Crear el path para la forma de documento (rectángulo con borde ondulado abajo)
   const waveHeight = Math.min(15, height * 0.15);
+  
+  // Obtener los estilos aplicables
+  const stroke = data?.stroke || 'rgb(59, 130, 246)'; // Color azul estandarizado
+  const fill = data?.fill || 'white';
+  const strokeWidth = data?.strokeWidth || 1.5;
+  const textColor = data?.textColor || '#000000';
+  const fontSize = data?.fontSize || 14;
   
   // Versión corregida: eliminando saltos de línea y asegurando formato correcto
   const documentPath = `M1,1 H${width - 1} V${height - waveHeight - 1} C${width * 0.75},${height - waveHeight * 0.5} ${width * 0.5},${height - waveHeight * 1.5} ${width * 0.25},${height - waveHeight * 0.5} C${width * 0.125},${height - 1} ${width * 0.0625},${height - waveHeight * 0.5} 1,${height - waveHeight - 1} Z`;
@@ -48,9 +79,9 @@ const Document = ({ id, data, selected }) => {
         <svg width={width} height={height} style={{ display: 'block' }}>
           <path
             d={documentPath}
-            fill={data.fill || 'white'}
-            stroke={data.stroke || '#7C3AED'}
-            strokeWidth={data.strokeWidth || 1.5}
+            fill={fill}
+            stroke={stroke}
+            strokeWidth={strokeWidth}
           />
         </svg>
         <div
@@ -72,12 +103,12 @@ const Document = ({ id, data, selected }) => {
           <EditableText
             text={text}
             onChange={onTextChange}
-            color={data.textColor || '#000000'}
-            fontSize={data.fontSize || 12}
-            bold={data.bold}
-            italic={data.italic}
-            underline={data.underline}
-            textAlign={data.textAlign || 'center'}
+            color={textColor}
+            fontSize={fontSize || 12}
+            bold={data?.bold}
+            italic={data?.italic}
+            underline={data?.underline}
+            textAlign={data?.textAlign || 'center'}
             size={Math.min(width, height - waveHeight) * 0.9}
             pointerEvents="auto"
           />

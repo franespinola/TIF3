@@ -1,111 +1,126 @@
-import React, { useEffect } from 'react';
-import BaseNodeComponent from '../../nodes/BaseNodeComponent';
-import NodeTextInput from '../../nodes/NodeTextInput';
-import useResizable from '../../../hooks/useResizable';
-import useNodeEditor from '../../../hooks/useNodeEditor';
+import React, { useCallback, useState } from 'react';
+import ResizableNode from '../ResizableNode';
+import EditableText from '../../text/EditableText';
+import FlowchartNodeBase from './FlowchartNodeBase';
 
 export default function DiamondNode({ data, id, selected }) {
+  // Estado para el texto y dimensiones
+  const [dimensions, setDimensions] = useState({
+    width: data?.width || 100,
+    height: data?.height || 80,
+  });
+  const [text, setText] = useState(data?.text || data?.label || "");
+
   // Valores por defecto si no se proporcionan en data
-  const width = data?.width || 100;
-  const height = data?.height || 80;
-  const stroke = data?.stroke || '#000000';
+  const stroke = data?.stroke || 'rgb(59, 130, 246)'; // Color azul estandarizado
   const fill = data?.fill || 'white';
-  const strokeWidth = data?.strokeWidth || 1;
-  
-  // Usar el hook de edición de nodos
-  const onSave = (newLabel) => {
-    if (data?.onEdit) {
-      data.onEdit(id, newLabel);
+  const strokeWidth = data?.strokeWidth || 1.5;
+  const textColor = data?.textColor || '#000000';
+  const fontSize = data?.fontSize || 14;
+
+  // Callback para manejar el cambio de tamaño
+  const onResize = useCallback((newDimensions) => {
+    setDimensions(newDimensions);
+    // Guardar el tamaño en data para que persista
+    if (data) {
+      data.width = newDimensions.width;
+      data.height = newDimensions.height;
     }
-  };
-  
-  const {
-    isEditing, 
-    value: label, 
-    handleDoubleClick, 
-    handleChange, 
-    handleBlur, 
-    handleKeyDown 
-  } = useNodeEditor(data?.label || "", onSave);
+  }, [data]);
 
-  // Usar el hook de redimensionamiento
-  const [size, resizeHandleRef, isResizing, setSize] = useResizable(
-    id, 
-    { width, height },
-    60, // min width
-    40  // min height
-  );
+  // Callback para manejar el cambio de texto
+  const onTextChange = useCallback((newText) => {
+    setText(newText);
+    if (data) {
+      data.text = newText;
+      data.label = newText; // Sincronizar ambas propiedades para consistencia
 
-  // Actualizar el tamaño cuando cambian los datos
-  useEffect(() => {
-    if (
-      data?.width !== undefined &&
-      data?.height !== undefined &&
-      !isResizing
-    ) {
-      if (data.width !== size.width || data.height !== size.height) {
-        setSize({
-          width: data.width,
-          height: data.height,
+      // Si hay una función onEdit, llamarla
+      if (data.onEdit) {
+        data.onEdit(id, newText, {
+          ...data,
+          text: newText,
+          label: newText
         });
       }
     }
-  }, [data?.width, data?.height, isResizing, setSize, size.width, size.height]);
+  }, [data, id]);
 
-  // Determinar si los handles son conectables
-  const isConnectable = data?.isConnectable !== false;
+  const width = dimensions.width;
+  const height = dimensions.height;
 
-  // Calcular puntos del rombo
-  const points = [
-    [size.width / 2, 0],              // top
-    [size.width, size.height / 2],    // right
-    [size.width / 2, size.height],    // bottom
-    [0, size.height / 2]              // left
-  ].map(point => point.join(',')).join(' ');
+  // Vista previa para el tooltip
+  const tooltipPreview = (
+    <svg width={width * 0.7} height={height * 0.7} style={{ display: 'block' }}>
+      <polygon
+        points={`${width*0.7/2},0 ${width*0.7},${height*0.7/2} ${width*0.7/2},${height*0.7} 0,${height*0.7/2}`}
+        stroke={stroke}
+        strokeWidth={strokeWidth}
+        fill={fill}
+      />
+    </svg>
+  );
 
   return (
-    <BaseNodeComponent
+    <FlowchartNodeBase
+      id={id}
       selected={selected}
-      resizeHandleRef={resizeHandleRef}
-      isConnectable={isConnectable}
+      nodeType="diamond"
+      data={data}
+      tooltipPreview={tooltipPreview}
+      description="Representa una decisión en un diagrama de flujo."
     >
-      <svg width={size.width} height={size.height}>
-        <polygon
-          points={points}
-          stroke={stroke}
-          strokeWidth={strokeWidth}
-          fill={fill}
-        />
-      </svg>
-      
-      <div
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          pointerEvents: 'none',
-        }}
+      <ResizableNode
+        id={id}
+        onResize={onResize}
+        width={width}
+        height={height}
+        minWidth={60}
+        minHeight={40}
+        selected={selected}
       >
-        {/* Componente para la entrada de texto */}
-        <NodeTextInput
-          value={label}
-          isEditing={isEditing}
-          onDoubleClick={handleDoubleClick}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          onKeyDown={handleKeyDown}
-          labelStyle={{
-            padding: '0 15px',
-            textAlign: 'center',
-            pointerEvents: 'all'
+        <svg 
+          width={width} 
+          height={height} 
+          viewBox={`0 0 ${width} ${height}`}
+          style={{ display: 'block' }}
+        >
+          <polygon
+            points={`${width/2},0 ${width},${height/2} ${width/2},${height} 0,${height/2}`}
+            stroke={stroke}
+            strokeWidth={strokeWidth}
+            fill={fill}
+          />
+        </svg>
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: '10px',
+            zIndex: 1,
+            pointerEvents: 'none',
           }}
-        />
-      </div>
-    </BaseNodeComponent>
+        >
+          <EditableText
+            text={text}
+            onChange={onTextChange}
+            color={textColor}
+            fontSize={fontSize}
+            bold={data?.bold}
+            italic={data?.italic}
+            underline={data?.underline}
+            textAlign={data?.textAlign || 'center'}
+            size={Math.min(width * 0.7, height * 0.7)}
+            pointerEvents="auto"
+          />
+        </div>
+      </ResizableNode>
+    </FlowchartNodeBase>
   );
 }

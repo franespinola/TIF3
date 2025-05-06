@@ -1,5 +1,5 @@
 import React from 'react';
-import BaseNodeComponent from '../../nodes/BaseNodeComponent';
+import BaseNodeComponent from './BaseNodeComponent';
 import NodeTextInput from '../../nodes/NodeTextInput';
 import useNodeSize from '../../../hooks/useNodeSize';
 import useNodeEditor from '../../../hooks/useNodeEditor';
@@ -33,44 +33,54 @@ const AdopcionNode = ({ data, id, selected }) => {
   // Determinar si los handles son conectables
   const isConnectable = data?.isConnectable !== false;
 
-  return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-      <BaseNodeComponent
-        selected={selected}
-        resizeHandleRef={resizeHandleRef}
-        isConnectable={isConnectable}
-        nodeStyles={{
-          width: size.width,
-          height: size.height,
-          background: "#e5e7eb",
-          border: "2px solid #4b5563",
-          borderRadius: "6px",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          position: "relative",
-        }}
-      >
-        {/* Texto del nodo */}
-        <NodeTextInput
-          value={label}
-          isEditing={isEditing}
-          onDoubleClick={handleDoubleClick}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          onKeyDown={handleKeyDown}
-          labelStyle={{
-            fontSize: 12,
-            fontWeight: "bold"
-          }}
-        />
-      </BaseNodeComponent>
-      
-      {/* Identificador del nodo */}
-      <div style={{ fontSize: 10, marginTop: 2, textAlign: "center" }}>
-        ID: {id}
-      </div>
+  // Preparar el contenido de la etiqueta para usar labelContent
+  const labelContent = (
+    <div style={{ 
+      fontSize: 10, 
+      marginTop: 2, 
+      textAlign: "center",
+      color: '#64748b',
+      fontFamily: 'monospace',
+      opacity: 0.7,
+      textShadow: "0px 1px 2px rgba(255,255,255,0.7)"
+    }}>
+      ID: {id}
     </div>
+  );
+
+  return (
+    <BaseNodeComponent
+      selected={selected}
+      resizeHandleRef={resizeHandleRef}
+      isConnectable={isConnectable}
+      nodeStyles={{
+        width: size.width,
+        height: size.height,
+        background: "#e5e7eb",
+        border: "2px solid #4b5563",
+        borderRadius: "6px",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        position: "relative",
+      }}
+      labelContent={labelContent}
+    >
+      {/* Texto del nodo */}
+      <NodeTextInput
+        value={label}
+        isEditing={isEditing}
+        onDoubleClick={handleDoubleClick}
+        onChange={handleChange}
+        onBlur={handleBlur}
+        onKeyDown={handleKeyDown}
+        labelStyle={{
+          fontSize: 12,
+          fontWeight: "bold",
+          pointerEvents: 'none'
+        }}
+      />
+    </BaseNodeComponent>
   );
 };
 

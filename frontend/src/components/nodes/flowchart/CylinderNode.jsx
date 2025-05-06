@@ -8,14 +8,19 @@ export default function CylinderNode({ data, id, selected }) {
   // Valores por defecto si no se proporcionan en data
   const width = data?.width || 100;
   const height = data?.height || 80;
-  const stroke = data?.stroke || '#000000';
+  const stroke = data?.stroke || 'rgb(59, 130, 246)'; // Color azul estandarizado
   const fill = data?.fill || 'white';
-  const strokeWidth = data?.strokeWidth || 1;
+  const strokeWidth = data?.strokeWidth || 1.5;
+  const textColor = data?.textColor || '#000000';
+  const fontSize = data?.fontSize || 14;
   
   // Usar el hook de edición de nodos
   const onSave = (newLabel) => {
     if (data?.onEdit) {
-      data.onEdit(id, newLabel);
+      data.onEdit(id, newLabel, {
+        ...data,
+        label: newLabel
+      });
     }
   };
   
@@ -64,87 +69,107 @@ export default function CylinderNode({ data, id, selected }) {
       selected={selected}
       resizeHandleRef={resizeHandleRef}
       isConnectable={isConnectable}
+      data={data}
+      nodeType="cylinder"
+      nodeStyles={{
+        width: size.width,
+        height: size.height,
+        position: "relative"
+      }}
     >
-      <svg width={size.width} height={size.height}>
-        {/* Elipse superior */}
-        <ellipse
-          cx={size.width / 2}
-          cy={ellipseHeight / 2}
-          rx={(size.width - strokeWidth) / 2}
-          ry={ellipseHeight / 2 - strokeWidth / 2}
-          fill={fill}
-          stroke={stroke}
-          strokeWidth={strokeWidth}
-        />
+      <div style={{ 
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        position: 'relative'
+      }}>
+        <svg width={size.width} height={size.height} style={{ position: 'absolute', top: 0, left: 0 }}>
+          {/* Elipse superior */}
+          <ellipse
+            cx={size.width / 2}
+            cy={ellipseHeight / 2}
+            rx={(size.width - strokeWidth) / 2}
+            ry={ellipseHeight / 2 - strokeWidth / 2}
+            fill={fill}
+            stroke={stroke}
+            strokeWidth={strokeWidth}
+          />
+          
+          {/* Cuerpo del cilindro */}
+          <rect
+            x={strokeWidth / 2}
+            y={ellipseHeight / 2}
+            width={size.width - strokeWidth}
+            height={cylinderHeight}
+            fill={fill}
+            stroke="none"
+          />
+          
+          {/* Líneas laterales del cilindro */}
+          <line
+            x1={strokeWidth / 2}
+            y1={ellipseHeight / 2}
+            x2={strokeWidth / 2}
+            y2={size.height - ellipseHeight / 2}
+            stroke={stroke}
+            strokeWidth={strokeWidth}
+          />
+          <line
+            x1={size.width - strokeWidth / 2}
+            y1={ellipseHeight / 2}
+            x2={size.width - strokeWidth / 2}
+            y2={size.height - ellipseHeight / 2}
+            stroke={stroke}
+            strokeWidth={strokeWidth}
+          />
+          
+          {/* Elipse inferior */}
+          <ellipse
+            cx={size.width / 2}
+            cy={size.height - ellipseHeight / 2}
+            rx={(size.width - strokeWidth) / 2}
+            ry={ellipseHeight / 2 - strokeWidth / 2}
+            fill={fill}
+            stroke={stroke}
+            strokeWidth={strokeWidth}
+          />
+        </svg>
         
-        {/* Cuerpo del cilindro */}
-        <rect
-          x={strokeWidth / 2}
-          y={ellipseHeight / 2}
-          width={size.width - strokeWidth}
-          height={cylinderHeight}
-          fill={fill}
-          stroke="none"
-        />
-        
-        {/* Líneas laterales del cilindro */}
-        <line
-          x1={strokeWidth / 2}
-          y1={ellipseHeight / 2}
-          x2={strokeWidth / 2}
-          y2={size.height - ellipseHeight / 2}
-          stroke={stroke}
-          strokeWidth={strokeWidth}
-        />
-        <line
-          x1={size.width - strokeWidth / 2}
-          y1={ellipseHeight / 2}
-          x2={size.width - strokeWidth / 2}
-          y2={size.height - ellipseHeight / 2}
-          stroke={stroke}
-          strokeWidth={strokeWidth}
-        />
-        
-        {/* Elipse inferior */}
-        <ellipse
-          cx={size.width / 2}
-          cy={size.height - ellipseHeight / 2}
-          rx={(size.width - strokeWidth) / 2}
-          ry={ellipseHeight / 2 - strokeWidth / 2}
-          fill={fill}
-          stroke={stroke}
-          strokeWidth={strokeWidth}
-        />
-      </svg>
-      
-      <div
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          pointerEvents: 'none',
-        }}
-      >
         {/* Componente para la entrada de texto */}
-        <NodeTextInput
-          value={label}
-          isEditing={isEditing}
-          onDoubleClick={handleDoubleClick}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          onKeyDown={handleKeyDown}
-          labelStyle={{
-            padding: '0 10px',
-            textAlign: 'center',
-            pointerEvents: 'all',
-            marginTop: ellipseHeight / 2 // Ajuste para centrar mejor el texto
-          }}
-        />
+        <div style={{ 
+          position: 'absolute', 
+          top: 0, 
+          left: 0, 
+          width: '100%', 
+          height: '100%', 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center',
+          padding: '10px',
+          paddingTop: `${ellipseHeight}px`,
+          paddingBottom: `${ellipseHeight}px`
+        }}>
+          <NodeTextInput
+            value={label}
+            isEditing={isEditing}
+            onDoubleClick={handleDoubleClick}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
+            labelStyle={{
+              color: textColor,
+              fontSize: fontSize,
+              textAlign: 'center',
+              width: '100%',
+              height: '100%',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center'
+            }}
+          />
+        </div>
       </div>
     </BaseNodeComponent>
   );

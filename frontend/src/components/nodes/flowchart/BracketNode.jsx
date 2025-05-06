@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import BaseNodeComponent from '../BaseNodeComponent';
+import NodeTextInput from '../NodeTextInput';
 import useResizable from '../../../hooks/useResizable';
 import useNodeEditor from '../../../hooks/useNodeEditor';
 
@@ -7,19 +8,33 @@ export default function BracketNode({ data, id, selected }) {
   // Valores por defecto si no se proporcionan en data
   const width = data?.width || 60;
   const height = data?.height || 100;
-  const stroke = data?.stroke || '#000000';
+  const stroke = data?.stroke || 'rgb(59, 130, 246)'; // Color azul estandarizado
   const fill = data?.fill || 'transparent';
-  const strokeWidth = data?.strokeWidth || 2;
+  const strokeWidth = data?.strokeWidth || 1.5;
   const type = data?.type || 'curly'; // curly, square, parenthesis
+  const variant = data?.variant || 'opening'; // opening, closing
+  const textColor = data?.textColor || '#000000';
+  const fontSize = data?.fontSize || 14;
   
-  // Usar el hook de edición de nodos si es necesario
+  // Usar el hook de edición de nodos
   const onSave = (newLabel) => {
     if (data?.onEdit) {
-      data.onEdit(id, newLabel);
+      data.onEdit(id, newLabel, {
+        ...data,
+        label: newLabel,
+        text: newLabel // Para mantener consistencia
+      });
     }
   };
   
-  const { isEditing } = useNodeEditor(data?.label || "", onSave);
+  const {
+    isEditing, 
+    value: label, 
+    handleDoubleClick, 
+    handleChange, 
+    handleBlur, 
+    handleKeyDown 
+  } = useNodeEditor(data?.label || data?.text || "", onSave);
 
   // Usar el hook de redimensionamiento
   const [size, resizeHandleRef, isResizing, setSize] = useResizable(
@@ -57,7 +72,7 @@ export default function BracketNode({ data, id, selected }) {
     switch(type) {
       case 'curly': // Llaves { }
         // Para llave de apertura {
-        if (data?.variant === 'opening') {
+        if (variant === 'opening') {
           return `
             M${w - strokeOffset},${strokeOffset}
             Q${w/2},${strokeOffset} ${w/2},${h/4}
@@ -79,7 +94,7 @@ export default function BracketNode({ data, id, selected }) {
         
       case 'square': // Corchetes [ ]
         // Para corchete de apertura [
-        if (data?.variant === 'opening') {
+        if (variant === 'opening') {
           return `
             M${w - strokeOffset},${strokeOffset}
             H${w/3}
@@ -99,7 +114,7 @@ export default function BracketNode({ data, id, selected }) {
         
       case 'parenthesis': // Paréntesis ( )
         // Para paréntesis de apertura (
-        if (data?.variant === 'opening') {
+        if (variant === 'opening') {
           return `
             M${w - strokeOffset},${strokeOffset}
             Q${w/3},${h/4} ${w/3},${h/2}
@@ -127,22 +142,104 @@ export default function BracketNode({ data, id, selected }) {
     }
   };
 
+  // Calcular la posición del texto según el tipo de paréntesis/llave
+  const getTextPosition = () => {
+    // Para llaves y paréntesis, el texto va en el lado opuesto
+    // Para corchetes, el texto va en el centro
+    if (type === 'square') {
+      return {
+        left: '0',
+        width: '100%',
+        textAlign: 'center',
+        padding: '0'
+      };
+    } else if ((type === 'curly' || type === 'parenthesis') && variant === 'opening') {
+      return {
+        left: '50%',
+        width: '150%',
+        textAlign: 'left',
+        padding: '0 0 0 10px'
+      };
+    } else {
+      return {
+        left: '-100%',
+        width: '150%',
+        textAlign: 'right',
+        padding: '0 10px 0 0'
+      };
+    }
+  };
+
+  const textPosition = getTextPosition();
+
   return (
     <BaseNodeComponent
       selected={selected}
       resizeHandleRef={resizeHandleRef}
       isConnectable={isConnectable}
+      data={data}
+      nodeType="bracket"
+      nodeStyles={{
+        width: size.width,
+        height: size.height,
+        position: "relative"
+      }}
     >
-      <svg width={size.width} height={size.height} style={{ overflow: 'visible' }}>
-        <path
-          d={getBracketPath()}
-          stroke={stroke}
-          strokeWidth={strokeWidth}
-          fill={fill}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
+      <div style={{ 
+        width: '100%',
+        height: '100%',
+        position: 'relative'
+      }}>
+        <svg 
+          width={size.width} 
+          height={size.height}
+          style={{ overflow: 'visible' }}
+        >
+          <path
+            d={getBracketPath()}
+            stroke={stroke}
+            strokeWidth={strokeWidth}
+            fill={fill}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+        
+        {/* Contenedor para el texto */}
+        <div
+          style={{
+            position: 'absolute',
+            top: '0',
+            left: textPosition.left,
+            width: textPosition.width,
+            height: '100%',
+            display: 'flex',
+            justifyContent: textPosition.textAlign === 'center' ? 'center' : (textPosition.textAlign === 'left' ? 'flex-start' : 'flex-end'),
+            alignItems: 'center',
+            padding: textPosition.padding
+          }}
+        >
+          {/* Componente para la entrada de texto */}
+          <NodeTextInput
+            value={label}
+            isEditing={isEditing}
+            onDoubleClick={handleDoubleClick}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
+            labelStyle={{
+              color: textColor,
+              fontSize: fontSize,
+              textAlign: textPosition.textAlign,
+              maxWidth: '100%',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              pointerEvents: 'all'
+            }}
+          />
+        </div>
+      </div>
     </BaseNodeComponent>
   );
 }

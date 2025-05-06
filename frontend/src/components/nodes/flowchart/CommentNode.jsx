@@ -7,15 +7,20 @@ import useNodeEditor from '../../../hooks/useNodeEditor';
 export default function CommentNode({ data, id, selected }) {
   // Valores por defecto si no se proporcionan en data
   const width = data?.width || 120;
-  const height = data?.height || 70;
-  const stroke = data?.stroke || '#000000';
+  const height = data?.height || 80;
+  const stroke = data?.stroke || 'rgb(59, 130, 246)'; // Color azul estandarizado
   const fill = data?.fill || 'white';
-  const strokeWidth = data?.strokeWidth || 1;
+  const strokeWidth = data?.strokeWidth || 1.5;
+  const textColor = data?.textColor || '#000000';
+  const fontSize = data?.fontSize || 14;
   
   // Usar el hook de edición de nodos
   const onSave = (newText) => {
     if (data?.onEdit) {
-      data.onEdit(id, newText);
+      data.onEdit(id, newText, {
+        ...data, 
+        text: newText
+      });
     }
   };
   
@@ -81,41 +86,60 @@ export default function CommentNode({ data, id, selected }) {
       selected={selected}
       resizeHandleRef={resizeHandleRef}
       isConnectable={isConnectable}
+      data={data}
+      nodeType="comment"
+      nodeStyles={{
+        width: size.width,
+        height: size.height,
+        position: "relative"
+      }}
     >
-      <svg width={size.width} height={size.height} style={{ overflow: 'visible' }}>
-        <path
-          d={createCloudPath(size.width, size.height)}
-          stroke={stroke}
-          strokeWidth={strokeWidth}
-          fill={fill}
-        />
-      </svg>
-      
-      <div
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          pointerEvents: 'none',
-          padding: '12px',
-        }}
-      >
-        {/* Componente para la entrada de texto */}
-        <NodeTextArea
-          value={text}
-          isEditing={isEditing}
-          onDoubleClick={handleDoubleClick}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          onKeyDown={handleKeyDown}
-          fontSize={12}
-          color="#000"
-        />
+      <div style={{ 
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        position: 'relative'
+      }}>
+        <svg 
+          width={size.width} 
+          height={size.height} 
+          style={{ position: 'absolute', top: 0, left: 0, overflow: 'visible' }}
+        >
+          <path
+            d={createCloudPath(size.width, size.height)}
+            stroke={stroke}
+            strokeWidth={strokeWidth}
+            fill={fill}
+          />
+        </svg>
+        
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: '12px',
+          }}
+        >
+          {/* Componente para la entrada de texto */}
+          <NodeTextArea
+            value={text}
+            isEditing={isEditing}
+            onDoubleClick={handleDoubleClick}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
+            fontSize={fontSize}
+            color={textColor}
+          />
+        </div>
       </div>
     </BaseNodeComponent>
   );

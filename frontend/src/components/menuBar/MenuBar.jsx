@@ -22,24 +22,38 @@ export default function MenuBar({
   showRelationEditor,
   setShowRelationEditor,
 }) {
+  // Estados para menús principales
   const [showFileMenu, setShowFileMenu] = useState(false);
   const [showViewMenu, setShowViewMenu] = useState(false);
+  
+  // Estados para submenús de Archivo
+  const [showImportSubmenu, setShowImportSubmenu] = useState(false);
+  const [showExportSubmenu, setShowExportSubmenu] = useState(false);
+  
+  // Estados para posiciones de menús
   const [fileMenuPosition, setFileMenuPosition] = useState({ top: 0, left: 0 });
   const [viewMenuPosition, setViewMenuPosition] = useState({ top: 0, left: 0 });
+  const [importSubmenuPosition, setImportSubmenuPosition] = useState({ top: 0, left: 0 });
+  const [exportSubmenuPosition, setExportSubmenuPosition] = useState({ top: 0, left: 0 });
   
-  // Referencia al input file oculto para importar
+  // Referencias para los elementos DOM
   const fileInputRef = useRef(null);
   const fileMenuRef = useRef(null);
   const fileMenuButtonRef = useRef(null);
   const viewMenuRef = useRef(null);
   const viewMenuButtonRef = useRef(null);
+  const importItemRef = useRef(null);
+  const exportItemRef = useRef(null);
+  const importSubmenuRef = useRef(null);
+  const exportSubmenuRef = useRef(null);
 
-  // Función para cerrar menús actualmente abiertos excepto el indicado
-  const closeOtherMenus = (currentMenuRef) => {
+  // Función para cerrar menús actualmente abiertos excepto el indicado y sus padres
+  const closeOtherMenus = (currentMenuRef, isSubmenu = false) => {
     if (window._activeMenus) {
       window._activeMenus.forEach(menu => {
         // Si el menú no es el actual (el que vamos a mostrar), lo cerramos
-        if (menu.ref.current !== currentMenuRef.current && menu.onClose) {
+        // Solo cerramos menús que no sean submenús del actual o el padre del actual
+        if (menu.ref.current !== currentMenuRef.current && menu.onClose && !isSubmenu) {
           menu.onClose();
         }
       });
@@ -56,10 +70,18 @@ export default function MenuBar({
       setShowViewMenu(true);
       setShowFileMenu(false);
       closeOtherMenus(viewMenuRef);
+    } else if (menuToOpen === 'importSubmenu') {
+      setShowImportSubmenu(true);
+      setShowExportSubmenu(false);
+      closeOtherMenus(importSubmenuRef, true);
+    } else if (menuToOpen === 'exportSubmenu') {
+      setShowExportSubmenu(true);
+      setShowImportSubmenu(false);
+      closeOtherMenus(exportSubmenuRef, true);
     }
   };
 
-  // Función para manejar el hover con intención (detección de intención real)
+  // Función para manejar el hover con intención
   const handleMenuHover = (menuType) => {
     if (menuType === 'file' && !showFileMenu) {
       const rect = fileMenuButtonRef.current.getBoundingClientRect();
@@ -69,6 +91,14 @@ export default function MenuBar({
       const rect = viewMenuButtonRef.current.getBoundingClientRect();
       setViewMenuPosition({ top: rect.bottom, left: rect.left });
       openMenuAndCloseOthers('view');
+    } else if (menuType === 'importSubmenu' && !showImportSubmenu) {
+      const rect = importItemRef.current.getBoundingClientRect();
+      setImportSubmenuPosition({ top: rect.top - 5, left: rect.right + 5 });
+      openMenuAndCloseOthers('importSubmenu');
+    } else if (menuType === 'exportSubmenu' && !showExportSubmenu) {
+      const rect = exportItemRef.current.getBoundingClientRect();
+      setExportSubmenuPosition({ top: rect.top - 5, left: rect.right + 5 });
+      openMenuAndCloseOthers('exportSubmenu');
     }
   };
 
@@ -78,7 +108,7 @@ export default function MenuBar({
     
     if (menuType === 'file') {
       if (showFileMenu) {
-        // No cerramos si ya está abierto, el usuario probablemente quiere navegar el menú
+        // No cerramos si ya está abierto
       } else {
         const rect = fileMenuButtonRef.current.getBoundingClientRect();
         setFileMenuPosition({ top: rect.bottom, left: rect.left });
@@ -86,11 +116,27 @@ export default function MenuBar({
       }
     } else if (menuType === 'view') {
       if (showViewMenu) {
-        // No cerramos si ya está abierto, el usuario probablemente quiere navegar el menú
+        // No cerramos si ya está abierto
       } else {
         const rect = viewMenuButtonRef.current.getBoundingClientRect();
         setViewMenuPosition({ top: rect.bottom, left: rect.left });
         openMenuAndCloseOthers('view');
+      }
+    } else if (menuType === 'importSubmenu') {
+      if (showImportSubmenu) {
+        // No cerramos si ya está abierto
+      } else {
+        const rect = importItemRef.current.getBoundingClientRect();
+        setImportSubmenuPosition({ top: rect.top - 5, left: rect.right + 5 });
+        openMenuAndCloseOthers('importSubmenu');
+      }
+    } else if (menuType === 'exportSubmenu') {
+      if (showExportSubmenu) {
+        // No cerramos si ya está abierto
+      } else {
+        const rect = exportItemRef.current.getBoundingClientRect();
+        setExportSubmenuPosition({ top: rect.top - 5, left: rect.right + 5 });
+        openMenuAndCloseOthers('exportSubmenu');
       }
     }
   };
@@ -146,6 +192,13 @@ export default function MenuBar({
     zIndex: 1000,
     minWidth: '200px',
   };
+  const submenuStyle = {
+    ...dropdownStyle,
+    top: '0px',
+    left: '100%',
+    marginTop: '0',
+    marginLeft: '1px',
+  };
   const dropdownItemStyle = {
     padding: '10px 16px',
     whiteSpace: 'nowrap',
@@ -153,6 +206,9 @@ export default function MenuBar({
     cursor: 'pointer',
     transition: 'background 0.2s, color 0.2s',
     borderBottom: '1px solid #f1f5f9',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   };
   const checkboxItemStyle = {
     ...dropdownItemStyle,
@@ -170,6 +226,9 @@ export default function MenuBar({
   const checkboxStyle = {
     marginRight: '8px',
   };
+  const submenuIconStyle = {
+    marginLeft: '10px',
+  };
   const dropdownItemHover = e => e.currentTarget.style.background = '#f0f4f8';
   const dropdownItemLeave = e => e.currentTarget.style.background = 'transparent';
 
@@ -183,8 +242,10 @@ export default function MenuBar({
         style={{ display: 'none' }}
         onChange={(e) => {
           onImportJSON(e);
-          // (por si acaso) cerramos aquí también tras elegir archivo
+          // Cerramos todos los menús tras elegir archivo
           setShowFileMenu(false);
+          setShowImportSubmenu(false);
+          setShowExportSubmenu(false);
         }}
       />
 
@@ -226,73 +287,149 @@ export default function MenuBar({
               isOpen={showFileMenu} 
               position={fileMenuPosition}
               onClickOutside={() => setShowFileMenu(false)}
+              closeDelay={300}
             >
               <div ref={fileMenuRef} style={dropdownStyle}>
-                {/* Importar JSON */}
+                {/* Importar con submenú */}
                 <div
+                  ref={importItemRef}
                   style={dropdownItemStyle}
-                  onMouseEnter={dropdownItemHover}
-                  onMouseLeave={dropdownItemLeave}
-                  onClick={() => {
-                    // cerramos antes de abrir el diálogo
-                    setShowFileMenu(false);
-                    // y lanzamos el click en el input tras un tick
-                    setTimeout(() => fileInputRef.current.click(), 0);
-                  }}
+                  onMouseEnter={() => handleMenuHover('importSubmenu')}
+                  onClick={(e) => handleMenuClick('importSubmenu', e)}
                 >
-                  Importar JSON
+                  <span>Importar</span>
+                  <span style={submenuIconStyle}>
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="#334e68"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <polyline points="9 6 15 12 9 18" />
+                    </svg>
+                  </span>
+                  
+                  {showImportSubmenu && (
+                    <MenuPortal 
+                      isOpen={showImportSubmenu} 
+                      position={importSubmenuPosition}
+                      onClickOutside={() => setShowImportSubmenu(false)}
+                      isSubmenu={true}
+                      closeDelay={300}
+                    >
+                      <div ref={importSubmenuRef} style={submenuStyle}>
+                        {/* Importar JSON */}
+                        <div
+                          style={dropdownItemStyle}
+                          onMouseEnter={dropdownItemHover}
+                          onMouseLeave={dropdownItemLeave}
+                          onClick={() => {
+                            setShowFileMenu(false);
+                            setShowImportSubmenu(false);
+                            setTimeout(() => fileInputRef.current.click(), 0);
+                          }}
+                        >
+                          Importar JSON
+                        </div>
+                      </div>
+                    </MenuPortal>
+                  )}
                 </div>
 
-                {/* Exportar JSON */}
+                {/* Exportar con submenú */}
                 <div
+                  ref={exportItemRef}
                   style={dropdownItemStyle}
-                  onMouseEnter={dropdownItemHover}
-                  onMouseLeave={dropdownItemLeave}
-                  onClick={() => {
-                    setShowFileMenu(false);
-                    onExportJSON();
-                  }}
+                  onMouseEnter={() => handleMenuHover('exportSubmenu')}
+                  onClick={(e) => handleMenuClick('exportSubmenu', e)}
                 >
-                  Exportar JSON
-                </div>
+                  <span>Exportar</span>
+                  <span style={submenuIconStyle}>
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="#334e68"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <polyline points="9 6 15 12 9 18" />
+                    </svg>
+                  </span>
+                  
+                  {showExportSubmenu && (
+                    <MenuPortal 
+                      isOpen={showExportSubmenu} 
+                      position={exportSubmenuPosition}
+                      onClickOutside={() => setShowExportSubmenu(false)}
+                      isSubmenu={true}
+                      closeDelay={300}
+                    >
+                      <div ref={exportSubmenuRef} style={submenuStyle}>
+                        {/* Exportar JSON */}
+                        <div
+                          style={dropdownItemStyle}
+                          onMouseEnter={dropdownItemHover}
+                          onMouseLeave={dropdownItemLeave}
+                          onClick={() => {
+                            setShowFileMenu(false);
+                            setShowExportSubmenu(false);
+                            onExportJSON();
+                          }}
+                        >
+                          Exportar JSON
+                        </div>
 
-                {/* Exportar CSV */}
-                <div
-                  style={dropdownItemStyle}
-                  onMouseEnter={dropdownItemHover}
-                  onMouseLeave={dropdownItemLeave}
-                  onClick={() => {
-                    setShowFileMenu(false);
-                    onExportCSV();
-                  }}
-                >
-                  Exportar CSV
-                </div>
+                        {/* Exportar CSV */}
+                        <div
+                          style={dropdownItemStyle}
+                          onMouseEnter={dropdownItemHover}
+                          onMouseLeave={dropdownItemLeave}
+                          onClick={() => {
+                            setShowFileMenu(false);
+                            setShowExportSubmenu(false);
+                            onExportCSV();
+                          }}
+                        >
+                          Exportar CSV
+                        </div>
 
-                {/* Exportar PNG */}
-                <div
-                  style={dropdownItemStyle}
-                  onMouseEnter={dropdownItemHover}
-                  onMouseLeave={dropdownItemLeave}
-                  onClick={() => {
-                    setShowFileMenu(false);
-                    onExportPNG();
-                  }}
-                >
-                  Exportar PNG
-                </div>
+                        {/* Exportar PNG */}
+                        <div
+                          style={dropdownItemStyle}
+                          onMouseEnter={dropdownItemHover}
+                          onMouseLeave={dropdownItemLeave}
+                          onClick={() => {
+                            setShowFileMenu(false);
+                            setShowExportSubmenu(false);
+                            onExportPNG();
+                          }}
+                        >
+                          Exportar PNG
+                        </div>
 
-                {/* Exportar JPG */}
-                <div
-                  style={dropdownItemStyle}
-                  onMouseEnter={dropdownItemHover}
-                  onMouseLeave={dropdownItemLeave}
-                  onClick={() => {
-                    setShowFileMenu(false);
-                    onExportJPG();
-                  }}
-                >
-                  Exportar JPG
+                        {/* Exportar JPG */}
+                        <div
+                          style={dropdownItemStyle}
+                          onMouseEnter={dropdownItemHover}
+                          onMouseLeave={dropdownItemLeave}
+                          onClick={() => {
+                            setShowFileMenu(false);
+                            setShowExportSubmenu(false);
+                            onExportJPG();
+                          }}
+                        >
+                          Exportar JPG
+                        </div>
+                      </div>
+                    </MenuPortal>
+                  )}
                 </div>
               </div>
             </MenuPortal>
@@ -333,6 +470,7 @@ export default function MenuBar({
               isOpen={showViewMenu} 
               position={viewMenuPosition}
               onClickOutside={() => setShowViewMenu(false)}
+              closeDelay={300}
             >
               <div ref={viewMenuRef} style={dropdownStyle}>
                 {/* Opción Panel de Navegación */}
