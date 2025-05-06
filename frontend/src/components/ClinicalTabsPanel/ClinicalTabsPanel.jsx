@@ -6,9 +6,9 @@ import SessionNotesPanel from '../sessionNotesPanel/SessionNotesPanel';
 const tabStyle = {
   padding: '12px 16px',
   cursor: 'pointer',
-  borderBottom: '2px solid transparent',
+  borderBottom: '3px solid transparent', // Borde más grueso para mejor definición
   fontWeight: '600',
-  color: '#64748b',
+  color: '#475569', // Color de texto más oscuro para mayor contraste
   transition: 'all 0.2s ease',
   display: 'flex',
   alignItems: 'center',
@@ -19,13 +19,14 @@ const tabStyle = {
 // Estilos para la pestaña activa
 const activeTabStyle = {
   ...tabStyle,
-  borderBottom: '2px solid #0284c7',
-  color: '#0284c7',
-  backgroundColor: '#f0f9ff',
+  borderBottom: '3px solid #0369a1', // Azul más oscuro y borde más grueso
+  color: '#0369a1', // Texto más oscuro para mayor contraste
+  backgroundColor: '#e0f2fe', // Color de fondo más sólido (menos transparente)
 };
 
 // Componente principal
 const ClinicalTabsPanel = ({ selectedNode, onUpdateNode, isOpen, onClose, nodes, edges, patientName }) => {
+  // Estados
   const [activeTab, setActiveTab] = useState('history');
   const [visible, setVisible] = useState(isOpen);
   
@@ -59,8 +60,8 @@ const ClinicalTabsPanel = ({ selectedNode, onUpdateNode, isOpen, onClose, nodes,
     right: 0,
     width: '440px',
     height: 'calc(100vh - 88px)',
-    backgroundColor: '#f0f9ff',
-    borderLeft: '1px solid #e0e7ff',
+    backgroundColor: '#ffffff', // Fondo blanco sólido para mejor nitidez
+    borderLeft: '1px solid #cbd5e1', // Borde más visible
     display: 'flex',
     flexDirection: 'column',
     zIndex: 999,
@@ -68,7 +69,7 @@ const ClinicalTabsPanel = ({ selectedNode, onUpdateNode, isOpen, onClose, nodes,
     overflow: 'hidden',
     transform: isOpen ? 'translateX(0)' : 'translateX(440px)',
     opacity: isOpen ? 1 : 0,
-    boxShadow: isOpen ? '-2px 0 10px rgba(0, 0, 0, 0.1)' : 'none',
+    boxShadow: isOpen ? '-3px 0 8px rgba(0, 0, 0, 0.15)' : 'none', // Sombra más definida
     transition: 'transform 300ms ease-out, opacity 300ms ease-out, box-shadow 300ms ease-out',
     willChange: 'transform, opacity', // Ayuda a optimizar la animación
     backfaceVisibility: 'hidden', // Reduce problemas de renderizado
@@ -79,8 +80,8 @@ const ClinicalTabsPanel = ({ selectedNode, onUpdateNode, isOpen, onClose, nodes,
   // Estilos para el contenedor de pestañas
   const tabHeaderContainerStyle = {
     display: 'flex',
-    backgroundColor: '#ffffff',
-    borderBottom: '1px solid #e0e7ff',
+    backgroundColor: '#ffffff', // Blanco sólido para mejor contraste
+    borderBottom: '2px solid #e2e8f0', // Borde más visible
     position: 'sticky',
     top: 0,
     zIndex: 10,
@@ -99,6 +100,7 @@ const ClinicalTabsPanel = ({ selectedNode, onUpdateNode, isOpen, onClose, nodes,
     boxSizing: 'border-box',
     opacity: isOpen ? 1 : 0,
     transition: 'opacity 250ms ease-out',
+    backgroundColor: '#f8fafc', // Fondo más claro y sólido
   };
 
   return (
@@ -129,7 +131,7 @@ const ClinicalTabsPanel = ({ selectedNode, onUpdateNode, isOpen, onClose, nodes,
             marginLeft: 'auto',
             padding: '12px',
             cursor: 'pointer',
-            color: '#64748b',
+            color: '#475569', // Color más oscuro para mejor visibilidad
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -141,9 +143,9 @@ const ClinicalTabsPanel = ({ selectedNode, onUpdateNode, isOpen, onClose, nodes,
           aria-label="Cerrar panel"
           tabIndex={0}
           onMouseEnter={(e) => e.currentTarget.style.color = '#ef4444'}
-          onMouseLeave={(e) => e.currentTarget.style.color = '#64748b'}
+          onMouseLeave={(e) => e.currentTarget.style.color = '#475569'}
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
             <path d="M18 6L6 18M6 6l12 12"/>
           </svg>
         </div>
@@ -192,7 +194,7 @@ const ClinicalTabsPanel = ({ selectedNode, onUpdateNode, isOpen, onClose, nodes,
 
 // Icono para la pestaña de Historia Clínica
 const HistoryIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
     <path d="M22 12h-6l-2 3h-4l-2-3H2"/>
     <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>
   </svg>
@@ -200,7 +202,7 @@ const HistoryIcon = () => (
 
 // Icono para la pestaña de Notas de Sesión
 const NotesIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
     <path d="M14 3v4a1 1 0 0 0 1 1h4"/>
     <path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/>
     <path d="M9 9h1M9 13h6M9 17h6"/>

@@ -273,7 +273,7 @@ const ClinicalHistoryPanel = ({
       {/* Encabezado del panel */}
       <div style={{
         padding: '15px',
-        backgroundColor: '#0284c7',
+        backgroundColor: '#0369a1', // Color más oscuro para mejor contraste
         color: 'white',
         display: 'flex',
         alignItems: 'center',
@@ -283,16 +283,16 @@ const ClinicalHistoryPanel = ({
         zIndex: 10
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
             <path d="M22 12h-6l-2 3h-4l-2-3H2"/>
             <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>
           </svg>
-          <h3 style={{ margin: 0 }}>Historia Clínica</h3>
+          <h3 style={{ margin: 0, fontWeight: '600', fontSize: '16px' }}>Historia Clínica</h3>
         </div>
       </div>
       
       {/* Contenido del paciente */}
-      <div style={{ padding: '15px 20px' }}> {/* Aumentado el padding horizontal */}
+      <div style={{ padding: '15px 20px', backgroundColor: '#ffffff' }}> {/* Fondo blanco sólido */}
         {selectedNode ? (
           <>
             <div style={{ 
@@ -302,7 +302,9 @@ const ClinicalHistoryPanel = ({
               marginBottom: '15px',
               display: 'flex',
               alignItems: 'center',
-              gap: '10px'
+              gap: '10px',
+              border: '1px solid #bae6fd', // Borde para mejor definición
+              boxShadow: '0 1px 2px rgba(0,0,0,0.05)', // Sombra sutil
             }}>
               <div style={{
                 width: '40px',
@@ -316,15 +318,27 @@ const ClinicalHistoryPanel = ({
                 justifyContent: 'center',
                 color: 'white',
                 fontWeight: 'bold',
-                fontSize: '18px'
+                fontSize: '18px',
+                border: '2px solid white', // Borde para mejor definición
               }}>
                 {selectedNode.data.name ? selectedNode.data.name.charAt(0).toUpperCase() : '?'}
               </div>
               <div>
-                <h3 style={{ margin: 0, color: '#0369a1' }}>
+                <h3 style={{ 
+                  margin: 0, 
+                  color: '#0369a1', 
+                  fontWeight: '600', 
+                  fontSize: '16px',
+                  textShadow: '0 0 0.5px rgba(0,0,0,0.1)', // Texto más nítido
+                  letterSpacing: '-0.01em', // Ajuste de espaciado entre letras
+                }}>
                   {selectedNode.data.name || 'Sin nombre'}
                 </h3>
-                <div style={{ fontSize: '14px', color: '#64748b' }}>
+                <div style={{ 
+                  fontSize: '14px', 
+                  color: '#1e293b', // Color más oscuro para mejor legibilidad
+                  fontWeight: '400',
+                }}>
                   {selectedNode.data.age ? `${selectedNode.data.age} años` : 'Edad no especificada'}
                   {selectedNode.data.profession ? ` • ${selectedNode.data.profession}` : ''}
                 </div>
@@ -334,9 +348,17 @@ const ClinicalHistoryPanel = ({
             {/* Secciones de la historia clínica */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
               {/* Diagnóstico */}
-              <section>
-                <h4 style={{ color: '#0369a1', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <section style={{ backgroundColor: '#ffffff', padding: '12px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', border: '1px solid #e2e8f0' }}>
+                <h4 style={{ 
+                  color: '#0369a1', 
+                  marginBottom: '8px', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '5px',
+                  fontSize: '15px',
+                  fontWeight: '600',
+                }}>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                     <path d="M8 2h8a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V4c0-1.1.9-2 2-2z"/>
                     <path d="M4 8h2M4 12h2M4 16h2M12 6h2M12 10h2M12 18h2M12 14h2"/>
                   </svg>
@@ -349,20 +371,32 @@ const ClinicalHistoryPanel = ({
                   style={{
                     width: '100%',
                     minHeight: '80px',
-                    padding: '8px 12px',
+                    padding: '10px',
                     borderRadius: '6px',
                     border: '1px solid #cbd5e1',
                     fontSize: '14px',
                     resize: 'vertical',
-                    boxSizing: 'border-box' // Asegurar que padding y border estén dentro del width
+                    boxSizing: 'border-box',
+                    fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', // Fuente más limpia
+                    fontWeight: '400', // Peso medio para mejor legibilidad
+                    lineHeight: '1.5', // Mejor espaciado entre líneas
+                    boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.05)', // Sombra interna sutil
                   }}
                 />
               </section>
               
               {/* Síntomas */}
-              <section>
-                <h4 style={{ color: '#0369a1', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <section style={{ backgroundColor: '#ffffff', padding: '12px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', border: '1px solid #e2e8f0' }}>
+                <h4 style={{ 
+                  color: '#0369a1', 
+                  marginBottom: '8px', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '5px',
+                  fontSize: '15px',
+                  fontWeight: '600',
+                }}>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                     <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
                     <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3"/>
                   </svg>
@@ -375,20 +409,32 @@ const ClinicalHistoryPanel = ({
                   style={{
                     width: '100%',
                     minHeight: '80px',
-                    padding: '8px 12px',
+                    padding: '10px',
                     borderRadius: '6px',
                     border: '1px solid #cbd5e1',
                     fontSize: '14px',
                     resize: 'vertical',
-                    boxSizing: 'border-box' // Asegurar que padding y border estén dentro del width
+                    boxSizing: 'border-box',
+                    fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', // Fuente más limpia
+                    fontWeight: '400', // Peso medio para mejor legibilidad
+                    lineHeight: '1.5', // Mejor espaciado entre líneas
+                    boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.05)', // Sombra interna sutil
                   }}
                 />
               </section>
               
               {/* Medicación */}
-              <section>
-                <h4 style={{ color: '#0369a1', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <section style={{ backgroundColor: '#ffffff', padding: '12px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', border: '1px solid #e2e8f0' }}>
+                <h4 style={{ 
+                  color: '#0369a1', 
+                  marginBottom: '8px', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '5px',
+                  fontSize: '15px',
+                  fontWeight: '600',
+                }}>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                     <path d="m9 12 2 2 4-4"/>
                     <path d="M5 7c0-1.1.9-2 2-2h10a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V7Z"/>
                     <path d="M9 3v4M15 3v4"/>
@@ -402,20 +448,32 @@ const ClinicalHistoryPanel = ({
                   style={{
                     width: '100%',
                     minHeight: '60px',
-                    padding: '8px 12px',
+                    padding: '10px',
                     borderRadius: '6px',
                     border: '1px solid #cbd5e1',
                     fontSize: '14px',
                     resize: 'vertical',
-                    boxSizing: 'border-box' // Asegurar que padding y border estén dentro del width
+                    boxSizing: 'border-box',
+                    fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', // Fuente más limpia
+                    fontWeight: '400', // Peso medio para mejor legibilidad
+                    lineHeight: '1.5', // Mejor espaciado entre líneas
+                    boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.05)', // Sombra interna sutil
                   }}
                 />
               </section>
               
               {/* Alergias */}
-              <section>
-                <h4 style={{ color: '#0369a1', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <section style={{ backgroundColor: '#ffffff', padding: '12px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', border: '1px solid #e2e8f0' }}>
+                <h4 style={{ 
+                  color: '#0369a1', 
+                  marginBottom: '8px', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '5px',
+                  fontSize: '15px',
+                  fontWeight: '600',
+                }}>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                     <path d="M8.4 10.6a1 1 0 0 0 0 1.4l4.6 4.6a1 1 0 0 0 1.4 0l4.6-4.6a1 1 0 0 0 0-1.4L14.4 6a1 1 0 0 0-1.4 0Z"/>
                     <path d="M4 15h2M4 9h2M12 2v2M12 20v2M20 9h-2M20 15h-2"/>
                   </svg>
@@ -428,20 +486,32 @@ const ClinicalHistoryPanel = ({
                   style={{
                     width: '100%',
                     minHeight: '60px',
-                    padding: '8px 12px',
+                    padding: '10px',
                     borderRadius: '6px',
                     border: '1px solid #cbd5e1',
                     fontSize: '14px',
                     resize: 'vertical',
-                    boxSizing: 'border-box' // Asegurar que padding y border estén dentro del width
+                    boxSizing: 'border-box',
+                    fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', // Fuente más limpia
+                    fontWeight: '400', // Peso medio para mejor legibilidad
+                    lineHeight: '1.5', // Mejor espaciado entre líneas
+                    boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.05)', // Sombra interna sutil
                   }}
                 />
               </section>
               
               {/* Antecedentes familiares */}
-              <section>
-                <h4 style={{ color: '#0369a1', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <section style={{ backgroundColor: '#ffffff', padding: '12px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', border: '1px solid #e2e8f0' }}>
+                <h4 style={{ 
+                  color: '#0369a1', 
+                  marginBottom: '8px', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '5px',
+                  fontSize: '15px',
+                  fontWeight: '600',
+                }}>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                     <path d="M20 6v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2z"/>
                     <path d="M12 11a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/>
                     <path d="M16 17a4 4 0 0 0-8 0"/>
@@ -455,12 +525,16 @@ const ClinicalHistoryPanel = ({
                   style={{
                     width: '100%',
                     minHeight: '80px',
-                    padding: '8px 12px',
+                    padding: '10px',
                     borderRadius: '6px',
                     border: '1px solid #cbd5e1',
                     fontSize: '14px',
                     resize: 'vertical',
-                    boxSizing: 'border-box' // Asegurar que padding y border estén dentro del width
+                    boxSizing: 'border-box',
+                    fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', // Fuente más limpia
+                    fontWeight: '400', // Peso medio para mejor legibilidad
+                    lineHeight: '1.5', // Mejor espaciado entre líneas
+                    boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.05)', // Sombra interna sutil
                   }}
                 />
               </section>

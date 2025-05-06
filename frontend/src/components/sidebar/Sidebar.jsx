@@ -313,7 +313,11 @@ function Sidebar({
         return (
           <div style={sectionStyle(true)}>
             <h2 style={headerStyle}>Figuras</h2>
-            <GenogramNodePalette nodes={genogramaNodes} />
+            <GenogramNodePalette 
+              nodes={genogramaNodes} 
+              activeDrawingTool={activeDrawingTool} 
+              handleDrawingToolSelect={handleDrawingToolSelect}
+            />
           </div>
         );
       case "diagramas":

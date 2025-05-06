@@ -394,7 +394,7 @@ const SessionNotesPanel = ({
       {/* Encabezado del panel */}
       <div style={{
         padding: '15px',
-        backgroundColor: '#0284c7',
+        backgroundColor: '#0369a1', // Color más oscuro para mejor contraste
         color: 'white',
         display: 'flex',
         alignItems: 'center',
@@ -404,12 +404,12 @@ const SessionNotesPanel = ({
         zIndex: 10
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
             <path d="M14 3v4a1 1 0 0 0 1 1h4"/>
             <path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/>
             <path d="M9 9h1M9 13h6M9 17h6"/>
           </svg>
-          <h3 style={{ margin: 0 }}>Notas de Sesión</h3>
+          <h3 style={{ margin: 0, fontWeight: '600', fontSize: '16px' }}>Notas de Sesión</h3>
         </div>
       </div>
       
@@ -432,7 +432,11 @@ const SessionNotesPanel = ({
             marginBottom: '10px',
             fontSize: '14px',
             resize: 'vertical',
-            boxSizing: 'border-box' // Asegurar que padding y border estén dentro del width
+            boxSizing: 'border-box', // Asegurar que padding y border estén dentro del width
+            fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', // Fuente más limpia
+            fontWeight: '400',
+            lineHeight: '1.5', // Mejor espaciado entre líneas
+            boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.05)', // Sombra interna sutil
           }}
         />
         
@@ -446,7 +450,7 @@ const SessionNotesPanel = ({
             style={{
               flex: '1',
               padding: '8px 16px',
-              backgroundColor: '#0284c7',
+              backgroundColor: '#0369a1', // Color más oscuro para mejor contraste
               color: 'white',
               border: 'none',
               borderRadius: '6px',
@@ -455,10 +459,12 @@ const SessionNotesPanel = ({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '5px'
+              gap: '5px',
+              fontWeight: '500', // Texto más definido
+              boxShadow: '0 1px 2px rgba(0,0,0,0.05)', // Sombra sutil
             }}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <path d={editingNoteId 
                 ? "M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" 
                 : "M12 5v14M5 12h14"} />
@@ -564,12 +570,14 @@ const SessionNotesPanel = ({
               onClick={() => setFilter(f)}
               style={{
                 padding: '6px 10px',
-                backgroundColor: filter === f ? '#0284c7' : '#f1f5f9',
-                color: filter === f ? 'white' : '#64748b',
+                backgroundColor: filter === f ? '#0369a1' : '#f8fafc', // Colores más contrastantes
+                color: filter === f ? 'white' : '#334155', // Color más oscuro para mejor contraste
                 border: filter === f ? 'none' : '1px solid #cbd5e1',
                 borderRadius: '6px',
                 cursor: 'pointer',
                 fontSize: '12px',
+                fontWeight: filter === f ? '500' : '400', // Texto seleccionado más definido
+                boxShadow: filter === f ? '0 1px 2px rgba(0,0,0,0.1)' : 'none', // Sombra sutil
                 whiteSpace: 'nowrap'
               }}
             >

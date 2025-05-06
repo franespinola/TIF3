@@ -1,14 +1,14 @@
 import React from "react";
 import MiniIcon from "../sidebar/MiniIcon";
-import { useReactFlow } from "reactflow";
+import usePaletteItemClick from "../../hooks/usePaletteItemClick";
 
 /**
  * Componente que muestra la paleta de herramientas de anotación arrastrables
  * Con estilo inspirado en Lucidchart: más limpio y con mejor usabilidad
  */
 const AnnotationToolPalette = ({ nodes, activeDrawingTool, handleDrawingToolSelect }) => {
-  // Obtenemos la instancia de ReactFlow para centrar nodos al hacer click
-  const reactFlowInstance = useReactFlow();
+  // Usar el hook personalizado para manejar clics en los elementos de la paleta
+  const handlePaletteItemClick = usePaletteItemClick(handleDrawingToolSelect);
   
   // Verificar si un tipo de herramienta de anotación está activo
   const isToolActive = (type) => {
@@ -18,54 +18,6 @@ const AnnotationToolPalette = ({ nodes, activeDrawingTool, handleDrawingToolSele
   // Separar los nodos por categoría
   const basicNodes = nodes.filter(node => !node.category);
   const flowchartNodes = nodes.filter(node => node.category === 'flowchart');
-
-  // Insertar un nodo directamente al hacer click (estilo Lucidchart)
-  const handleNodeClick = (item) => {
-    // Primero marcamos la herramienta como activa
-    handleDrawingToolSelect(item.type);
-    
-    // Luego insertamos el nodo en el centro de la vista actual
-    const { x, y, zoom } = reactFlowInstance.getViewport();
-    
-    // Calcular el centro visible del viewport
-    const centerX = x + (window.innerWidth / 2 - x) / zoom;
-    const centerY = y + (window.innerHeight / 2 - y) / zoom;
-    
-    // Crear un nuevo nodo con ID único
-    const newNodeId = `${item.type}_${Date.now()}`;
-    const newNode = {
-      id: newNodeId,
-      type: item.type,
-      position: { x: centerX, y: centerY },
-      data: { 
-        ...item.data,
-        // Agregar una flag que indica que debe activar la edición
-        initialEdit: true
-      },
-    };
-    
-    // Añadir el nodo al diagrama
-    reactFlowInstance.addNodes(newNode);
-    
-    // Centrar la vista en el nuevo nodo con una animación suave
-    reactFlowInstance.setCenter(centerX, centerY, { duration: 300 });
-    
-    // Seleccionar el nodo recién agregado y activar el modo de edición
-    setTimeout(() => {
-      // Seleccionamos el nodo
-      reactFlowInstance.setNodes((nodes) =>
-        nodes.map((node) =>
-          node.id === newNodeId
-            ? { ...node, selected: true }
-            : { ...node, selected: false }
-        )
-      );
-      
-      // Emitimos un evento personalizado que será detectado para activar la edición
-      const editEvent = new CustomEvent('activateNodeEdit', { detail: { nodeId: newNodeId } });
-      document.dispatchEvent(editEvent);
-    }, 100); // Un poco más de tiempo para que el nodo se renderice completamente
-  };
 
   // Contenedor principal con flex-wrap para una disposición fluida
   const flowchartContainerStyle = {
@@ -153,7 +105,7 @@ const AnnotationToolPalette = ({ nodes, activeDrawingTool, handleDrawingToolSele
           onDragStart={(e) =>
             e.dataTransfer.setData("application/reactflow", JSON.stringify(item))
           }
-          onClick={() => handleNodeClick(item)} // Usando la nueva función para insertar nodos
+          onClick={() => handlePaletteItemClick(item)} // Usar la función del hook personalizado
           style={{
             ...paletteItemStyle(isActive),
             width: getWidth() // Aplicamos cálculo dinámico del ancho

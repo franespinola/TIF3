@@ -1,79 +1,145 @@
 import React from "react";
 import MiniIcon from "../../sidebar/MiniIcon";
+import usePaletteItemClick from "../../../hooks/usePaletteItemClick";
 
 /**
  * Componente que muestra la paleta de nodos de genograma arrastrables
- * Optimizado para un sidebar más angosto
+ * Con funcionalidad mejorada de clic para inserción directa como Lucidchart
  */
-const GenogramNodePalette = ({ nodes }) => {
-  // Contenedor principal con diseño de grid más compacto
-  const gridContainerStyle = {
-    display: "grid",
-    gridTemplateColumns: "calc(50% - 5px) calc(50% - 5px)", // Reducido el espacio entre columnas
-    gap: "10px", // Reducida la separación horizontal más
-    width: "100%",
-    padding: "1px" // Minimizado el padding
+const GenogramNodePalette = ({ nodes, activeDrawingTool, handleDrawingToolSelect }) => {
+  // Usar hook personalizado para manejar clic en ítems
+  const handlePaletteItemClick = usePaletteItemClick(handleDrawingToolSelect);
+
+  // Verificar si un tipo de herramienta está activo
+  const isToolActive = (type) => {
+    return activeDrawingTool === type;
   };
 
-  // Estilos para los elementos del palette - Sin estilo de botón
-  const paletteItemStyle = {
-    padding: "5px", // Reducido más
-    cursor: "grab",
+  // Contenedor principal con diseño flex para 4 columnas
+  const gridContainerStyle = {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "8px",
+    width: "100%",
+    padding: "4px",
+    maxHeight: "300px",
+    overflowY: "auto",
+    scrollbarWidth: "thin",
+    scrollbarColor: "#cbd5e1 #f1f5f9",
+  };
+
+  // Agregamos CSS en JS para soporte responsive
+  const getWidth = () => {
+    if (window.innerWidth <= 480) return "calc(50% - 8px)"; // 2 columnas en móviles
+    if (window.innerWidth <= 768) return "calc(33.33% - 8px)"; // 3 columnas en tablets
+    return "calc(25% - 8px)"; // 4 columnas por defecto
+  };
+
+  // Estilos para los elementos del palette - Estilo consistente con AnnotationToolPalette
+  const paletteItemStyle = (isActive) => ({
+    padding: "8px", // Consistente con otras secciones
+    background: isActive ? "rgba(0, 0, 0, 0.05)" : "transparent",
+    cursor: "pointer", // Cambio de grab a pointer para indicar que es clickeable
+    borderRadius: "4px",
     textAlign: "center",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
-    transition: "all 0.2s ease-in-out",
-    height: "100%",
+    transition: "all 0.15s ease-in-out",
+    border: isActive ? "1px dashed #94a3b8" : "1px solid transparent",
+    boxShadow: "none",
     userSelect: "none",
-    margin: "0" // Eliminado el margen
-  };
+    // Tamaño flexible basado en pantalla
+    width: "calc(25% - 8px)", // 4 columnas por defecto
+  });
 
-  const labelStyle = {
-    fontSize: "0.7rem", // Reducido más el tamaño de fuente
-    marginTop: "2px", // Reducido el espacio superior
+  // Estilos para las etiquetas
+  const labelStyle = (isActive) => ({
+    fontSize: "0.75rem",
+    marginTop: "4px",
     whiteSpace: "nowrap",
     overflow: "hidden",
     textOverflow: "ellipsis",
     maxWidth: "100%",
-    fontWeight: "500"
-  };
+    fontWeight: isActive ? "500" : "normal",
+    color: isActive ? "#475569" : "#64748b"
+  });
 
   const sectionHeaderStyle = {
-    fontSize: "0.95rem", // Reducido más el tamaño del título
+    fontSize: "1rem",
     fontWeight: "600",
-    marginBottom: "6px", // Reducido el margen inferior
-    borderBottom: "2px solid #3b82f6",
-    paddingBottom: "3px", // Reducido el padding inferior
-    color: "#3b82f6",
-    gridColumn: "1 / span 2" // El título ocupa ambas columnas
+    marginBottom: "8px",
+    borderBottom: "1px solid #e2e8f0",
+    paddingBottom: "6px",
+    color: "#475569",
+    width: "100%"
   };
 
   return (
-    <div className="genogram-node-palette" style={{ marginBottom: "10px" }}> {/* Reducido más el margen inferior */}
+    <div className="genogram-node-palette" style={{ marginBottom: "14px" }}>
       <h3 style={sectionHeaderStyle}>Nodos de Genograma</h3>
-      <div style={gridContainerStyle}>
-        {nodes.map((item, idx) => (
-          <div
-            key={idx}
-            draggable
-            onDragStart={(e) =>
-              e.dataTransfer.setData("application/reactflow", JSON.stringify(item))
-            }
-            style={{...paletteItemStyle}}
-            onMouseOver={(e) => {
-              e.currentTarget.style.transform = "translateY(-1px)";
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.transform = "none";
-            }}
-          >
-            <MiniIcon type={item.type} size={22} /> {/* Reducido el tamaño del ícono si MiniIcon acepta props de tamaño */}
-            <span style={labelStyle}>{item.label}</span>
-          </div>
-        ))}
+      <div style={gridContainerStyle} className="genogram-node-container">
+        {nodes.map((item, idx) => {
+          const isActive = isToolActive(item.type);
+          return (
+            <div
+              key={`genogram-${item.type}-${idx}`}
+              draggable
+              onDragStart={(e) =>
+                e.dataTransfer.setData("application/reactflow", JSON.stringify(item))
+              }
+              onClick={() => handlePaletteItemClick(item)} // Usar la función del hook personalizado
+              style={{
+                ...paletteItemStyle(isActive),
+                width: getWidth() // Aplicamos cálculo dinámico del ancho
+              }}
+              onMouseOver={(e) => {
+                if (!isActive) {
+                  e.currentTarget.style.background = "rgba(0, 0, 0, 0.05)";
+                }
+              }}
+              onMouseOut={(e) => {
+                if (!isActive) {
+                  e.currentTarget.style.background = "transparent";
+                }
+              }}
+            >
+              <MiniIcon type={item.type} isActive={isActive} />
+              <span style={labelStyle(isActive)}>
+                {item.label}
+              </span>
+            </div>
+          );
+        })}
       </div>
+      
+      {/* Estilos CSS específicos para mejorar el scrollbar en diferentes navegadores */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        .genogram-node-container::-webkit-scrollbar {
+          width: 6px;
+        }
+        .genogram-node-container::-webkit-scrollbar-track {
+          background: #f1f5f9;
+        }
+        .genogram-node-container::-webkit-scrollbar-thumb {
+          background: #cbd5e1;
+          border-radius: 3px;
+        }
+        .genogram-node-container::-webkit-scrollbar-thumb:hover {
+          background: #94a3b8;
+        }
+        @media (max-width: 768px) {
+          .genogram-node-container > div {
+            width: calc(33.33% - 8px);
+          }
+        }
+        @media (max-width: 480px) {
+          .genogram-node-container > div {
+            width: calc(50% - 8px);
+          }
+        }
+      `}} />
     </div>
   );
 };
