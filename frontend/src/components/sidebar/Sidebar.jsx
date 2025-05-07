@@ -492,15 +492,13 @@ function Sidebar({
                 strokeLinecap="round"
                 strokeLinejoin="round"
               >
-                <path d="M8 19H5c-1 0-2-1-2-2v-1a3 3 0 0 1 6 0v1c0 1-1 2-2 2Z"></path>
-                <path d="M16 19h-3c-1 0-2-1-2-2v-1a3 3 0 0 1 6 0v1c0 1-1 2-2 2Z"></path>
-                <path d="M19 12a3 3 0 1 0 0-6a3 3 0 0 0 0 6Z"></path>
-                <path d="M11 12a3 3 0 1 0 0-6a3 3 0 0 0 0 6Z"></path>
-                <path d="M3 12a3 3 0 1 0 0-6a3 3 0 0 0 0 6Z"></path>
-                <path d="M17.17 19.51c-.44-1.94-1.64-3.49-3.17-4.44"></path>
-                <path d="M7 15.07c-1.53.95-2.72 2.5-3.17 4.44"></path>
-                <path d="M16.41 7.38c-.34.2-.69.38-1.06.52"></path>
-                <path d="M7.59 7.38c.34.2.69.38 1.06.52"></path>
+                <circle cx="12" cy="5" r="2"/>
+                <circle cx="5" cy="19" r="2"/>
+                <circle cx="19" cy="19" r="2"/>
+                <path d="M12 7v5"/>
+                <path d="M5 17v-2h14v2"/>
+                <path d="M12 12h-7"/>
+                <path d="M12 12h7"/>
               </svg>
             }
           />

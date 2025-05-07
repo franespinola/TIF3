@@ -96,7 +96,10 @@ export default function MenuBar({
 
   const handleMenuHover = (menuType) => {
     // Si ya hay un menú activo o se trata de un submenú, permitimos que se abra por hover
-    const shouldOpenByHover = anyMenuActive || menuType === 'importSubmenu' || menuType === 'exportSubmenu';
+    // Ahora incluimos la verificación de mouseInMenuBar para los menús principales
+    const shouldOpenByHover = (anyMenuActive && mouseInMenuBar) || 
+                              menuType === 'importSubmenu' || 
+                              menuType === 'exportSubmenu';
     
     if (menuType === 'file' && (!showFileMenu && shouldOpenByHover)) {
       const rect = fileMenuButtonRef.current.getBoundingClientRect();

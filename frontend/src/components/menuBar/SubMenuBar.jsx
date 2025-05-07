@@ -270,7 +270,7 @@ const SubMenuBar = ({
   // Función para manejar la apertura automática al hacer hover
   const handleMenuHover = (menuType) => {
     // Si ya hay un menú activo, permitimos que se abra por hover
-    const shouldOpenByHover = anyMenuActive;
+    const shouldOpenByHover = anyMenuActive && mouseInSubMenuBar;
     
     if (menuType === 'relation' && (!showRelationMenu && shouldOpenByHover)) {
       const rect = relationButtonRef.current.getBoundingClientRect();
@@ -526,12 +526,13 @@ const SubMenuBar = ({
         >
           <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 5l0 14"/>
-              <path d="M18 11H6"/>
-              <path d="M18 5a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/>
-              <path d="M6 5a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/>
-              <path d="M18 23a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/>
-              <path d="M6 23a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/>
+              <circle cx="12" cy="5" r="2.5"/>
+              <circle cx="5" cy="19" r="2.5"/>
+              <circle cx="19" cy="19" r="2.5"/>
+              <path d="M12 7L12 13"/>
+              <path d="M5 17L5 13 19 13 19 17"/>
+              <path d="M12 13L5 13"/>
+              <path d="M12 13L19 13"/>
             </svg>
           </span>
           <span style={{
