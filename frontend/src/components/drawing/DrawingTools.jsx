@@ -183,24 +183,16 @@ export default function DrawingTools({ activeTool, toggleTool, drawingColor, set
     </svg>
   );
 
-  // SVG personalizado para ícono de selector - Reducido tamaño
+    // SVG personalizado para ícono de cursor/puntero - Reemplaza el SelectIcon actual
   const SelectIcon = ({ isActive }) => (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path 
-        d="M3 3L10 16L12 12L16 10L3 3Z"
+        d="M7 3V19L11 15H17L7 3Z" 
         fill={isActive ? "#fff" : "none"} 
         stroke={isActive ? "#fff" : "#1e293b"} 
         strokeWidth="1.5" 
         strokeLinecap="round" 
         strokeLinejoin="round"
-      />
-      <path
-        d="M17 8L21 21L14 16.5"
-        stroke={isActive ? "#fff" : "#1e293b"} 
-        strokeWidth="1.5" 
-        strokeLinecap="round" 
-        strokeLinejoin="round"
-        fill="none"
       />
     </svg>
   );

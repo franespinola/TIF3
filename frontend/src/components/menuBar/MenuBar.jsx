@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import MenuPortal from './MenuPortal';
 
 /**
@@ -37,7 +37,13 @@ export default function MenuBar({
   const [importSubmenuPosition, setImportSubmenuPosition] = useState({ top: 0, left: 0 });
   const [exportSubmenuPosition, setExportSubmenuPosition] = useState({ top: 0, left: 0 });
   
+  // Estado para saber si hay algún menú activo (para comportamiento hover)
+  const [anyMenuActive, setAnyMenuActive] = useState(false);
+  // Estado para saber si el ratón está dentro del MenuBar
+  const [mouseInMenuBar, setMouseInMenuBar] = useState(false);
+  
   // Referencias para los elementos DOM
+  const menuBarRef = useRef(null);
   const fileInputRef = useRef(null);
   const fileMenuRef = useRef(null);
   const fileMenuButtonRef = useRef(null);
@@ -51,6 +57,12 @@ export default function MenuBar({
   // Estado para almacenar el elemento canvas generado
   const [canvasElement, setCanvasElement] = useState(null);
   const [showCanvasModal, setShowCanvasModal] = useState(false);
+  
+  // Actualizamos el estado anyMenuActive cuando cambia el estado de los menús
+  useEffect(() => {
+    const isAnyMenuActive = showFileMenu || showViewMenu;
+    setAnyMenuActive(isAnyMenuActive);
+  }, [showFileMenu, showViewMenu]);
 
   const closeOtherMenus = (currentMenuRef, isSubmenu = false) => {
     if (window._activeMenus) {
@@ -83,21 +95,24 @@ export default function MenuBar({
   };
 
   const handleMenuHover = (menuType) => {
-    if (menuType === 'file' && !showFileMenu) {
+    // Si ya hay un menú activo o se trata de un submenú, permitimos que se abra por hover
+    const shouldOpenByHover = anyMenuActive || menuType === 'importSubmenu' || menuType === 'exportSubmenu';
+    
+    if (menuType === 'file' && (!showFileMenu && shouldOpenByHover)) {
       const rect = fileMenuButtonRef.current.getBoundingClientRect();
       setFileMenuPosition({ top: rect.bottom, left: rect.left });
       openMenuAndCloseOthers('file');
-    } else if (menuType === 'view' && !showViewMenu) {
+    } else if (menuType === 'view' && (!showViewMenu && shouldOpenByHover)) {
       const rect = viewMenuButtonRef.current.getBoundingClientRect();
       setViewMenuPosition({ top: rect.bottom, left: rect.left });
       openMenuAndCloseOthers('view');
     } else if (menuType === 'importSubmenu' && !showImportSubmenu) {
       const rect = importItemRef.current.getBoundingClientRect();
-      setImportSubmenuPosition({ top: rect.top - 5, left: rect.right + 5 });
+      setImportSubmenuPosition({ top: rect.top, left: rect.right });
       openMenuAndCloseOthers('importSubmenu');
     } else if (menuType === 'exportSubmenu' && !showExportSubmenu) {
       const rect = exportItemRef.current.getBoundingClientRect();
-      setExportSubmenuPosition({ top: rect.top - 5, left: rect.right + 5 });
+      setExportSubmenuPosition({ top: rect.top, left: rect.right });
       openMenuAndCloseOthers('exportSubmenu');
     }
   };
@@ -126,7 +141,7 @@ export default function MenuBar({
         // No cerramos si ya está abierto
       } else {
         const rect = importItemRef.current.getBoundingClientRect();
-        setImportSubmenuPosition({ top: rect.top - 5, left: rect.right + 5 });
+        setImportSubmenuPosition({ top: rect.top, left: rect.right });
         openMenuAndCloseOthers('importSubmenu');
       }
     } else if (menuType === 'exportSubmenu') {
@@ -134,11 +149,61 @@ export default function MenuBar({
         // No cerramos si ya está abierto
       } else {
         const rect = exportItemRef.current.getBoundingClientRect();
-        setExportSubmenuPosition({ top: rect.top - 5, left: rect.right + 5 });
+        setExportSubmenuPosition({ top: rect.top, left: rect.right });
         openMenuAndCloseOthers('exportSubmenu');
       }
     }
   };
+
+  // Función para cerrar todos los menús
+  const closeAllMenus = () => {
+    setShowFileMenu(false);
+    setShowViewMenu(false);
+    setShowImportSubmenu(false);
+    setShowExportSubmenu(false);
+  };
+
+  // Manejar la entrada y salida del ratón del MenuBar
+  const handleMouseEnterMenuBar = () => {
+    setMouseInMenuBar(true);
+  };
+
+  const handleMouseLeaveMenuBar = () => {
+    setMouseInMenuBar(false);
+    // Si el ratón sale del MenuBar y no hay ningún menú abierto en este momento
+    // (esto previene que se cierren los menús si el ratón entra en un menú desplegado)
+    if (anyMenuActive && !window._activeMenus) {
+      closeAllMenus();
+    }
+  };
+
+  // Efecto para manejar clics en cualquier parte del documento
+  useEffect(() => {
+    const handleDocumentClick = (e) => {
+      // Si hay algún menú abierto y el clic fue fuera de la barra de menú y fuera de cualquier menú
+      if (anyMenuActive) {
+        let clickedInMenuBar = menuBarRef.current && menuBarRef.current.contains(e.target);
+        let clickedInAnyMenu = false;
+        
+        if (window._activeMenus) {
+          window._activeMenus.forEach(menu => {
+            if (menu.ref.current && menu.ref.current.contains(e.target)) {
+              clickedInAnyMenu = true;
+            }
+          });
+        }
+        
+        if (!clickedInMenuBar && !clickedInAnyMenu) {
+          closeAllMenus();
+        }
+      }
+    };
+
+    document.addEventListener('mousedown', handleDocumentClick);
+    return () => {
+      document.removeEventListener('mousedown', handleDocumentClick);
+    };
+  }, [anyMenuActive]);
 
   // Manejador para exportar como canvas
   const handleExportCanvas = async () => {
@@ -205,6 +270,7 @@ export default function MenuBar({
     borderRadius: '4px',
     color: '#334e68',
     fontWeight: 600,
+    fontSize: '14px', // Reducido a 14px
     transition: 'background 0.2s',
     marginRight: '10px',
   };
@@ -231,12 +297,15 @@ export default function MenuBar({
     top: '0px',
     left: '100%',
     marginTop: '0',
-    marginLeft: '1px',
+    marginLeft: '0',
+    borderRadius: '4px',
+    boxShadow: '0 3px 6px rgba(0,0,0,0.15)',
   };
   const dropdownItemStyle = {
     padding: '10px 16px',
     whiteSpace: 'nowrap',
     color: '#334e68',
+    fontSize: '14px', // Reducido a 14px
     cursor: 'pointer',
     transition: 'background 0.2s, color 0.2s',
     borderBottom: '1px solid #f1f5f9',
@@ -256,6 +325,7 @@ export default function MenuBar({
     alignItems: 'center',
     cursor: 'pointer',
     width: '100%',
+    fontSize: '14px', // Reducido a 14px
   }
   const checkboxStyle = {
     marginRight: '8px',
@@ -281,7 +351,12 @@ export default function MenuBar({
         }}
       />
 
-      <div style={menuBarStyle}>
+      <div 
+        style={menuBarStyle} 
+        ref={menuBarRef} 
+        onMouseEnter={handleMouseEnterMenuBar} 
+        onMouseLeave={handleMouseLeaveMenuBar}
+      >
         <img src="/logo192.png" alt="App Logo" style={logoStyle} />
 
         <div

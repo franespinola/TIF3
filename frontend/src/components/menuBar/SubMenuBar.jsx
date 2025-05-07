@@ -26,6 +26,11 @@ const SubMenuBar = ({
   const [relationMenuPosition, setRelationMenuPosition] = useState({ top: 0, left: 0 });
   const [lineStyleMenuPosition, setLineStyleMenuPosition] = useState({ top: 0, left: 0 });
   
+  // Estado para saber si hay algún menú activo (para comportamiento hover)
+  const [anyMenuActive, setAnyMenuActive] = useState(false);
+  // Estado para saber si el ratón está dentro del SubMenuBar
+  const [mouseInSubMenuBar, setMouseInSubMenuBar] = useState(false);
+  
   // Estado para formulario de relaciones
   const [source, setSource] = useState("");
   const [target, setTarget] = useState("");
@@ -42,10 +47,17 @@ const SubMenuBar = ({
   });
   
   // Referencias para los menús desplegables
+  const subMenuBarRef = useRef(null);
   const relationMenuRef = useRef(null);
   const relationButtonRef = useRef(null);
   const lineStyleMenuRef = useRef(null);
   const lineStyleButtonRef = useRef(null);
+  
+  // Actualizamos el estado anyMenuActive cuando cambia el estado de los menús
+  useEffect(() => {
+    const isAnyMenuActive = showRelationMenu || showLineStyleMenu;
+    setAnyMenuActive(isAnyMenuActive);
+  }, [showRelationMenu, showLineStyleMenu]);
 
   // Lista de tipos de relaciones con sus iconos y descripciones
   const relationshipTypes = [
@@ -194,6 +206,54 @@ const SubMenuBar = ({
     }
   };
 
+  // Función para cerrar todos los menús
+  const closeAllMenus = () => {
+    setShowRelationMenu(false);
+    setShowLineStyleMenu(false);
+  };
+
+  // Manejar la entrada y salida del ratón del SubMenuBar
+  const handleMouseEnterSubMenuBar = () => {
+    setMouseInSubMenuBar(true);
+  };
+
+  const handleMouseLeaveSubMenuBar = () => {
+    setMouseInSubMenuBar(false);
+    // Si el ratón sale del SubMenuBar y no hay ningún menú abierto en este momento
+    // (esto previene que se cierren los menús si el ratón entra en un menú desplegado)
+    if (anyMenuActive && !window._activeMenus) {
+      closeAllMenus();
+    }
+  };
+
+  // Efecto para manejar clics en cualquier parte del documento
+  useEffect(() => {
+    const handleDocumentClick = (e) => {
+      // Si hay algún menú abierto y el clic fue fuera de la barra de menú y fuera de cualquier menú
+      if (anyMenuActive) {
+        let clickedInSubMenuBar = subMenuBarRef.current && subMenuBarRef.current.contains(e.target);
+        let clickedInAnyMenu = false;
+        
+        if (window._activeMenus) {
+          window._activeMenus.forEach(menu => {
+            if (menu.ref.current && menu.ref.current.contains(e.target)) {
+              clickedInAnyMenu = true;
+            }
+          });
+        }
+        
+        if (!clickedInSubMenuBar && !clickedInAnyMenu) {
+          closeAllMenus();
+        }
+      }
+    };
+
+    document.addEventListener('mousedown', handleDocumentClick);
+    return () => {
+      document.removeEventListener('mousedown', handleDocumentClick);
+    };
+  }, [anyMenuActive]);
+
   // Función para mostrar un menú y esconder los otros
   const openMenuAndCloseOthers = (menuToOpen) => {
     if (menuToOpen === 'relation') {
@@ -209,11 +269,14 @@ const SubMenuBar = ({
 
   // Función para manejar la apertura automática al hacer hover
   const handleMenuHover = (menuType) => {
-    if (menuType === 'relation' && !showRelationMenu) {
+    // Si ya hay un menú activo, permitimos que se abra por hover
+    const shouldOpenByHover = anyMenuActive;
+    
+    if (menuType === 'relation' && (!showRelationMenu && shouldOpenByHover)) {
       const rect = relationButtonRef.current.getBoundingClientRect();
       setRelationMenuPosition({ top: rect.bottom, left: rect.left });
       openMenuAndCloseOthers('relation');
-    } else if (menuType === 'lineStyle' && !showLineStyleMenu) {
+    } else if (menuType === 'lineStyle' && (!showLineStyleMenu && shouldOpenByHover)) {
       const rect = lineStyleButtonRef.current.getBoundingClientRect();
       setLineStyleMenuPosition({ top: rect.bottom, left: rect.left });
       openMenuAndCloseOthers('lineStyle');
@@ -438,7 +501,12 @@ const SubMenuBar = ({
   };
 
   return (
-    <div style={subMenuBarStyle}>
+    <div 
+      style={subMenuBarStyle}
+      ref={subMenuBarRef}
+      onMouseEnter={handleMouseEnterSubMenuBar}
+      onMouseLeave={handleMouseLeaveSubMenuBar}
+    >
       {/* Barra de herramientas de formato - Utilizamos el componente FormattingToolbar */}
       <FormattingToolbar 
         selectedNode={selectedNode} 
@@ -457,11 +525,14 @@ const SubMenuBar = ({
           onMouseEnter={() => handleMenuHover('relation')}
         >
           <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M9 17H5a2 2 0 0 0-2 2 2 2 0 0 0 2 2h2a2 2 0 0 0 2-2zm0 0V5a2 2 0 0 1 2-2h6" />
-              <path d="M14 13h4a2 2 0 0 0 2-2 2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2zm0 0v9"/>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 5l0 14"/>
+              <path d="M18 11H6"/>
+              <path d="M18 5a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/>
+              <path d="M6 5a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/>
+              <path d="M18 23a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/>
+              <path d="M6 23a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/>
             </svg>
-            Relación
           </span>
           <span style={{
             ...iconStyle,
@@ -596,12 +667,11 @@ const SubMenuBar = ({
         onMouseEnter={() => handleMenuHover('lineStyle')}
       >
         <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M21 6H3"/>
             <path d="M21 12H3" strokeDasharray="4 2"/>
             <path d="M21 18H3" strokeDasharray="2 2"/>
           </svg>
-          Estilo de línea
         </span>
         <span style={{
           ...iconStyle,
