@@ -55,6 +55,40 @@ const ReactFlowMinimap = ({
     };
   }, []);
   
+  // Solución para corregir la alineación del viewport en el minimapa:
+  // Mover este hook arriba, antes del return condicional para seguir las reglas de React Hooks
+  useEffect(() => {
+    // No hacer nada si el componente no es visible
+    if (!isVisible) return;
+    
+    // Buscar si ya existe un estilo para la corrección
+    let styleElement = document.getElementById('minimapViewportFix');
+    
+    if (!styleElement) {
+      // Crear el elemento de estilo si no existe
+      styleElement = document.createElement('style');
+      styleElement.id = 'minimapViewportFix';
+      styleElement.type = 'text/css';
+      
+      // Agregar reglas CSS que corrigen la posición del viewport
+      styleElement.innerHTML = `
+        .react-flow__minimap-mask {
+          fill: var(--minimapMaskColor, rgba(240, 240, 240, 0.6)) !important;
+          transform-origin: center center !important;
+          vector-effect: non-scaling-stroke !important;
+        }
+      `;
+      document.head.appendChild(styleElement);
+    }
+    
+    // Limpiar el estilo si el componente se desmonta
+    return () => {
+      if (styleElement && styleElement.parentNode) {
+        styleElement.parentNode.removeChild(styleElement);
+      }
+    };
+  }, [isVisible]); // Agregamos isVisible como dependencia
+
   // Colores personalizados para el minimapa según el tipo de nodo
   const nodeStrokeColor = (node) => {
     if (node.type === 'masculinoNode') return '#2563eb';
@@ -83,16 +117,18 @@ const ReactFlowMinimap = ({
       style={{
         height: height,
         width: 250,
-        position: 'fixed',
+        position: 'absolute',
         bottom: '20px',
         right: position.right,
         left: 'auto',
         backgroundColor: 'rgba(255, 255, 255, 0.7)',
         border: '1px solid rgba(0, 0, 0, 0.1)',
         borderRadius: '8px',
-        padding: '4px',
         boxShadow: '0 2px 6px rgba(0, 0, 0, 0.1)',
-        transition: 'right 0.3s ease'
+        transition: 'right 0.3s ease',
+        // Asegurar que el minimapa tenga las propiedades correctas para el rendering
+        transformOrigin: 'center center',
+        overflow: 'hidden',
       }}
     />
   );

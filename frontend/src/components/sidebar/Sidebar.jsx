@@ -7,18 +7,15 @@ import SidebarPanels from "./SidebarPanels";
 import GenogramNodePalette from "../nodes/genogram/GenogramNodePalette";
 import AnnotationToolPalette from "../drawing/AnnotationToolPalette";
 import RelationshipManager from "../relationships/RelationshipManager";
-import ExportImageButton from "../visualization/ExportImageButton";
 import CollapseToggle from "./CollapseToggle";
 import TooltipPortal from "./TooltipPortal";
 
-// Importar constantes para las alturas de las barras de menú
 const MENU_BAR_HEIGHT = 48;
 const SUB_MENU_BAR_HEIGHT = 40;
 const TOTAL_MENU_HEIGHT = MENU_BAR_HEIGHT + SUB_MENU_BAR_HEIGHT;
 
-// Constantes para los tamaños del sidebar responsive
-const SIDEBAR_COLLAPSED_WIDTH = 48; // Reducido de 60px
-const SIDEBAR_EXPANDED_DESKTOP = 360; // Reducido de 460px
+const SIDEBAR_COLLAPSED_WIDTH = 48; 
+const SIDEBAR_EXPANDED_DESKTOP = 360; 
 const SIDEBAR_EXPANDED_TABLET = 300;
 const SIDEBAR_EXPANDED_MOBILE = 280;
 
@@ -43,11 +40,10 @@ function Sidebar({
   onToggleSmartGuides,
   guideOptions,
   updateGuideOptions,
-  onExportDrawing,
   toggleClinicalTabs,
   isClinicalTabsOpen,
   showRelationEditor = true,
-  onSidebarCollapse = {} // Callback para avisar al componente padre del estado de colapso
+  onSidebarCollapse = {} 
 }) {
   const [collapsed, setCollapsed] = useState(false);
   const [source, setSource] = useState("");
@@ -56,12 +52,9 @@ function Sidebar({
   const [activeDrawingTool, setActiveDrawingTool] = useState("");
   const [screenWidth, setScreenWidth] = useState(window.innerWidth);
 
-  // Estado para manejar qué sección está expandida
   const [expandedSection, setExpandedSection] = useState(null);
-  // Estado para tooltip activo
   const [activeTooltip, setActiveTooltip] = useState(null);
 
-  // Detectar el ancho de la pantalla para responsive
   useEffect(() => {
     const handleResize = () => {
       setScreenWidth(window.innerWidth);
@@ -73,14 +66,12 @@ function Sidebar({
     };
   }, []);
 
-  // Obtener el ancho expandido según el tamaño de pantalla
   const getExpandedWidth = () => {
     if (screenWidth <= 480) return SIDEBAR_EXPANDED_MOBILE;
     if (screenWidth <= 768) return SIDEBAR_EXPANDED_TABLET;
     return SIDEBAR_EXPANDED_DESKTOP;
   };
 
-  // Lista de tipos de relaciones disponibles
   const relationshipTypes = [
     "matrimonio",
     "divorcio",
@@ -93,7 +84,6 @@ function Sidebar({
     "rota",
   ];
 
-  // Actualizar campos si hay una conexión seleccionada
   useEffect(() => {
     if (selectedEdge) {
       setSource(selectedEdge.source);
@@ -102,12 +92,10 @@ function Sidebar({
     }
   }, [selectedEdge]);
 
-  // Efecto para agregar retraso al mostrar tooltip
   useEffect(() => {
     let tooltipTimer = null;
 
     if (activeTooltip) {
-      // Usamos un setTimeout para aplicar la opacidad y transformación después de un breve retraso
       tooltipTimer = setTimeout(() => {
         const tooltipElement = document.getElementById(
           `tooltip-${activeTooltip}`
@@ -116,7 +104,7 @@ function Sidebar({
           tooltipElement.style.opacity = "1";
           tooltipElement.style.transform = "translateY(-50%) translateX(0)";
         }
-      }, 300); // 300ms de retraso
+      }, 300); 
     }
 
     return () => {
@@ -124,34 +112,26 @@ function Sidebar({
     };
   }, [activeTooltip]);
 
-  // Función para alternar expandir/colapsar secciones
   const toggleSection = (section) => {
     if (collapsed) {
-      // Si el sidebar está colapsado, lo expandimos y mostramos la sección seleccionada
       setCollapsed(false);
       setExpandedSection(section);
     } else {
-      // Si el sidebar ya está expandido
       if (expandedSection === section) {
-        // Si la sección actual ya está abierta, la cerramos
         setExpandedSection(null);
       } else {
-        // Si es una sección diferente, abrimos esa y cerramos la anterior
         setExpandedSection(section);
       }
     }
   };
 
-  // Separar el palette en nodos de genograma y herramientas de anotación
   const genogramaNodes = nodePalette.filter((item) => !item.isDrawing);
   const drawingNodes = nodePalette.filter((item) => item.isDrawing);
 
-  // Manejar la selección de herramientas de anotación
   const handleDrawingToolSelect = (type) => {
     setActiveDrawingTool(type === activeDrawingTool ? "" : type);
   };
 
-  // Estilos generales del sidebar - Más angosto y responsive
   const sidebarContainerStyle = {
     position: "fixed",
     top: `${TOTAL_MENU_HEIGHT}px`,
@@ -168,7 +148,6 @@ function Sidebar({
     display: "flex",
   };
 
-  // Estilo para el contenedor de iconos - Más angosto
   const iconsContainerStyle = {
     width: `${SIDEBAR_COLLAPSED_WIDTH}px`,
     height: "100%",
@@ -180,7 +159,6 @@ function Sidebar({
     flexShrink: 0,
   };
 
-  // Estilo para el contenedor de contenido expandido - Padding reducido
   const contentContainerStyle = {
     flex: 1,
     height: "100%",
@@ -191,7 +169,6 @@ function Sidebar({
     padding: screenWidth <= 768 ? "8px 10px" : "10px 12px",
   };
 
-  // Estilo para secciones - Padding reducido para móviles
   const sectionStyle = (expanded) => ({
     padding: screenWidth <= 768 ? "6px" : "8px",
     borderRadius: "0",
@@ -199,7 +176,6 @@ function Sidebar({
     transition: "all 0.2s ease",
   });
 
-  // Clase CSS para encabezados responsive
   const headerStyle = {
     fontSize: screenWidth <= 768 ? "14px" : "16px",
     fontWeight: "600",
@@ -207,15 +183,14 @@ function Sidebar({
     color: "#1e40af",
   };
 
-  // Estilo para iconos en la barra lateral - Tamaño reducido
   const sidebarIconStyle = (isActive) => ({
-    width: "36px", // Reducido de 42px
-    height: "36px", // Reducido de 42px
+    width: "36px", 
+    height: "36px", 
     borderRadius: "4px",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    margin: "6px auto", // Reducido de 8px
+    margin: "6px auto", 
     cursor: "pointer",
     backgroundColor: isActive ? "#e0f2fe" : "transparent",
     color: isActive ? "#0ea5e9" : "#64748b",
@@ -224,32 +199,26 @@ function Sidebar({
     border: isActive ? "1px solid #bae6fd" : "1px solid transparent",
   });
 
-  // Separador para el sidebar - más delgado
   const dividerStyle = {
-    margin: "8px auto", // Reducido de 10px
-    width: "70%", // Reducido de 80%
+    margin: "8px auto", 
+    width: "70%", 
     height: "1px",
     backgroundColor: "#e2e8f0",
   };
 
-  // Mostrar tooltip al pasar el mouse
   const handleTooltipShow = (id) => {
     setActiveTooltip(id);
   };
 
-  // Ocultar tooltip al quitar el mouse
   const handleTooltipHide = () => {
     setActiveTooltip(null);
   };
 
-  // Botón de sidebar con tooltip
   const SidebarIconButton = ({ id, icon, label, isActive, onClick }) => {
-    // Referencia al elemento del botón para calcular su posición
     const buttonRef = useRef(null);
     const [tooltipVisible, setTooltipVisible] = useState(false);
     const [buttonRect, setButtonRect] = useState(null);
 
-    // Mostrar tooltip con retraso
     const handleMouseEnter = () => {
       if (collapsed) {
         handleTooltipShow(id);
@@ -261,7 +230,6 @@ function Sidebar({
       }
     };
 
-    // Ocultar tooltip
     const handleMouseLeave = () => {
       handleTooltipHide();
       setTooltipVisible(false);
@@ -279,7 +247,6 @@ function Sidebar({
           {icon}
         </div>
 
-        {/* Renderizar el tooltip a través del portal */}
         {collapsed && (
           <TooltipPortal
             id={id}
@@ -292,7 +259,6 @@ function Sidebar({
     );
   };
 
-  // Contenido dependiendo de la sección activa
   const renderSectionContent = () => {
     switch (expandedSection) {
       case "drawing":
@@ -359,12 +325,6 @@ function Sidebar({
               guideOptions={guideOptions}
               updateGuideOptions={updateGuideOptions}
             />
-
-            {onExportDrawing && (
-              <div style={{ marginTop: screenWidth <= 768 ? "12px" : "15px" }}>
-                <ExportImageButton onExportDrawing={onExportDrawing} />
-              </div>
-            )}
           </div>
         );
       case "grabacion":
@@ -416,9 +376,7 @@ function Sidebar({
 
   return (
     <div style={sidebarContainerStyle}>
-      {/* Columna izquierda con iconos */}
       <div style={iconsContainerStyle}>
-        {/* Botón para colapsar/expandir el sidebar */}
         <div
           style={{
             padding: "8px 0",
@@ -431,12 +389,11 @@ function Sidebar({
             collapsed={collapsed}
             setCollapsed={(value) => {
               setCollapsed(value);
-              onSidebarCollapse(value); // Avisar al componente padre del estado de colapso
+              onSidebarCollapse(value); 
             }}
           />
         </div>
 
-        {/* Icono para herramientas de dibujo - Lápiz/Pincel */}
         <SidebarIconButton
           id="drawing"
           isActive={expandedSection === "drawing"}
@@ -460,7 +417,6 @@ function Sidebar({
           }
         />
 
-        {/* Icono para figuras - Personas/Familia */}
         <SidebarIconButton
           id="figuras"
           isActive={expandedSection === "figuras"}
@@ -486,7 +442,6 @@ function Sidebar({
           }
         />
 
-        {/* Icono para diagramas de flujo - Formas/Anotaciones */}
         <SidebarIconButton
           id="diagramas"
           isActive={expandedSection === "diagramas"}
@@ -519,7 +474,6 @@ function Sidebar({
           }
         />
 
-        {/* Icono para relaciones - Conexiones entre personas */}
         {showRelationEditor && (
           <SidebarIconButton
             id="relaciones"
@@ -552,7 +506,6 @@ function Sidebar({
           />
         )}
 
-        {/* Icono para configuración - Tuerca/Gear */}
         <SidebarIconButton
           id="config"
           isActive={expandedSection === "config"}
@@ -578,7 +531,6 @@ function Sidebar({
 
         <div style={dividerStyle}></div>
 
-        {/* Botón para grabación - Micrófono médico */}
         <SidebarIconButton
           id="grabacion"
           isActive={expandedSection === "grabacion"}
@@ -605,7 +557,6 @@ function Sidebar({
           }
         />
 
-        {/* Botón para historia clínica - Hoja de documento */}
         <SidebarIconButton
           id="historia"
           isActive={isClinicalTabsOpen}
@@ -633,14 +584,12 @@ function Sidebar({
         />
       </div>
 
-      {/* Columna derecha con contenido expandido - solo se muestra cuando no está colapsado */}
       {!collapsed && (
         <div style={contentContainerStyle}>
           {renderSectionContent()}
         </div>
       )}
 
-      {/* Estilos para tooltips al hover - eliminando variables no utilizadas */}
       <style>
         {`
           .sidebar-tooltip {

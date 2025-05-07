@@ -13,7 +13,7 @@ import SmartGuidesOverlay from "../guides/SmartGuidesOverlay";
 import EnhancedMinimap from "../navigation/EnhancedMinimap";
 import ThemeVisualizer from "../visualization/ThemeVisualizer";
 import ClinicalTabsPanel from "../ClinicalTabsPanel/ClinicalTabsPanel";
-import html2canvas from 'html2canvas';
+// import html2canvas from 'html2canvas'; // Eliminado ya que no se usa para exportar imágenes
 import useGenogramaState from "../../hooks/useGenogramaState";
 import useSmartGuides from "../../hooks/useSmartGuides";
 import MenuBar from "../menuBar/MenuBar";
@@ -44,7 +44,7 @@ function GenogramaEditorWrapper() {
   const [showNavigationPanel, setShowNavigationPanel] = useState(false);
   const [showSmartGuidesConfigPanel, setShowSmartGuidesConfigPanel] = useState(false);
   const [showThemeVisualizer, setShowThemeVisualizer] = useState(false);
-  const [showMinimap, setShowMinimap] = useState(false);
+  const [showMinimap, setShowMinimap] = useState(true); // Cambiado a true para que el minimapa aparezca por defecto
   const [showRelationEditor, setShowRelationEditor] = useState(false); // Nuevo estado para el editor de relaciones
   
   // Estado para los modos de visualización
@@ -148,7 +148,6 @@ function GenogramaEditorWrapper() {
 
   // Manejador personalizado para cambios en nodos que integra Smart Guides
   const handleNodesChange = useCallback((changes) => {
-    // Aplicar cambios normales de nodos a través del hook de estado de genograma
     onNodesChange(changes);
   }, [onNodesChange]);
 
@@ -156,58 +155,38 @@ function GenogramaEditorWrapper() {
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (event.key === 'Escape' && activeTool) {
-        // Deseleccionar la herramienta activa
         setActiveTool(null);
       }
-      // Increase stroke width with '+'
       if (event.key === '+') {
         setStrokeWidth(prev => Math.min(MAX_STROKE_WIDTH, prev + 1));
       }
-      // Decrease stroke width with '-'
       if (event.key === '-') {
         setStrokeWidth(prev => Math.max(MIN_STROKE_WIDTH, prev - 1));
       }
-      // Toggle Smart Guides with 'g'
       if (event.key === 'g') {
         toggleSmartGuides();
       }
-      // Toggle distribution detection with 'd'
       if (event.key === 'd') {
         updateGuideOptions('detectDistribution', !guideOptions.detectDistribution);
       }
     };
 
-    // Agregar el event listener
     window.addEventListener('keydown', handleKeyDown);
 
-    // Limpiar el event listener cuando el componente se desmonte
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [activeTool, toggleSmartGuides, guideOptions.detectDistribution, updateGuideOptions]); 
 
-  const handleExportImage = useCallback(() => {
-    const container = document.getElementById('flowWrapper');
-    html2canvas(container).then(canvas => {
-      const link = document.createElement('a');
-      link.download = 'genograma_dibujo.png';
-      link.href = canvas.toDataURL('image/png');
-      link.click();
-    });
-  }, []);
-
   // Manejador para conexiones que determina el tipo de conexión basado en los nodos
   const handleConnect = useCallback((params) => {
-    // Encontrar los nodos de origen y destino
     const sourceNode = nodes.find(node => node.id === params.source);
     const targetNode = nodes.find(node => node.id === params.target);
 
-    // Verificar si al menos uno de los nodos es un nodo de anotación
     const isAnnotationConnection = 
       (sourceNode && ['rectangle', 'circle', 'text', 'note'].includes(sourceNode.type)) || 
       (targetNode && ['rectangle', 'circle', 'text', 'note'].includes(targetNode.type));
 
-    // Si es una conexión con un nodo de anotación, usar el tipo de borde annotationEdge
     if (isAnnotationConnection) {
       const newEdge = {
         ...params,
@@ -221,7 +200,6 @@ function GenogramaEditorWrapper() {
       };
       setEdges(eds => addEdge(newEdge, eds));
     } else {
-      // Para los otros tipos de conexiones, usar el manejador existente
       onConnect(params);
     }
   }, [nodes, onConnect, setEdges]);
@@ -254,7 +232,6 @@ function GenogramaEditorWrapper() {
     setIsClinicalTabsOpen(prev => !prev);
   }, []);
 
-  // Usando useMemo para asegurar que nodeTypes y edgeTypes no se recreen en cada renderizado
   const memoizedNodeTypes = useMemo(() => nodeTypes, []);
   const memoizedEdgeTypes = useMemo(() => edgeTypes, []);
 
@@ -266,7 +243,6 @@ function GenogramaEditorWrapper() {
         onExportCSV={onExportCSV}
         onExportPNG={onExportPNG}
         onExportJPG={onExportJPG}
-        // Propiedades para controlar la visibilidad de los paneles
         showNavigationPanel={showNavigationPanel}
         setShowNavigationPanel={setShowNavigationPanel}
         showSmartGuidesConfigPanel={showSmartGuidesConfigPanel}
@@ -291,13 +267,13 @@ function GenogramaEditorWrapper() {
       <div style={{ 
         display: "flex", 
         height: `calc(100vh - ${TOTAL_MENU_HEIGHT}px)`,
-        position: "absolute", /* Cambiado de relative a absolute para evitar espacios */
-        top: `${TOTAL_MENU_HEIGHT}px`, /* Usar top en lugar de marginTop */
+        position: "absolute", 
+        top: `${TOTAL_MENU_HEIGHT}px`, 
         left: 0,
         right: 0,
         bottom: 0,
         boxSizing: "border-box",
-        overflow: "hidden" /* Prevenir cualquier desbordamiento */
+        overflow: "hidden" 
       }}>
         <Sidebar
           onRelate={onRelate}
@@ -328,12 +304,10 @@ function GenogramaEditorWrapper() {
           onToggleSmartGuides={toggleSmartGuides}
           guideOptions={guideOptions}
           updateGuideOptions={updateGuideOptions}
-          onExportDrawing={handleExportImage}
+          // onExportDrawing prop eliminada
           onImportJSON={onImportJSON}
           onExportJSON={onExportJSON}
           onExportCSV={onExportCSV}
-          onExportPNG={onExportPNG}
-          onExportJPG={onExportJPG}
           showRelationEditor={showRelationEditor}
         />
         
@@ -341,7 +315,7 @@ function GenogramaEditorWrapper() {
           id="flowWrapper"
           style={{ 
             flexGrow: 1,
-            display: "flex", /* Añadido display flex para asegurar que ReactFlow ocupe todo el espacio */
+            display: "flex", 
             height: "100%",
             position: "relative",
             paddingRight: isClinicalTabsOpen ? "440px" : "0", 
@@ -354,9 +328,9 @@ function GenogramaEditorWrapper() {
         >
           <ReactFlow
             style={{
-              width: "100%", /* Asegurar que ReactFlow ocupe todo el ancho */
-              height: "100%", /* Asegurar que ReactFlow ocupe toda la altura */
-              background: "#f8f8f8" /* Un color de fondo para mejor visualización */
+              width: "100%", 
+              height: "100%", 
+              background: "#f8f8f8" 
             }}
             nodes={nodes.map((node) => ({
               ...node,
@@ -383,7 +357,6 @@ function GenogramaEditorWrapper() {
           >
             <Background gap={12} size={1} />
             
-            {/* Visualizador de Temas */}
             <ThemeVisualizer
               onThemeChange={setCurrentTheme}
               currentTheme={currentTheme}
@@ -394,7 +367,6 @@ function GenogramaEditorWrapper() {
               isVisible={showThemeVisualizer}
             />
             
-            {/* Overlay para dibujo libre */}
             <FreeDrawOverlay 
               selectedDrawingTool={activeTool}
               drawingColor={drawingColor}
@@ -405,12 +377,11 @@ function GenogramaEditorWrapper() {
               setEdges={setEdges}
             />
             
-            {/* Overlay para guías inteligentes */}
+            {/* Siempre renderizar SmartGuidesOverlay cuando está activado, sin importar si el panel es visible */}
             {enableSmartGuides && (
-              <SmartGuidesOverlay guides={guides} showDistances={showDistances} isVisible={showSmartGuidesConfigPanel} />
+              <SmartGuidesOverlay guides={guides} showDistances={showDistances} isVisible={true} />
             )}
             
-            {/* Panel para control de Smart Guides */}
             <Panel position="top-right">
               <div style={{
                 padding: '6px 10px',
@@ -481,7 +452,6 @@ function GenogramaEditorWrapper() {
               </div>
             </Panel>
             
-            {/* Mini-mapa mejorado */}
             <EnhancedMinimap 
               nodes={nodes} 
               isVisible={showMinimap}
@@ -498,7 +468,7 @@ function GenogramaEditorWrapper() {
           patientName={patientName}
           nodes={nodes}
           edges={edges}
-          style={{ right: 0 }} // Posicionarlo a la derecha
+          style={{ right: 0 }} 
         />
       </div>
     </>

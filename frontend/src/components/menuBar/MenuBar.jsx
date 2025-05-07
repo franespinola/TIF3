@@ -47,12 +47,9 @@ export default function MenuBar({
   const importSubmenuRef = useRef(null);
   const exportSubmenuRef = useRef(null);
 
-  // Función para cerrar menús actualmente abiertos excepto el indicado y sus padres
   const closeOtherMenus = (currentMenuRef, isSubmenu = false) => {
     if (window._activeMenus) {
       window._activeMenus.forEach(menu => {
-        // Si el menú no es el actual (el que vamos a mostrar), lo cerramos
-        // Solo cerramos menús que no sean submenús del actual o el padre del actual
         if (menu.ref.current !== currentMenuRef.current && menu.onClose && !isSubmenu) {
           menu.onClose();
         }
@@ -60,7 +57,6 @@ export default function MenuBar({
     }
   };
 
-  // Función para mostrar un menú y esconder los otros
   const openMenuAndCloseOthers = (menuToOpen) => {
     if (menuToOpen === 'file') {
       setShowFileMenu(true);
@@ -81,7 +77,6 @@ export default function MenuBar({
     }
   };
 
-  // Función para manejar el hover con intención
   const handleMenuHover = (menuType) => {
     if (menuType === 'file' && !showFileMenu) {
       const rect = fileMenuButtonRef.current.getBoundingClientRect();
@@ -102,7 +97,6 @@ export default function MenuBar({
     }
   };
 
-  // Función para manejar el clic en un botón de menú
   const handleMenuClick = (menuType, e) => {
     e.stopPropagation();
     
@@ -141,7 +135,6 @@ export default function MenuBar({
     }
   };
 
-  // Estilos
   const menuBarStyle = {
     display: 'flex',
     alignItems: 'center',
@@ -172,7 +165,7 @@ export default function MenuBar({
     color: '#334e68',
     fontWeight: 600,
     transition: 'background 0.2s',
-    marginRight: '10px', // Espacio entre elementos del menú
+    marginRight: '10px',
   };
   const iconStyle = {
     display: 'inline-block',
@@ -234,7 +227,6 @@ export default function MenuBar({
 
   return (
     <>
-      {/* Hidden file input for JSON import */}
       <input
         type="file"
         accept=".json"
@@ -242,18 +234,15 @@ export default function MenuBar({
         style={{ display: 'none' }}
         onChange={(e) => {
           onImportJSON(e);
-          // Cerramos todos los menús tras elegir archivo
           setShowFileMenu(false);
           setShowImportSubmenu(false);
           setShowExportSubmenu(false);
         }}
       />
 
-      {/* Top menu bar */}
       <div style={menuBarStyle}>
         <img src="/logo192.png" alt="App Logo" style={logoStyle} />
 
-        {/* Menú Archivo */}
         <div
           ref={fileMenuButtonRef}
           style={{
@@ -290,7 +279,6 @@ export default function MenuBar({
               closeDelay={300}
             >
               <div ref={fileMenuRef} style={dropdownStyle}>
-                {/* Importar con submenú */}
                 <div
                   ref={importItemRef}
                   style={dropdownItemStyle}
@@ -322,7 +310,6 @@ export default function MenuBar({
                       closeDelay={300}
                     >
                       <div ref={importSubmenuRef} style={submenuStyle}>
-                        {/* Importar JSON */}
                         <div
                           style={dropdownItemStyle}
                           onMouseEnter={dropdownItemHover}
@@ -340,7 +327,6 @@ export default function MenuBar({
                   )}
                 </div>
 
-                {/* Exportar con submenú */}
                 <div
                   ref={exportItemRef}
                   style={dropdownItemStyle}
@@ -372,7 +358,6 @@ export default function MenuBar({
                       closeDelay={300}
                     >
                       <div ref={exportSubmenuRef} style={submenuStyle}>
-                        {/* Exportar JSON */}
                         <div
                           style={dropdownItemStyle}
                           onMouseEnter={dropdownItemHover}
@@ -386,7 +371,6 @@ export default function MenuBar({
                           Exportar JSON
                         </div>
 
-                        {/* Exportar CSV */}
                         <div
                           style={dropdownItemStyle}
                           onMouseEnter={dropdownItemHover}
@@ -400,7 +384,6 @@ export default function MenuBar({
                           Exportar CSV
                         </div>
 
-                        {/* Exportar PNG */}
                         <div
                           style={dropdownItemStyle}
                           onMouseEnter={dropdownItemHover}
@@ -414,7 +397,6 @@ export default function MenuBar({
                           Exportar PNG
                         </div>
 
-                        {/* Exportar JPG */}
                         <div
                           style={dropdownItemStyle}
                           onMouseEnter={dropdownItemHover}
@@ -436,7 +418,6 @@ export default function MenuBar({
           )}
         </div>
 
-        {/* Menú Visualizar */}
         <div
           ref={viewMenuButtonRef}
           style={{
@@ -473,7 +454,6 @@ export default function MenuBar({
               closeDelay={300}
             >
               <div ref={viewMenuRef} style={dropdownStyle}>
-                {/* Opción Panel de Navegación */}
                 <div
                   style={checkboxItemStyle}
                   onMouseEnter={dropdownItemHover}
@@ -490,7 +470,6 @@ export default function MenuBar({
                   </label>
                 </div>
 
-                {/* Opción Panel de Configuración de Guías */}
                 <div
                   style={checkboxItemStyle}
                   onMouseEnter={dropdownItemHover}
@@ -507,7 +486,6 @@ export default function MenuBar({
                   </label>
                 </div>
 
-                {/* Opción Modos de Visualización */}
                 <div
                   style={checkboxItemStyle}
                   onMouseEnter={dropdownItemHover}
@@ -524,7 +502,6 @@ export default function MenuBar({
                   </label>
                 </div>
 
-                {/* Opción Minimapa */}
                 <div
                   style={checkboxItemStyle}
                   onMouseEnter={dropdownItemHover}
@@ -541,7 +518,6 @@ export default function MenuBar({
                   </label>
                 </div>
 
-                {/* Opción Editor de Relaciones (en sidebar) */}
                 <div
                   style={checkboxItemStyle}
                   onMouseEnter={dropdownItemHover}
