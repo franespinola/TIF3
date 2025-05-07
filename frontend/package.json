@@ -11,6 +11,7 @@
     "dagre": "^0.8.5",
     "framer-motion": "^12.9.7",
     "frontend": "file:",
+    "html-to-image": "^1.11.13",
     "html2canvas": "^1.4.1",
     "konva": "^9.3.20",
     "nanoid": "^5.1.5",

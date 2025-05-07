@@ -5,6 +5,8 @@ import { useNodesState, useEdgesState, addEdge, useReactFlow } from 'reactflow';
 import layoutWithDagre from '../utils/layoutWithDagre';
 // Importar normalizeGenogram que omite hermanos/mellizos para el layout inicial
 import { normalizeGenogram } from '../utils/normalizeGenogram';
+// Importar las funciones de exportación de imágenes
+import { exportAsPng, exportAsJpeg, exportAsCanvas } from '../utils/imageExport';
 
 /**
  * Hook personalizado para manejar el estado del genograma.
@@ -244,70 +246,77 @@ export default function useGenogramaState() {
     showToast("✔ CSV exportado correctamente");
   }, [nodes, edges, showToast]);
 
+  // Reemplazar función exportImage con las nuevas funciones de html-to-image
   const exportImage = useCallback(async (format = "png") => {
-    // Buscar el contenedor principal que incluye tanto el React Flow como el overlay de dibujo
-    const flowWrapper = document.getElementById('flowWrapper');
-    if (!flowWrapper) {
-      showToast("❌ No se pudo encontrar el contenedor del diagrama", false);
-      return;
-    }
+    // Usar el ID 'flowWrapper' que es el contenedor del editor de genograma
+    const elementId = 'flowWrapper';
+    const fileName = 'genograma';
     
     try {
+      // Buscar el contenedor principal que incluye tanto el React Flow como el overlay de dibujo
+      const flowWrapper = document.getElementById(elementId);
+      if (!flowWrapper) {
+        throw new Error("No se pudo encontrar el contenedor del diagrama");
+      }
+      
       // Guardar el estado original de visibilidad de elementos que queremos ocultar
-      const minimapElement = document.querySelector(".react-flow__minimap");
-      const controlsElement = document.querySelector(".react-flow__controls");
-      const smartGuidesElement = document.querySelector(".react-flow-smart-edge__guide");
-      const attributionElement = document.querySelector(".react-flow__attribution");
-      // Encontrar el panel de navegación
-      const navigationPanel = document.querySelector(".navigation-panel");
+      const elementsToHide = [
+        document.querySelector(".react-flow__minimap"),
+        document.querySelector(".react-flow__controls"),
+        document.querySelector(".react-flow-smart-edge__guide"),
+        document.querySelector(".react-flow__attribution"),
+        document.querySelector(".navigation-panel")
+      ].filter(Boolean);
       
       // Guardar visibilidad original
-      const originalStates = [];
-      [minimapElement, controlsElement, smartGuidesElement, attributionElement, navigationPanel].forEach(el => {
-        if (el) {
-          originalStates.push({
-            element: el,
-            display: el.style.display
-          });
-          el.style.display = 'none'; // Ocultar temporalmente
-        }
+      const originalStates = elementsToHide.map(el => ({
+        element: el,
+        display: el.style.display
+      }));
+      
+      // Ocultar temporalmente los elementos
+      elementsToHide.forEach(el => {
+        el.style.display = 'none';
       });
       
-      // Asegurar que capture todo el diagrama completo incluyendo el dibujo libre
-      const options = { 
-        useCORS: true, 
+      // Opciones para la exportación de la imagen
+      const options = {
+        quality: format === 'jpeg' ? 0.9 : 0.95,
         backgroundColor: '#ffffff',
-        scale: 2, // Mayor resolución
-        logging: false,
-        allowTaint: true,
-        foreignObjectRendering: true,
-        width: flowWrapper.offsetWidth,
-        height: flowWrapper.offsetHeight,
-        ignoreElements: (element) => {
-          return element.classList && (
-            element.classList.contains('react-flow__minimap') ||
-            element.classList.contains('react-flow__controls') ||
-            element.classList.contains('react-flow-smart-edge__guide') ||
-            element.classList.contains('react-flow__attribution') ||
-            element.classList.contains('navigation-panel')
-          );
+        pixelRatio: 2,
+        skipAutoScale: true,
+        fontEmbedCSS: true,
+        filter: (node) => {
+          return !node.classList?.contains('react-flow__minimap') &&
+                 !node.classList?.contains('react-flow__controls') &&
+                 !node.classList?.contains('react-flow-smart-edge__guide') &&
+                 !node.classList?.contains('react-flow__attribution') &&
+                 !node.classList?.contains('navigation-panel');
         }
       };
       
-      const html2canvas = await import('html2canvas').then(module => module.default);
-      const canvas = await html2canvas(flowWrapper, options);
+      // Exportar según el formato solicitado
+      if (format === 'canvas') {
+        // Para canvas, obtenemos el elemento y podemos manipularlo (por ejemplo, mostrarlo en un modal)
+        const canvas = await exportAsCanvas(elementId, options);
+        
+        // Restaurar visibilidad original de los elementos
+        originalStates.forEach(state => {
+          state.element.style.display = state.display;
+        });
+        
+        showToast(`✔ Canvas generado correctamente`);
+        return canvas;
+      } else if (format === 'jpeg') {
+        await exportAsJpeg(elementId, fileName, options);
+      } else {
+        await exportAsPng(elementId, fileName, options);
+      }
       
-      // Restaurar visibilidad original
+      // Restaurar visibilidad original de los elementos
       originalStates.forEach(state => {
         state.element.style.display = state.display;
       });
-      
-      // Exportar la imagen
-      const dataUrl = canvas.toDataURL(`image/${format}`, format === 'jpeg' ? 0.95 : undefined);
-      const link = document.createElement("a");
-      link.href = dataUrl;
-      link.download = `genograma.${format}`;
-      link.click();
       
       showToast(`✔ Imagen ${format.toUpperCase()} exportada`);
     } catch (err) {
@@ -318,6 +327,7 @@ export default function useGenogramaState() {
 
   const onExportPNG = useCallback(() => exportImage("png"), [exportImage]);
   const onExportJPG = useCallback(() => exportImage("jpeg"), [exportImage]);
+  const onExportCanvas = useCallback(() => exportImage("canvas"), [exportImage]);
 
   return {
     nodes,
@@ -336,7 +346,8 @@ export default function useGenogramaState() {
     onExportJSON,
     onExportCSV,
     onExportPNG,
-    onExportJPG
+    onExportJPG,
+    onExportCanvas
   };
 }
 // --- END OF FILE useGenogramaState.js ---

@@ -13,7 +13,6 @@ import SmartGuidesOverlay from "../guides/SmartGuidesOverlay";
 import EnhancedMinimap from "../navigation/EnhancedMinimap";
 import ThemeVisualizer from "../visualization/ThemeVisualizer";
 import ClinicalTabsPanel from "../ClinicalTabsPanel/ClinicalTabsPanel";
-// import html2canvas from 'html2canvas'; // Eliminado ya que no se usa para exportar imágenes
 import useGenogramaState from "../../hooks/useGenogramaState";
 import useSmartGuides from "../../hooks/useSmartGuides";
 import MenuBar from "../menuBar/MenuBar";
@@ -76,6 +75,7 @@ function GenogramaEditorWrapper() {
     onExportCSV,
     onExportPNG,
     onExportJPG,
+    onExportCanvas, // Agregamos la nueva función de exportación a canvas
     setEdges,
     setNodes,
     updateEdgeRelation,
@@ -243,6 +243,7 @@ function GenogramaEditorWrapper() {
         onExportCSV={onExportCSV}
         onExportPNG={onExportPNG}
         onExportJPG={onExportJPG}
+        onExportCanvas={onExportCanvas} // Pasamos la nueva función como prop
         showNavigationPanel={showNavigationPanel}
         setShowNavigationPanel={setShowNavigationPanel}
         showSmartGuidesConfigPanel={showSmartGuidesConfigPanel}
@@ -304,7 +305,6 @@ function GenogramaEditorWrapper() {
           onToggleSmartGuides={toggleSmartGuides}
           guideOptions={guideOptions}
           updateGuideOptions={updateGuideOptions}
-          // onExportDrawing prop eliminada
           onImportJSON={onImportJSON}
           onExportJSON={onExportJSON}
           onExportCSV={onExportCSV}

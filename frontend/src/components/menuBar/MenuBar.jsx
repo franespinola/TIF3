@@ -10,6 +10,7 @@ export default function MenuBar({
   onExportCSV,
   onExportPNG,
   onExportJPG,
+  onExportCanvas, // Nueva prop para exportar como canvas
   // Propiedades para controlar la visibilidad de los paneles
   showNavigationPanel,
   setShowNavigationPanel,
@@ -46,6 +47,10 @@ export default function MenuBar({
   const exportItemRef = useRef(null);
   const importSubmenuRef = useRef(null);
   const exportSubmenuRef = useRef(null);
+  
+  // Estado para almacenar el elemento canvas generado
+  const [canvasElement, setCanvasElement] = useState(null);
+  const [showCanvasModal, setShowCanvasModal] = useState(false);
 
   const closeOtherMenus = (currentMenuRef, isSubmenu = false) => {
     if (window._activeMenus) {
@@ -133,6 +138,42 @@ export default function MenuBar({
         openMenuAndCloseOthers('exportSubmenu');
       }
     }
+  };
+
+  // Manejador para exportar como canvas
+  const handleExportCanvas = async () => {
+    setShowFileMenu(false);
+    setShowExportSubmenu(false);
+    const canvas = await onExportCanvas();
+    if (canvas) {
+      setCanvasElement(canvas);
+      setShowCanvasModal(true);
+    }
+  };
+
+  // Estilo para modal de canvas
+  const canvasModalStyle = {
+    position: 'fixed', 
+    zIndex: 1100, 
+    left: 0, top: 0, 
+    width: '100%', 
+    height: '100%', 
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    display: showCanvasModal ? 'flex' : 'none',
+    alignItems: 'center',
+    justifyContent: 'center'
+  };
+
+  const canvasModalContentStyle = {
+    backgroundColor: '#f8f8f8',
+    padding: '20px',
+    borderRadius: '8px',
+    boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+    maxWidth: '90%',
+    maxHeight: '90%',
+    overflow: 'auto',
+    display: 'flex',
+    flexDirection: 'column'
   };
 
   const menuBarStyle = {
@@ -385,7 +426,12 @@ export default function MenuBar({
                         </div>
 
                         <div
-                          style={dropdownItemStyle}
+                          style={{
+                            ...dropdownItemStyle,
+                            display: 'flex', 
+                            alignItems: 'center',
+                            gap: '6px'
+                          }}
                           onMouseEnter={dropdownItemHover}
                           onMouseLeave={dropdownItemLeave}
                           onClick={() => {
@@ -394,11 +440,19 @@ export default function MenuBar({
                             onExportPNG();
                           }}
                         >
-                          Exportar PNG
+                          <span>Exportar PNG</span>
+                          <span style={{ fontSize: '10px', color: '#666', marginLeft: 'auto' }}>
+                            Mejor calidad
+                          </span>
                         </div>
 
                         <div
-                          style={dropdownItemStyle}
+                          style={{
+                            ...dropdownItemStyle,
+                            display: 'flex', 
+                            alignItems: 'center',
+                            gap: '6px'
+                          }}
                           onMouseEnter={dropdownItemHover}
                           onMouseLeave={dropdownItemLeave}
                           onClick={() => {
@@ -407,7 +461,27 @@ export default function MenuBar({
                             onExportJPG();
                           }}
                         >
-                          Exportar JPG
+                          <span>Exportar JPG</span>
+                          <span style={{ fontSize: '10px', color: '#666', marginLeft: 'auto' }}>
+                            Archivo más pequeño
+                          </span>
+                        </div>
+
+                        <div
+                          style={{
+                            ...dropdownItemStyle,
+                            display: 'flex', 
+                            alignItems: 'center',
+                            gap: '6px'
+                          }}
+                          onMouseEnter={dropdownItemHover}
+                          onMouseLeave={dropdownItemLeave}
+                          onClick={handleExportCanvas}
+                        >
+                          <span>Exportar Canvas</span>
+                          <span style={{ fontSize: '10px', color: '#666', marginLeft: 'auto' }}>
+                            Vista previa interactiva
+                          </span>
                         </div>
                       </div>
                     </MenuPortal>
@@ -536,6 +610,57 @@ export default function MenuBar({
               </div>
             </MenuPortal>
           )}
+        </div>
+      </div>
+
+      {/* Modal para mostrar el canvas exportado */}
+      <div style={canvasModalStyle} onClick={() => setShowCanvasModal(false)}>
+        <div style={canvasModalContentStyle} onClick={e => e.stopPropagation()}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
+            <h3 style={{ margin: 0 }}>Vista previa del Canvas</h3>
+            <button 
+              onClick={() => setShowCanvasModal(false)}
+              style={{ 
+                border: 'none', 
+                background: 'transparent', 
+                fontSize: '20px', 
+                cursor: 'pointer',
+                fontWeight: 'bold'
+              }}
+            >
+              ×
+            </button>
+          </div>
+          <div style={{ overflow: 'auto' }}>
+            {canvasElement && <div id="canvas-container" ref={ref => {
+              if (ref && canvasElement && !ref.firstChild) {
+                ref.appendChild(canvasElement);
+              }
+            }}></div>}
+          </div>
+          <div style={{ marginTop: '15px', display: 'flex', justifyContent: 'flex-end' }}>
+            <button 
+              onClick={() => {
+                if (canvasElement) {
+                  // Descargar el canvas como imagen PNG
+                  const link = document.createElement('a');
+                  link.download = 'genograma_canvas.png';
+                  link.href = canvasElement.toDataURL('image/png');
+                  link.click();
+                }
+              }}
+              style={{ 
+                padding: '8px 16px', 
+                background: '#4285f4', 
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer'
+              }}
+            >
+              Descargar como PNG
+            </button>
+          </div>
         </div>
       </div>
     </>
