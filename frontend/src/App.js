@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { ReactFlowProvider } from 'reactflow'; // Importar ReactFlowProvider
+import { ReactFlowProvider } from 'reactflow';
 import GenogramaEditorWrapper from "./components/genogramaEditorWrapper/GenogramaEditorWrapper";
 import ErrorBoundary from "./components/ErrorBoundary/ErrorBoundary";
 
@@ -22,7 +22,7 @@ function App() {
   
   return (
     <ErrorBoundary>
-      <ReactFlowProvider> {/* Envolver con ReactFlowProvider */}
+      <ReactFlowProvider>
         <GenogramaEditorWrapper />
       </ReactFlowProvider>
     </ErrorBoundary>

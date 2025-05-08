@@ -5,8 +5,8 @@ import ReactFlow, {
 } from "reactflow";
 import "reactflow/dist/style.css";
 import { addEdge } from "reactflow";
-import nodeTypes from "../../nodeTypes";
-import edgeTypes from "../../edgeTypes";
+import nodeTypes from "../../types/nodeTypes";
+import edgeTypes from "../../types/edgeTypes";
 import Sidebar from "../sidebar/Sidebar";
 import FreeDrawOverlay from "../drawing/FreeDrawOverlay";
 import SmartGuidesOverlay from "../guides/SmartGuidesOverlay";
