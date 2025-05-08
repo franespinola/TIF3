@@ -96,7 +96,7 @@ export function transformToReactFlow(genoData) {
         
         // Usar la función extraída para determinar el tipo de nodo
         const nodeType = getNodeType(person);
-
+        
         // Obtener generación asignada (se respeta el valor que viene en el JSON)
         const generation = typeof person.generation === 'number' && isFinite(person.generation) ? person.generation : null;
 
@@ -126,26 +126,35 @@ export function transformToReactFlow(genoData) {
 
         // Determinar el tipo de línea visual basado en la relación
         let visualRelType = rel.type || "default"; // Empezar con el tipo base
+        
+        // Prioridad de visualización:
+        // 1. Vínculo emocional (conflictiva, cercana, distante, etc.)
+        // 2. Estado legal (matrimonio, divorcio, etc.)
+        // 3. Tipo estructural base (parentChild, hermanos, etc.)
+        
         if (rel.emotionalBond) {
             visualRelType = rel.emotionalBond; // Priorizar vínculo emocional para estilo
         } else if (rel.legalStatus) {
             visualRelType = rel.legalStatus; // Luego estado legal
         }
+        
         // Asegurarse de que visualRelType sea uno de los tipos esperados por RelationshipEdge
         const validVisualTypes = [
             "matrimonio", "divorcio", "cohabitacion", "compromiso", "separacion",
             "conflicto", "violencia", "cercana", "distante", "rota",
             "parentChild", "bezier", "mellizos", "hermanos", "conyugal"
         ];
+        
         if (!validVisualTypes.includes(visualRelType) && visualRelType !== 'default') {
              // Si no es un tipo visual conocido, usar uno por defecto o el tipo base
              console.warn(`Tipo visual no reconocido '${visualRelType}' para relación ${rel.id}. Usando tipo base '${rel.type || 'default'}'.`);
              visualRelType = rel.type === 'parentChild' ? 'parentChild' : 'matrimonio'; // O un default más genérico
         }
-         // Para parentChild, podríamos querer un estilo simple por defecto
-         if (rel.type === 'parentChild' && !rel.emotionalBond) {
+        
+        // Para parentChild, podríamos querer un estilo simple por defecto
+        if (rel.type === 'parentChild' && !rel.emotionalBond) {
             visualRelType = 'parentChild'; // Asignar un tipo específico si no hay otro estilo
-         }
+        }
 
         return {
             id: rel.id,

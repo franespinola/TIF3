@@ -192,12 +192,20 @@ export default function useGenogramaState() {
           setEdges(rawData.edges || []);
           showToast("✔ Snapshot importado correctamente");
         } else {
-          // Es un JSON estructurado: aplicar cálculos y layout
+          // Es un JSON estructurado: aplicar cálculos y layout mejorado
           const { nodes: structuralNodes, edges: structuralEdges } = normalizeGenogram(rawData);
-          const laidOutNodes = layoutWithDagre(structuralNodes, structuralEdges, { respectExistingPositions: true });
+          
+          // Aplicar un layout mejorado con parámetros optimizados
+          const laidOutNodes = layoutWithDagre(structuralNodes, structuralEdges, { 
+            rankdir: "TB",     // Top to Bottom (de arriba hacia abajo)
+            ranksep: 200,      // Mayor separación vertical entre generaciones
+            nodesep: 150,      // Mayor separación horizontal entre nodos
+            respectExistingPositions: false  // Forzar recálculo completo
+          });
+          
           setNodes(laidOutNodes);
           setEdges(structuralEdges);
-          showToast("✔ Genograma estructurado importado con layout aplicado");
+          showToast("✔ Genograma estructurado importado con layout mejorado");
         }
 
         // Ajustar idCounter para evitar colisiones

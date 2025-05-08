@@ -23,6 +23,8 @@ function RelationshipEdge(props) {
   const { 
     relType = "matrimonio", 
     edgeType,
+    originalType,
+    emotionalBond,
     // Nuevas propiedades de estilo personalizadas
     strokeType = "solid", 
     connectionType = "bezier", 
@@ -31,19 +33,16 @@ function RelationshipEdge(props) {
     strokeWidth: customStrokeWidth, 
   } = data;
 
-  // Log para depuración si es necesario
+  // Log para diagnóstico - muestra información detallada sobre cada relación
   useEffect(() => {
-    console.log(`RelationshipEdge ${id} actualizado:`, { 
+    console.log(`RelationshipEdge ${id} renderizado:`, { 
       relType, 
-      edgeType, 
-      strokeType,
-      connectionType,
-      markerEnd,
-      markerStart,
-      customStrokeWidth,
-      data 
+      edgeType,
+      originalType,
+      emotionalBond,
+      data
     });
-  }, [id, relType, edgeType, strokeType, connectionType, markerEnd, markerStart, customStrokeWidth, data]);
+  }, [id, relType, edgeType, originalType, emotionalBond, data]);
 
   let edgePath = "";
   let strokeColor = "#555";

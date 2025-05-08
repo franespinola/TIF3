@@ -3,8 +3,8 @@ import dagre from "dagre";
 /**
  * @typedef {Object} LayoutOptions
  * @property {string} [rankdir="TB"] - Dirección del layout ("TB", "LR", "BT", "RL").
- * @property {number} [ranksep=120] - Separación entre niveles.
- * @property {number} [nodesep=120] - Separación entre nodos (aumentado para mayor espacio horizontal).
+ * @property {number} [ranksep=150] - Separación entre niveles (generaciones).
+ * @property {number} [nodesep=150] - Separación horizontal entre nodos.
  * @property {number} [defaultWidth=100] - Ancho por defecto de un nodo si no se especifica.
  * @property {number} [defaultHeight=100] - Alto por defecto de un nodo si no se especifica.
  */
@@ -12,9 +12,9 @@ import dagre from "dagre";
 /**
  * Calcula el layout de un grafo usando Dagre y actualiza la posición de cada nodo.
  * 
- * Esta versión utiliza automáticamente el valor de `generation` asociado a cada nodo
+ * Esta versión mejorada utiliza explícitamente el valor de `generation` asociado a cada nodo
  * para asignar el `rank` en Dagre, asegurando que las generaciones se visualicen
- * correctamente en niveles horizontales distintos.
+ * correctamente en niveles horizontales distintos y con amplia separación.
  *
  * @param {Array<Object>} nodes - Array de nodos, donde cada uno debe tener la propiedad `id` y `data.generation`.
  * @param {Array<Object>} edges - Array de aristas, cada una con propiedades `source` y `target`.
@@ -23,11 +23,12 @@ import dagre from "dagre";
  */
 export default function layoutWithDagre(nodes, edges, options = {}) {
   const {
-    rankdir = "TB",
-    ranksep = 120,
-    nodesep = 120, // Aumentado a 120 para mayor separación horizontal
+    rankdir = "TB",            // Top-to-Bottom por defecto
+    ranksep = 150,             // Mayor separación vertical entre niveles (generaciones)
+    nodesep = 150,             // Mayor separación horizontal entre nodos
     defaultWidth = 100,
     defaultHeight = 100,
+    respectExistingPositions = false
   } = options;
 
   if (!Array.isArray(nodes)) {
@@ -38,20 +39,59 @@ export default function layoutWithDagre(nodes, edges, options = {}) {
   }
 
   const g = new dagre.graphlib.Graph();
-  g.setGraph({ rankdir, ranksep, nodesep });
+  
+  // Configurar el grafo con opciones mejoradas para visualización clara
+  g.setGraph({ 
+    rankdir,       // Dirección del layout
+    ranksep,       // Espacio entre filas (generaciones)
+    nodesep,       // Espacio entre columnas (entre miembros de la misma generación)
+    marginx: 50,   // Margen externo horizontal
+    marginy: 50,   // Margen externo vertical
+    acyclicer: 'greedy',  // Algoritmo para eliminar ciclos
+    ranker: 'network-simplex'  // Algoritmo para asignar rangos (generaciones)
+  });
+  
   g.setDefaultEdgeLabel(() => ({}));
 
-  // Agregar los nodos al grafo con su rank basado en generation
+  // Preparar un mapa de generaciones para organizar nodos horizontalmente por grupo familiar/relación
+  // Esto ayudará a mantener juntos los nodos que deberían estar cercanos
+  const nodesByGeneration = new Map();
+  const groupings = new Map();
+  
+  // Primera pasada: agrupar por generación y recopilar información de grupos
   nodes.forEach((node) => {
     if (!node.id) {
       console.warn("Nodo sin id detectado:", node);
       return;
     }
     
-    const width = node.data?.width ?? defaultWidth;
-    const height = node.data?.height ?? defaultHeight;
+    // Obtener generación del nodo
+    const generation = node.data?.generation;
     
-    // Configuración básica del nodo para Dagre
+    // Agrupar por generación
+    if (!nodesByGeneration.has(generation)) {
+      nodesByGeneration.set(generation, []);
+    }
+    nodesByGeneration.get(generation).push(node);
+    
+    // Identificar grupos basados en displayGroup si está disponible
+    const displayGroup = node.data?.displayGroup;
+    if (displayGroup) {
+      if (!groupings.has(displayGroup)) {
+        groupings.set(displayGroup, []);
+      }
+      groupings.get(displayGroup).push(node.id);
+    }
+  });
+
+  // Agregar los nodos al grafo con su rank basado en generation
+  nodes.forEach((node) => {
+    if (!node.id) return;
+    
+    const width = node.width || node.data?.width || defaultWidth;
+    const height = node.height || node.data?.height || defaultHeight;
+    
+    // Crear configuración del nodo para Dagre
     const nodeConfig = { 
       width, 
       height,
@@ -62,12 +102,24 @@ export default function layoutWithDagre(nodes, edges, options = {}) {
     g.setNode(node.id, nodeConfig);
   });
 
-  // Agregar edges (relaciones) al grafo
-  edges.forEach((edge) => {
+  // Filtrar aristas que podrían causar problemas en el layout
+  const layoutEdges = edges.filter(edge => {
+    // Omitir aristas específicamente marcadas para no afectar el layout
+    if (edge.data?.omitFromLayout) {
+      return false;
+    }
+    
+    // Asegurarse que la arista tiene source y target válidos
     if (!edge.source || !edge.target) {
       console.warn("Edge inválido detectado:", edge);
-      return;
+      return false;
     }
+    
+    return true;
+  });
+
+  // Agregar edges (relaciones) al grafo
+  layoutEdges.forEach((edge) => {
     g.setEdge(edge.source, edge.target);
   });
 
@@ -83,8 +135,8 @@ export default function layoutWithDagre(nodes, edges, options = {}) {
     }
     
     // Conservar el ancho y alto (se usan para centrar la posición del nodo)
-    const width = node.data?.width ?? defaultWidth;
-    const height = node.data?.height ?? defaultHeight;
+    const width = node.width || node.data?.width || defaultWidth;
+    const height = node.height || node.data?.height || defaultHeight;
 
     return {
       ...node,

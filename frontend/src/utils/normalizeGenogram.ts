@@ -27,9 +27,10 @@ function createEdge(
     id,
     source,
     target,
-    type,
+    type: 'relationshipEdge', // Usamos siempre el mismo tipo para todas las relaciones
     data: {
-      relType,
+      relType, // El tipo visual (matrimonio, conflicto, cercana, etc.)
+      edgeType: type, // El tipo estructural (partnerEdge, childEdge, etc.)
       notes,
       startDate,
       endDate
@@ -117,7 +118,8 @@ export function normalizeGenogram(genoData: GenogramData): { nodes: Node[], edge
       familyNodeParents[famNodeId].add(rel.source);
       familyNodeParents[famNodeId].add(rel.target);
       
-      // Crear aristas desde los padres al nodo familia
+      // Crear aristas desde los padres al nodo familia - Priorizar vínculo emocional
+      // Usar emotionalBond si existe, sino legalStatus, sino default "matrimonio"
       const relType = rel.emotionalBond || rel.legalStatus || 'matrimonio';
       edges.push(
         createEdge(
@@ -154,8 +156,8 @@ export function normalizeGenogram(genoData: GenogramData): { nodes: Node[], edge
     }
     
     if (rel.type === 'parentChild') {
-      const parent = rel.source;
-      const child = rel.target;
+      const parent = rel.target; // El padre es el "target" en parentChild
+      const child = rel.source; // El hijo es el "source" en parentChild
       
       // Buscar si el padre está en algún nodo familia
       let familyNodeFound = false;
@@ -170,7 +172,7 @@ export function normalizeGenogram(genoData: GenogramData): { nodes: Node[], edge
               famNodeId,
               child,
               'childEdge',
-              'parentChild',
+              rel.emotionalBond || 'parentChild', // Usar vínculo emocional si existe
               rel.notes
             )
           );
@@ -188,7 +190,7 @@ export function normalizeGenogram(genoData: GenogramData): { nodes: Node[], edge
             parent,
             child,
             'childEdge',
-            'parentChild',
+            rel.emotionalBond || 'parentChild', // Usar vínculo emocional si existe
             rel.notes
           )
         );
