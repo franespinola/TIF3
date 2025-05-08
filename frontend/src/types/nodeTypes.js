@@ -1,36 +1,36 @@
-import PacienteNode from "./components/nodes/genogram/PacienteNode";
-import MasculinoNode from "./components/nodes/genogram/MasculinoNode";
-import FemeninoNode from "./components/nodes/genogram/FemeninoNode";
-import FallecidoMNode from "./components/nodes/genogram/FallecidoMNode";
-import FallecidoFNode from "./components/nodes/genogram/FallecidoFNode";
-import EmbarazoNode from "./components/nodes/genogram/EmbarazoNode";
-import AbortoEspontaneoNode from "./components/nodes/genogram/AbortoEspontaneoNode";
-import AbortoProvocadoNode from "./components/nodes/genogram/AbortoProvocadoNode";
-import FetoMuertoNode, { FetoMuertoMujer } from "./components/nodes/genogram/FetoMuertoNode";
-import AdopcionNode from "./components/nodes/genogram/AdopcionNode";
-import FamilyNode from "./components/nodes/genogram/FamilyNode";
+import PacienteNode from "../components/nodes/genogram/PacienteNode";
+import MasculinoNode from "../components/nodes/genogram/MasculinoNode";
+import FemeninoNode from "../components/nodes/genogram/FemeninoNode";
+import FallecidoMNode from "../components/nodes/genogram/FallecidoMNode";
+import FallecidoFNode from "../components/nodes/genogram/FallecidoFNode";
+import EmbarazoNode from "../components/nodes/genogram/EmbarazoNode";
+import AbortoEspontaneoNode from "../components/nodes/genogram/AbortoEspontaneoNode";
+import AbortoProvocadoNode from "../components/nodes/genogram/AbortoProvocadoNode";
+import FetoMuertoNode, { FetoMuertoMujer } from "../components/nodes/genogram/FetoMuertoNode";
+import AdopcionNode from "../components/nodes/genogram/AdopcionNode";
+import FamilyNode from "../components/nodes/genogram/FamilyNode";
 
 // Importar componentes de anotación (ahora en la carpeta flowchart)
-import RectangleNode from "./components/nodes/flowchart/RectangleNode";
-import CircleNode from "./components/nodes/flowchart/CircleNode";
-import TextNode from "./components/nodes/flowchart/TextNode";
-import NoteNode from "./components/nodes/flowchart/NoteNode";
+import RectangleNode from "../components/nodes/flowchart/RectangleNode";
+import CircleNode from "../components/nodes/flowchart/CircleNode";
+import TextNode from "../components/nodes/flowchart/TextNode";
+import NoteNode from "../components/nodes/flowchart/NoteNode";
 
 // Importar componentes de diagrama de flujo
-import DiamondNode from "./components/nodes/flowchart/DiamondNode";
-import OvalNode from "./components/nodes/flowchart/OvalNode";
-import CommentNode from "./components/nodes/flowchart/CommentNode";
-import HexagonNode from "./components/nodes/flowchart/HexagonNode";
-import CylinderNode from "./components/nodes/flowchart/CylinderNode";
-import DocumentNode from "./components/nodes/flowchart/DocumentNode";
-import RoundedRectNode from "./components/nodes/flowchart/RoundedRectNode";
-import BracketNode from "./components/nodes/flowchart/BracketNode";
-import TableNode from "./components/nodes/flowchart/TableNode";
-import TriangleNode from "./components/nodes/flowchart/TriangleNode";
-import CrossNode from "./components/nodes/flowchart/CrossNode";
-import XNode from "./components/nodes/flowchart/XNode";
-import ArrowNode from "./components/nodes/flowchart/ArrowNode";
-import FlagNode from "./components/nodes/flowchart/FlagNode";
+import DiamondNode from "../components/nodes/flowchart/DiamondNode";
+import OvalNode from "../components/nodes/flowchart/OvalNode";
+import CommentNode from "../components/nodes/flowchart/CommentNode";
+import HexagonNode from "../components/nodes/flowchart/HexagonNode";
+import CylinderNode from "../components/nodes/flowchart/CylinderNode";
+import DocumentNode from "../components/nodes/flowchart/DocumentNode";
+import RoundedRectNode from "../components/nodes/flowchart/RoundedRectNode";
+import BracketNode from "../components/nodes/flowchart/BracketNode";
+import TableNode from "../components/nodes/flowchart/TableNode";
+import TriangleNode from "../components/nodes/flowchart/TriangleNode";
+import CrossNode from "../components/nodes/flowchart/CrossNode";
+import XNode from "../components/nodes/flowchart/XNode";
+import ArrowNode from "../components/nodes/flowchart/ArrowNode";
+import FlagNode from "../components/nodes/flowchart/FlagNode";
 
 const nodeTypes = {
   // Nodos de genograma

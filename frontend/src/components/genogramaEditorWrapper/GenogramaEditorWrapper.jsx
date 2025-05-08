@@ -12,7 +12,7 @@ import FreeDrawOverlay from "../drawing/FreeDrawOverlay";
 import SmartGuidesOverlay from "../guides/SmartGuidesOverlay";
 import EnhancedMinimap from "../navigation/EnhancedMinimap";
 import ThemeVisualizer from "../visualization/ThemeVisualizer";
-import ClinicalTabsPanel from "../ClinicalTabsPanel/ClinicalTabsPanel";
+import ClinicalTabsPanel from "../clinical/ClinicalTabsPanel/ClinicalTabsPanel";
 import useGenogramaState from "../../hooks/useGenogramaState";
 import useSmartGuides from "../../hooks/useSmartGuides";
 import MenuBar from "../menuBar/MenuBar";

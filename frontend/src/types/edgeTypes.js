@@ -1,4 +1,4 @@
-import RelationshipEdge from "../src/components/edges/RelationshipEdge";
+import RelationshipEdge from "../components/edges/RelationshipEdge";
 
 // Ahora todos los tipos de borde usan el mismo componente RelationshipEdge
 // manteniendo los tipos diferentes para compatibilidad con código existente

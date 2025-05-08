@@ -1,5 +1,5 @@
 import React from 'react';
-import { exportCanvasAsImage } from '../utils/imageExport';
+import { exportCanvasAsImage } from './imageExport';
 
 /**
  * Componente que proporciona botones para exportar un elemento como imagen

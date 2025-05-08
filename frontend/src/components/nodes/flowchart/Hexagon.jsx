@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { useUpdateNodeInternals } from 'reactflow';
-import ResizableNode from '../ResizableNode';
+import ResizableNode from '../../ResizableNode';
 import EditableText from '../../text/EditableText';
 import FlowchartNodeBase from './FlowchartNodeBase';
 

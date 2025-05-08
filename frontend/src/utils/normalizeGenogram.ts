@@ -8,71 +8,32 @@
  */
 
 import { getNodeType } from './transformToReactFlow';
+import { Person, Relationship, GenogramData, Node, Edge } from '../types/genogramTypes';
 
-// Tipos para TypeScript
-interface Person {
-  id: string;
-  name?: string;
-  gender?: 'M' | 'F';
-  generation?: number;
-  age?: number;
-  notes?: string;
-  attributes?: {
-    isPatient?: boolean;
-    isDeceased?: boolean;
-    isAbortion?: boolean;
-    abortionType?: string;
-    isAdoption?: boolean;
-    isPregnancy?: boolean;
-    [key: string]: any;
-  };
-}
-
-interface Relationship {
-  id: string;
-  source: string;
-  target: string;
-  type: 'conyugal' | 'parentChild' | 'hermanos' | 'mellizos' | string;
-  emotionalBond?: string;
-  legalStatus?: string;
-  startDate?: string;
-  endDate?: string;
-  notes?: string;
-}
-
-interface GenogramData {
-  people: Person[];
-  relationships: Relationship[];
-}
-
-interface Node {
-  id: string;
-  type: string;
-  position: { x: number; y: number };
-  data: {
-    label: string;
-    generation?: number;
-    age?: number;
-    notes?: string;
-    attributes?: any;
-    gender?: string;
-    [key: string]: any;
-  };
-}
-
-interface Edge {
-  id: string;
-  source: string;
-  target: string;
-  type: string;
-  sourceHandle?: string;
-  targetHandle?: string;
-  data: {
-    relType: string;
-    notes?: string;
-    startDate?: string;
-    endDate?: string;
-    [key: string]: any;
+/**
+ * Crea una arista con los datos proporcionados
+ */
+function createEdge(
+  id: string,
+  source: string,
+  target: string,
+  type: string,
+  relType: string,
+  notes: string = '',
+  startDate: string = '',
+  endDate: string = ''
+): Edge {
+  return {
+    id,
+    source,
+    target,
+    type,
+    data: {
+      relType,
+      notes,
+      startDate,
+      endDate
+    }
   };
 }
 
@@ -157,31 +118,32 @@ export function normalizeGenogram(genoData: GenogramData): { nodes: Node[], edge
       familyNodeParents[famNodeId].add(rel.target);
       
       // Crear aristas desde los padres al nodo familia
-      edges.push({
-        id: `partner-${rel.source}-${famNodeId}`,
-        source: rel.source,
-        target: famNodeId,
-        type: 'partnerEdge',
-        data: {
-          relType: rel.emotionalBond || rel.legalStatus || 'matrimonio',
-          notes: rel.notes || '',
-          startDate: rel.startDate || '',
-          endDate: rel.endDate || ''
-        }
-      });
+      const relType = rel.emotionalBond || rel.legalStatus || 'matrimonio';
+      edges.push(
+        createEdge(
+          `partner-${rel.source}-${famNodeId}`,
+          rel.source,
+          famNodeId,
+          'partnerEdge',
+          relType,
+          rel.notes,
+          rel.startDate,
+          rel.endDate
+        )
+      );
       
-      edges.push({
-        id: `partner-${rel.target}-${famNodeId}`,
-        source: rel.target,
-        target: famNodeId,
-        type: 'partnerEdge',
-        data: {
-          relType: rel.emotionalBond || rel.legalStatus || 'matrimonio',
-          notes: rel.notes || '',
-          startDate: rel.startDate || '',
-          endDate: rel.endDate || ''
-        }
-      });
+      edges.push(
+        createEdge(
+          `partner-${rel.target}-${famNodeId}`,
+          rel.target,
+          famNodeId,
+          'partnerEdge',
+          relType,
+          rel.notes,
+          rel.startDate,
+          rel.endDate
+        )
+      );
     }
   });
   
@@ -202,16 +164,16 @@ export function normalizeGenogram(genoData: GenogramData): { nodes: Node[], edge
       for (const famNodeId in familyNodeParents) {
         if (familyNodeParents[famNodeId].has(parent)) {
           // Si encontramos un nodo familia que contiene al padre, conectamos el hijo a ese nodo
-          edges.push({
-            id: `child-${famNodeId}-${child}`,
-            source: famNodeId,
-            target: child,
-            type: 'childEdge',
-            data: {
-              relType: 'parentChild',
-              notes: rel.notes || ''
-            }
-          });
+          edges.push(
+            createEdge(
+              `child-${famNodeId}-${child}`,
+              famNodeId,
+              child,
+              'childEdge',
+              'parentChild',
+              rel.notes
+            )
+          );
           familyNodeFound = true;
           break;
         }
@@ -220,31 +182,31 @@ export function normalizeGenogram(genoData: GenogramData): { nodes: Node[], edge
       // Si el padre no está en ningún nodo familia (familia monoparental),
       // conectamos directamente padre e hijo
       if (!familyNodeFound) {
-        edges.push({
-          id: `direct-${parent}-${child}`,
-          source: parent,
-          target: child,
-          type: 'childEdge',
-          data: {
-            relType: 'parentChild',
-            notes: rel.notes || ''
-          }
-        });
+        edges.push(
+          createEdge(
+            `direct-${parent}-${child}`,
+            parent,
+            child,
+            'childEdge',
+            'parentChild',
+            rel.notes
+          )
+        );
       }
     } else if (rel.type !== 'conyugal') {
       // Para otras relaciones (hermanos, mellizos, etc.)
-      edges.push({
-        id: rel.id,
-        source: rel.source,
-        target: rel.target,
-        type: 'relationshipEdge',
-        data: {
-          relType: rel.emotionalBond || rel.type || 'default',
-          notes: rel.notes || '',
-          startDate: rel.startDate || '',
-          endDate: rel.endDate || ''
-        }
-      });
+      edges.push(
+        createEdge(
+          rel.id,
+          rel.source,
+          rel.target,
+          'relationshipEdge',
+          rel.emotionalBond || rel.type || 'default',
+          rel.notes,
+          rel.startDate,
+          rel.endDate
+        )
+      );
     }
   });
   
