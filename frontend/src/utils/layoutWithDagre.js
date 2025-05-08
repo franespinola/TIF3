@@ -3,7 +3,7 @@ import dagre from "dagre";
 /**
  * @typedef {Object} LayoutOptions
  * @property {string} [rankdir="TB"] - Dirección del layout ("TB", "LR", "BT", "RL").
- * @property {number} [ranksep=150] - Separación entre niveles (generaciones).
+ * @property {number} [ranksep=250] - Separación entre niveles (generaciones) - AUMENTADO DE 150 A 250.
  * @property {number} [nodesep=150] - Separación horizontal entre nodos.
  * @property {number} [defaultWidth=100] - Ancho por defecto de un nodo si no se especifica.
  * @property {number} [defaultHeight=100] - Alto por defecto de un nodo si no se especifica.
@@ -24,7 +24,7 @@ import dagre from "dagre";
 export default function layoutWithDagre(nodes, edges, options = {}) {
   const {
     rankdir = "TB",            // Top-to-Bottom por defecto
-    ranksep = 150,             // Mayor separación vertical entre niveles (generaciones)
+    ranksep = 250,             // AUMENTADO DE 150 A 250 - Mayor separación vertical entre generaciones
     nodesep = 150,             // Mayor separación horizontal entre nodos
     defaultWidth = 100,
     defaultHeight = 100,
@@ -46,7 +46,7 @@ export default function layoutWithDagre(nodes, edges, options = {}) {
     ranksep,       // Espacio entre filas (generaciones)
     nodesep,       // Espacio entre columnas (entre miembros de la misma generación)
     marginx: 50,   // Margen externo horizontal
-    marginy: 50,   // Margen externo vertical
+    marginy: 80,   // AUMENTADO DE 50 A 80 - Mayor margen vertical
     acyclicer: 'greedy',  // Algoritmo para eliminar ciclos
     ranker: 'network-simplex'  // Algoritmo para asignar rangos (generaciones)
   });
@@ -54,11 +54,12 @@ export default function layoutWithDagre(nodes, edges, options = {}) {
   g.setDefaultEdgeLabel(() => ({}));
 
   // Preparar un mapa de generaciones para organizar nodos horizontalmente por grupo familiar/relación
-  // Esto ayudará a mantener juntos los nodos que deberían estar cercanos
   const nodesByGeneration = new Map();
   const groupings = new Map();
+  const familyNodeMap = new Map();   // Mapa para rastrear nodos familia
+  const partnerConnections = new Map(); // Mapa para rastrear conexiones entre parejas
   
-  // Primera pasada: agrupar por generación y recopilar información de grupos
+  // Primera pasada: agrupar por generación y recopilar información de grupos y relaciones
   nodes.forEach((node) => {
     if (!node.id) {
       console.warn("Nodo sin id detectado:", node);
@@ -81,6 +82,25 @@ export default function layoutWithDagre(nodes, edges, options = {}) {
         groupings.set(displayGroup, []);
       }
       groupings.get(displayGroup).push(node.id);
+    }
+    
+    // Identificar los nodos familia para posicionamiento especial
+    if (node.type === 'familyNode') {
+      familyNodeMap.set(node.id, node);
+    }
+  });
+  
+  // Identificar conexiones entre parejas y nodos familia para posicionamiento preciso
+  edges.forEach(edge => {
+    if (edge.data?.edgeType === 'partnerEdge') {
+      // Verificar si el destino es un nodo familia
+      const targetNode = nodes.find(n => n.id === edge.target);
+      if (targetNode && targetNode.type === 'familyNode') {
+        if (!partnerConnections.has(edge.target)) {
+          partnerConnections.set(edge.target, []);
+        }
+        partnerConnections.get(edge.target).push(edge.source);
+      }
     }
   });
 
@@ -137,15 +157,78 @@ export default function layoutWithDagre(nodes, edges, options = {}) {
     // Conservar el ancho y alto (se usan para centrar la posición del nodo)
     const width = node.width || node.data?.width || defaultWidth;
     const height = node.height || node.data?.height || defaultHeight;
+    
+    // Calculamos la posición base
+    const basePosition = {
+      x: nodeWithPos.x - width / 2,
+      y: nodeWithPos.y - height / 2,
+    };
+
+    // Si es un nodo familia, vamos a posicionarlo exactamente entre sus nodos padre
+    if (node.type === 'familyNode' && partnerConnections.has(node.id)) {
+      const partners = partnerConnections.get(node.id);
+      if (partners.length >= 2) {
+        const partner1 = g.node(partners[0]);
+        const partner2 = g.node(partners[1]);
+        
+        if (partner1 && partner2) {
+          // Calcular posición X centrada entre los padres
+          const centerX = (partner1.x + partner2.x) / 2;
+          
+          // Mantener la misma posición Y (generación) del nodo familia
+          basePosition.x = centerX - width / 2;
+          
+          // Asegurar que los padres estén alineados en Y
+          const alignY = Math.min(partner1.y, partner2.y);
+          const partner1Node = nodes.find(n => n.id === partners[0]);
+          const partner2Node = nodes.find(n => n.id === partners[1]);
+          
+          if (partner1Node && partner2Node) {
+            partner1Node.position = {
+              x: partner1.x - (partner1Node.width || defaultWidth) / 2,
+              y: alignY - (partner1Node.height || defaultHeight) / 2
+            };
+            
+            partner2Node.position = {
+              x: partner2.x - (partner2Node.width || defaultWidth) / 2,
+              y: alignY - (partner2Node.height || defaultHeight) / 2
+            };
+          }
+        }
+      }
+    }
 
     return {
       ...node,
-      position: {
-        // Centrar el nodo en la posición calculada por Dagre
-        x: nodeWithPos.x - width / 2,
-        y: nodeWithPos.y - height / 2,
-      },
+      position: basePosition,
     };
+  });
+  
+  // Realizar un paso adicional para verificar y arreglar la alineación vertical de parejas
+  // y nodos familia en cada generación
+  const generationsMap = new Map();
+  updatedNodes.forEach(node => {
+    if (!node.data?.generation) return;
+    
+    const gen = node.data.generation;
+    if (!generationsMap.has(gen)) {
+      generationsMap.set(gen, []);
+    }
+    generationsMap.get(gen).push(node);
+  });
+  
+  // Para cada generación, asegurarse de que todos los nodos estén alineados en Y
+  generationsMap.forEach((genNodes, generation) => {
+    // Calcular la posición Y promedio de la generación
+    const avgY = genNodes.reduce((sum, node) => sum + node.position.y, 0) / genNodes.length;
+    
+    // Alinear todos los nodos de esta generación a la misma posición Y
+    genNodes.forEach(node => {
+      // Solo modificamos la posición Y, mantenemos la X para preservar el espaciado horizontal
+      if (node.type !== 'familyNode') { // No modificamos nodos familia para no romper otras lógicas
+        node.position.y = avgY;
+      }
+    });
   });
 
   return updatedNodes;
