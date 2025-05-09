@@ -503,15 +503,44 @@ export function normalizeGenogram(genoData) {
     const targetNode = finalNodes.find(n => n.id === rel.target);
     if (!sourceNode || !targetNode) return;
 
+    // Configuración de handles para tipos específicos de relaciones
+    let sourceHandle = null;
+    let targetHandle = null;
+    
+    // Lista de relaciones que deberían conectarse entre handles laterales
+    const lateralConnectionTypes = ['cohabitacion', 'cercana', 'violencia', 'conflicto', 'divorcio', 'rota'];
+    
+    // Determinar el tipo de relación (priorizar vínculo emocional)
+    const relType = rel.emotionalBond || rel.legalStatus || rel.type || 'default';
+    
+    // Para las relaciones especificadas, usar handles left y right
+    if (lateralConnectionTypes.includes(relType)) {
+      // Determinar qué nodo está más a la izquierda para una conexión natural
+      const sourcePosition = sourceNode.position?.x || 0;
+      const targetPosition = targetNode.position?.x || 0;
+      
+      if (sourcePosition <= targetPosition) {
+        // El nodo fuente está a la izquierda o en la misma posición
+        sourceHandle = 'r'; // Usar handle derecho del nodo izquierdo
+        targetHandle = 'l'; // Usar handle izquierdo del nodo derecho
+      } else {
+        // El nodo fuente está a la derecha
+        sourceHandle = 'l'; // Usar handle izquierdo del nodo derecho
+        targetHandle = 'r'; // Usar handle derecho del nodo izquierdo
+      }
+    }
+
     // Añadir arista usando relationshipEdge (para vínculos emocionales, etc.)
     finalEdges.push({
       id: rel.id, 
       source: rel.source, 
       target: rel.target, 
       type: 'relationshipEdge',
+      sourceHandle, // Usar handle configurado o null (por defecto)
+      targetHandle, // Usar handle configurado o null (por defecto)
       data: { 
         // Priorizar vínculo emocional, luego estado legal, luego tipo base
-        relType: rel.emotionalBond || rel.legalStatus || rel.type || 'default', 
+        relType: relType, 
         originalType: rel.type,
         emotionalBond: rel.emotionalBond,
         legalStatus: rel.legalStatus,
