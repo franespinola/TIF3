@@ -1,4 +1,4 @@
-# backend/config.py
+# backend/app/core/config.py
 
 import os
 
@@ -12,7 +12,5 @@ BLOCK_DURATION_MS = 5 * 60 * 1000
 # Tasa de muestreo
 SAMPLE_RATE = 16000
 
-
 ## modelos LLM ##
 LLM_MODEL_NAME = os.getenv("LLM_MODEL_NAME", "deepseek-r1-14b-chat") # otro modelo = command-r-plus  deepseek-r1:14b llama3:8b command-r qwq:latest mistral-small3.1:latest 
-

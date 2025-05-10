@@ -2,7 +2,12 @@
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routes import transcription, audio_recording, process_audio, patients, genograms, clinical_notes
+from routes import transcription, audio_recording, process_audio, patients, genograms, clinical_notes, appointments
+from app.core.database import engine
+from app.models import Base
+
+# Crear las tablas de la base de datos
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Sistema de Genogramas y Gestión Clínica")
 
@@ -24,13 +29,7 @@ app.include_router(process_audio.router, prefix="/api")
 app.include_router(patients.router, prefix="/api")
 app.include_router(genograms.router, prefix="/api")
 app.include_router(clinical_notes.router, prefix="/api")
-
-# Crear los directorios de datos si no existen
-import os
-data_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
-os.makedirs(os.path.join(data_dir, "patients"), exist_ok=True)
-os.makedirs(os.path.join(data_dir, "genograms"), exist_ok=True)
-os.makedirs(os.path.join(data_dir, "clinical"), exist_ok=True)
+app.include_router(appointments.router, prefix="/api")
 
 @app.get("/")
 async def root():

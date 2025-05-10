@@ -5,11 +5,11 @@ import ReactFlow, {
   MiniMap
 } from "reactflow";
 import "reactflow/dist/style.css";
-import nodeTypes from "../../types/nodeTypes";
-import edgeTypes from "../../types/edgeTypes";
-import useGenogramaState from "../../hooks/useGenogramaState";
-import { normalizeGenogram } from "../../utils/normalizeGenogram";
-import layoutWithDagre from "../../utils/layoutWithDagre";
+import nodeTypes from "../../../types/nodeTypes";
+import edgeTypes from "../../../types/edgeTypes";
+import useGenogramaState from "../../../hooks/useGenogramaState";
+import { normalizeGenogram } from "../../../utils/normalizeGenogram";
+import layoutWithDagre from "../../../utils/layoutWithDagre";
 
 /**
  * GenogramaViewerWrapper - Componente para visualización (solo lectura) de genogramas

@@ -7,4 +7,6 @@ pydub
 python-multipart
 requests
 git+https://github.com/m-bain/whisperx
+sqlalchemy
+alembic
 

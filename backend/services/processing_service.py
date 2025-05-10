@@ -1,5 +1,4 @@
-from config import HUGGINGFACE_TOKEN
-from services.recording_service import save_recording
+from app.core.tokenConfigs import HUGGINGFACE_TOKEN
 from services.whisperx_service import transcribir_con_whisperx
 from services.gemini_service import extract_genogram_with_reflection
 import os, json

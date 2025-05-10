@@ -6,16 +6,8 @@ import { ReactFlowProvider } from 'reactflow';
 import GenogramaEditorWrapper from "./components/genogramaEditorWrapper/GenogramaEditorWrapper";
 import ErrorBoundary from "./components/ErrorBoundary/ErrorBoundary";
 
-// Componentes del Dashboard
-import Dashboard from './components/dashboard/Dashboard';
-import PatientsList from './components/dashboard/PatientsList';
-import PatientDetail from './components/dashboard/PatientDetail';
-import AppointmentsCalendar from './components/dashboard/AppointmentsCalendar';
-import AppointmentDetail from './components/dashboard/AppointmentDetail';
-import GenogramsList from './components/dashboard/GenogramsList';
-import GenogramEditor from './components/dashboard/GenogramEditor';
-import GenogramViewer from './components/dashboard/GenogramViewer';
-import SettingsPage from './components/dashboard/SettingsPage';
+// Componente de rutas del Dashboard
+import DashboardRoutes from './components/dashboard/Routes';
 
 // Componentes de Autenticación
 import Login from './components/auth/Login';
@@ -64,61 +56,10 @@ function App() {
           <Route path="/register" element={<Register />} />
 
           {/* Rutas protegidas del dashboard */}
-          <Route
-            path="/"
-            element={isAuthenticated ? <Dashboard /> : <Navigate to="/login" />}
+          <Route 
+            path="/*" 
+            element={isAuthenticated ? <DashboardRoutes /> : <Navigate to="/login" />} 
           />
-          
-          {/* Rutas de Pacientes */}
-          <Route
-            path="/patients"
-            element={isAuthenticated ? <PatientsList /> : <Navigate to="/login" />}
-          />
-          <Route
-            path="/patients/:id"
-            element={isAuthenticated ? <PatientDetail /> : <Navigate to="/login" />}
-          />
-          <Route
-            path="/patients/new"
-            element={isAuthenticated ? <PatientDetail isNew={true} /> : <Navigate to="/login" />}
-          />
-          
-          {/* Rutas de Citas */}
-          <Route
-            path="/appointments"
-            element={isAuthenticated ? <AppointmentsCalendar /> : <Navigate to="/login" />}
-          />
-          <Route
-            path="/appointments/:id"
-            element={isAuthenticated ? <AppointmentDetail /> : <Navigate to="/login" />}
-          />
-          
-          {/* Rutas de Genogramas */}
-          <Route
-            path="/genograms"
-            element={isAuthenticated ? <GenogramsList /> : <Navigate to="/login" />}
-          />
-          <Route
-            path="/genograms/new"
-            element={isAuthenticated ? <GenogramEditor isNew={true} /> : <Navigate to="/login" />}
-          />
-          <Route
-            path="/genograms/edit/:id"
-            element={isAuthenticated ? <GenogramEditor /> : <Navigate to="/login" />}
-          />
-          <Route
-            path="/genograms/view/:id"
-            element={isAuthenticated ? <GenogramViewer /> : <Navigate to="/login" />}
-          />
-          
-          {/* Configuraciones */}
-          <Route
-            path="/settings"
-            element={isAuthenticated ? <SettingsPage /> : <Navigate to="/login" />}
-          />
-          
-          {/* Redirigir rutas no encontradas al dashboard */}
-          <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </Router>
     </ErrorBoundary>
