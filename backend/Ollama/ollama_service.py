@@ -2,7 +2,7 @@ import requests
 import re
 import json
 from datetime import datetime
-from config import LLM_MODEL_NAME  # Asegurate que esto sea "deepseek-r1-chat"
+from app.core.tokenConfigs import LLM_MODEL_NAME  # Asegurate que esto sea "deepseek-r1-chat"
 
 def consultar_ollama(prompt: str, modelo: str = LLM_MODEL_NAME) -> str:
     """

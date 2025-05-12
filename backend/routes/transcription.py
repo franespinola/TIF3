@@ -21,7 +21,7 @@ async def transcribe_audio(file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail="Error al guardar el archivo.")
 
     try:
-        from config import HUGGINGFACE_TOKEN
+        from app.core.tokenConfigs import HUGGINGFACE_TOKEN
         segmentos = transcribir_con_whisperx(temp_path, hf_token=HUGGINGFACE_TOKEN)
         os.remove(temp_path)
 

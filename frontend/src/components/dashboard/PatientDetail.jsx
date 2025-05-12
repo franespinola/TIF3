@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import DashboardLayout from './DashboardLayout';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '../ui/Card';
 import { Button } from '../ui/Button';
@@ -10,6 +10,7 @@ import { Icons } from '../ui/Icons';
 const PatientDetail = () => {
   // Obtener el ID del paciente desde los parámetros de la URL
   const { patientId } = useParams();
+  const navigate = useNavigate();
   const [patient, setPatient] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('summary');
@@ -49,9 +50,9 @@ const PatientDetail = () => {
             { id: 'gen1', date: '2025-05-05', name: 'Genograma familiar completo' }
           ],
           clinicalHistory: [
-            { date: '2025-05-05', type: 'Sesión regular', notes: 'La paciente relató nuevos conflictos con su madre.' },
-            { date: '2025-04-15', type: 'Sesión regular', notes: 'Se trabajó en técnicas de comunicación asertiva.' },
-            { date: '2025-03-28', type: 'Primera evaluación', notes: 'Primera sesión. Se realizó historia clínica inicial.' }
+            { id: 'session1', date: '2025-05-05', type: 'Sesión regular', notes: 'La paciente relató nuevos conflictos con su madre.' },
+            { id: 'session2', date: '2025-04-15', type: 'Sesión regular', notes: 'Se trabajó en técnicas de comunicación asertiva.' },
+            { id: 'session3', date: '2025-03-28', type: 'Primera evaluación', notes: 'Primera sesión. Se realizó historia clínica inicial.' }
           ]
         });
         
@@ -369,8 +370,9 @@ const PatientDetail = () => {
           <CardContent>
             {patient.clinicalHistory.length > 0 ? (
               <div className="space-y-8">
+                {/* Para cada entrada en la historia clínica */}
                 {patient.clinicalHistory.map((entry, index) => (
-                  <div key={index} className="border-l-2 border-gray-200 pl-6 pb-6">
+                  <div key={index} className={`border-l-2 pl-6 pb-6 ${index === 0 ? 'border-blue-500' : 'border-gray-200'}`}>
                     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-2">
                       <div>
                         <h4 className="font-medium text-gray-900">{entry.type}</h4>
@@ -383,9 +385,25 @@ const PatientDetail = () => {
                           })}
                         </div>
                       </div>
-                      <Button variant="ghost" size="sm" className="mt-2 sm:mt-0">
-                        <Icons.Edit className="w-4 h-4" />
-                      </Button>
+                      <div className="flex mt-2 sm:mt-0 space-x-2">
+                        {/* Botón para ver/editar la sesión */}
+                        <Button variant="ghost" size="sm">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                          </svg>
+                        </Button>
+
+                        {/* Nuevo botón para ver el resumen de la sesión */}
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => navigate(`/patients/${patientId}/sessions/${entry.id}/summary`)}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                        </Button>
+                      </div>
                     </div>
                     <p className="mt-2 text-gray-700">{entry.notes}</p>
                   </div>

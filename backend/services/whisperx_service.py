@@ -40,7 +40,7 @@ def transcribir_con_whisperx(audio_path: str, hf_token: str) -> list:
     del model_a
 
     # 3. Diarización
-    diarize_model = whisperx.DiarizationPipeline(use_auth_token=hf_token, device=device)
+    diarize_model = whisperx.diarize.DiarizationPipeline(use_auth_token=hf_token, device=device)
     diarize_segments = diarize_model(audio)
 
     # 4. Asignar hablantes a palabras

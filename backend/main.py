@@ -2,7 +2,7 @@
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routes import transcription, audio_recording, process_audio, patients, genograms, clinical_notes, appointments
+from routes import transcription, audio_recording, process_audio, patients, genograms, clinical_notes, appointments, summary
 from app.core.database import engine
 from app.models import Base
 
@@ -30,6 +30,7 @@ app.include_router(patients.router, prefix="/api")
 app.include_router(genograms.router, prefix="/api")
 app.include_router(clinical_notes.router, prefix="/api")
 app.include_router(appointments.router, prefix="/api")
+app.include_router(summary.router, prefix="/api")
 
 @app.get("/")
 async def root():

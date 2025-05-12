@@ -10,6 +10,7 @@ import GenogramViewer from './GenogramViewer';
 import AppointmentsCalendar from './AppointmentsCalendar';
 import AppointmentDetail from './AppointmentDetail';
 import SettingsPage from './SettingsPage';
+import SessionSummaryView from '../clinical/SessionSummaryView';
 
 const DashboardRoutes = () => {
   return (
@@ -31,6 +32,10 @@ const DashboardRoutes = () => {
       {/* Rutas de Citas */}
       <Route path="/appointments" element={<AppointmentsCalendar />} />
       <Route path="/appointments/:id" element={<AppointmentDetail />} />
+      
+      {/* Rutas de Resúmenes de Sesión */}
+      <Route path="/sessions/:sessionId/summary" element={<SessionSummaryView />} />
+      <Route path="/patients/:patientId/sessions/:sessionId/summary" element={<SessionSummaryView />} />
       
       {/* Configuraciones */}
       <Route path="/settings" element={<SettingsPage />} />

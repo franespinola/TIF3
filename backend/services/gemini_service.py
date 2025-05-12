@@ -8,7 +8,7 @@ import sys # Para salir del script en caso de errores críticos
 
 API_KEY = "AIzaSyAvAF1YlyjWPPBCZMb5Af64pAbK8AxTybA"
 
-MODEL = "gemini-2.5-pro-exp-03-25" #gemini-1.5-pro gemini-2.5-flash-preview-04-17
+MODEL = "gemini-2.5-pro-exp-03-25" #gemini-1.5-pro gemini-2.5-flash-preview-04-17 gemini-2.5-pro-exp-03-25
 
 # También podés probar con "gemini-1.5-flash"
 
@@ -145,7 +145,7 @@ def call_gemini_api(prompt: str) -> str:
             "temperature": 0.6,          # 0.0-1.0: Más bajo = más determinista, más alto = más creativo
             "topP": 0.95,                # Controla diversidad vía nucleo de probabilidad
             "topK": 40,                  # Controla diversidad vía número de opciones
-            "maxOutputTokens": 20000,     # Máximo de tokens en la respuesta (ajusta según necesidad)
+            "maxOutputTokens": 30000,     # Máximo de tokens en la respuesta (ajusta según necesidad)
             # "stopSequences": ["\n\n"] # Opcional: secuencias para detener la generación
         },
         # --- Configuración Opcional de Seguridad ---
@@ -160,7 +160,7 @@ def call_gemini_api(prompt: str) -> str:
 
     try:
         # Timeout más largo por si la generación es compleja (en segundos)
-        response = requests.post(ENDPOINT, headers=headers, data=json.dumps(data), timeout=180) # 3 minutos
+        response = requests.post(ENDPOINT, headers=headers, data=json.dumps(data), timeout=600) # 3 minutos
 
         # Lanza excepción para errores HTTP 4xx/5xx (ej. 400 Bad Request, 401 Unauthorized, 429 Quota Exceeded, 500 Server Error)
         response.raise_for_status()
