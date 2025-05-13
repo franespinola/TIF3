@@ -10,7 +10,7 @@ def generate_uuid():
 class Patient(Base):
     __tablename__ = "patients"
 
-    id = Column(String, primary_key=True)
+    id = Column(String, primary_key=True, default=generate_uuid)
     name = Column(String, nullable=False)
     age = Column(Integer, nullable=False)
     gender = Column(String, nullable=False)
@@ -31,7 +31,6 @@ class Patient(Base):
     clinical_entries = relationship("ClinicalEntry", back_populates="patient")
     appointments = relationship("Appointment", back_populates="patient")
     genograms = relationship("Genogram", back_populates="patient")
-    recordings = relationship("Recording", back_populates="patient")
 
 class Medication(Base):
     __tablename__ = "medications"
@@ -47,4 +46,4 @@ class Medication(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    patient = relationship("Patient", back_populates="medications") 
+    patient = relationship("Patient", back_populates="medications")
