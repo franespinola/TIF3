@@ -1,5 +1,5 @@
-from app.core.database_config import engine
-from app.models.models import Base
+from app.core.database import engine
+from app.models import Base
 
 def init_db():
     # Crear todas las tablas

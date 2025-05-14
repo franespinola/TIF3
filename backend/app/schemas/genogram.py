@@ -5,6 +5,9 @@ from pydantic import BaseModel
 class GenogramBase(BaseModel):
     data: Dict[str, Any]
     notes: Optional[str] = None
+    name: Optional[str] = None
+    description: Optional[str] = None
+    thumbnail: Optional[str] = None
 
 class GenogramCreate(GenogramBase):
     patient_id: str
@@ -17,3 +20,8 @@ class Genogram(GenogramBase):
 
     class Config:
         from_attributes = True
+        
+class GenogramWithPatientName(Genogram):
+    patientName: str
+    created: str  # Para formato compatible con frontend (YYYY-MM-DD)
+    lastModified: str  # Para formato compatible con frontend (YYYY-MM-DD)

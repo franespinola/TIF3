@@ -14,103 +14,45 @@ const PatientsList = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filter, setFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
+  const [error, setError] = useState(null);
   const patientsPerPage = 12;
 
   useEffect(() => {
-    // Simular carga de datos desde la API
+    // Cargar datos reales desde la API
     const fetchPatients = async () => {
       setIsLoading(true);
+      setError(null);
       
-      // Simular retardo en la red
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      // Datos de muestra basados en tus carpetas de pacientes
-      const mockPatients = [
-        { 
-          id: 'cristian', 
-          name: 'Cristian Rodríguez', 
-          age: 45, 
-          gender: 'Masculino',
-          diagnosis: 'Ansiedad generalizada', 
-          lastVisit: '2025-04-29',
-          nextAppointment: '2025-05-10T10:00:00',
-          hasGenogram: true
-        },
-        { 
-          id: 'cristian2', 
-          name: 'Cristian Morales', 
-          age: 28, 
-          gender: 'Masculino',
-          diagnosis: 'Estrés post-traumático', 
-          lastVisit: '2025-04-29',
-          nextAppointment: null,
-          hasGenogram: true
-        },
-        { 
-          id: 'francisco', 
-          name: 'Francisco Torres', 
-          age: 52, 
-          gender: 'Masculino',
-          diagnosis: 'Depresión moderada', 
-          lastVisit: '2025-04-20',
-          nextAppointment: '2025-05-18T16:00:00',
-          hasGenogram: true
-        },
-        { 
-          id: 'francisco2', 
-          name: 'Francisco Gómez', 
-          age: 33, 
-          gender: 'Masculino',
-          diagnosis: 'Trastorno de ansiedad social', 
-          lastVisit: '2025-04-20',
-          nextAppointment: null,
-          hasGenogram: true
-        },
-        { 
-          id: 'ignacia', 
-          name: 'Ignacia Vázquez', 
-          age: 29, 
-          gender: 'Femenino',
-          diagnosis: 'Trastorno de estrés', 
-          lastVisit: '2025-04-25',
-          nextAppointment: '2025-05-11T11:00:00',
-          hasGenogram: true
-        },
-        { 
-          id: 'ignacia10', 
-          name: 'Ignacia Fernandez', 
-          age: 42, 
-          gender: 'Femenino',
-          diagnosis: 'Trastorno de pánico', 
-          lastVisit: '2025-04-25',
-          nextAppointment: null,
-          hasGenogram: true
-        },
-        { 
-          id: 'ignacia12-gemini-pro', 
-          name: 'Ignacia Rojas', 
-          age: 37, 
-          gender: 'Femenino',
-          diagnosis: 'Trastorno obsesivo-compulsivo', 
-          lastVisit: '2025-04-25',
-          nextAppointment: null,
-          hasGenogram: true
-        },
-        { 
-          id: 'maria', 
-          name: 'María Fernandez', 
-          age: 34, 
-          gender: 'Femenino',
-          diagnosis: 'Problemas familiares', 
-          lastVisit: '2025-05-05',
-          nextAppointment: '2025-05-09T15:30:00',
-          hasGenogram: true
+      try {
+        const response = await fetch('/api/patients');
+        
+        if (!response.ok) {
+          throw new Error(`Error: ${response.status} ${response.statusText}`);
         }
-      ];
-      
-      setPatients(mockPatients);
-      setFilteredPatients(mockPatients);
-      setIsLoading(false);
+        
+        const data = await response.json();
+        
+        // Procesar y formatear datos
+        const formattedPatients = data.map(patient => ({
+          ...patient,
+          // Calcular si tiene genogramas
+          hasGenogram: patient.genograms && patient.genograms.length > 0,
+          // Calcular si tiene una próxima cita
+          nextAppointment: patient.appointments && 
+                          patient.appointments.length > 0 ? 
+                          patient.appointments.find(app => new Date(app.date) > new Date())?.date : null,
+          // Asegurar que tenemos la última visita
+          lastVisit: patient.last_visit || patient.created_at
+        }));
+        
+        setPatients(formattedPatients);
+        setFilteredPatients(formattedPatients);
+      } catch (err) {
+        console.error("Error al cargar pacientes:", err);
+        setError("No se pudieron cargar los pacientes. Inténtelo nuevamente más tarde.");
+      } finally {
+        setIsLoading(false);
+      }
     };
     
     fetchPatients();
@@ -126,7 +68,7 @@ const PatientsList = () => {
     const filtered = patients.filter(patient => {
       const matchesSearch = searchTerm === '' || 
         patient.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-        patient.diagnosis.toLowerCase().includes(searchTerm.toLowerCase());
+        (patient.diagnosis && patient.diagnosis.toLowerCase().includes(searchTerm.toLowerCase()));
       
       const matchesFilter = filter === 'all' || 
         (filter === 'with-appointment' && patient.nextAppointment) || 
@@ -188,6 +130,13 @@ const PatientsList = () => {
         </CardContent>
       </Card>
 
+      {/* Mostrar error si existe */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6">
+          <p>{error}</p>
+        </div>
+      )}
+
       {/* Patients grid */}
       {isLoading ? (
         <div className="flex justify-center items-center h-64">
@@ -232,21 +181,25 @@ const PatientsList = () => {
                       </div>
                       
                       <div className="mt-3">
-                        <Badge variant={
-                          patient.diagnosis.includes('Ansiedad') ? 'warning' : 
-                          patient.diagnosis.includes('Depresión') ? 'danger' :
-                          patient.diagnosis.includes('Estrés') ? 'info' :
-                          'secondary'
-                        }>
-                          {patient.diagnosis}
-                        </Badge>
+                        {patient.diagnosis && (
+                          <Badge variant={
+                            patient.diagnosis.includes('Ansiedad') ? 'warning' : 
+                            patient.diagnosis.includes('Depresión') ? 'danger' :
+                            patient.diagnosis.includes('Estrés') ? 'info' :
+                            'secondary'
+                          }>
+                            {patient.diagnosis}
+                          </Badge>
+                        )}
                       </div>
                       
                       <div className="mt-4 pt-3 border-t border-gray-200">
                         <div className="flex items-center justify-between">
                           <div className="text-sm text-gray-500">
                             <span className="block">Última visita:</span>
-                            <span className="font-medium text-gray-700">{new Date(patient.lastVisit).toLocaleDateString()}</span>
+                            <span className="font-medium text-gray-700">
+                              {patient.lastVisit ? new Date(patient.lastVisit).toLocaleDateString() : 'N/A'}
+                            </span>
                           </div>
                           <div className="flex">
                             {patient.hasGenogram && (

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import DashboardLayout from './DashboardLayout';
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '../ui/Card';
+import { Card, CardContent, CardFooter } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Avatar } from '../ui/Avatar';
 import { Icons } from '../ui/Icons';
@@ -12,82 +12,32 @@ const GenogramsList = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredGenograms, setFilteredGenograms] = useState([]);
-
   useEffect(() => {
-    // En un entorno real, esto sería una llamada a la API
+    // Función para obtener los genogramas de la API
     const fetchGenograms = async () => {
       setLoading(true);
       
-      // Simular retardo en la red
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      // Datos de muestra basados en tus carpetas de pacientes
-      const mockGenograms = [
-        {
-          id: 'gen1',
-          patientId: 'cristian',
-          patientName: 'Cristian Rodríguez',
-          created: '2025-04-29',
-          lastModified: '2025-04-29',
-          name: 'Genograma familiar completo',
-          thumbnail: null,
-          description: 'Representación completa de la estructura familiar nuclear y extendida.'
-        },
-        {
-          id: 'gen2',
-          patientId: 'francisco',
-          patientName: 'Francisco Torres',
-          created: '2025-04-20',
-          lastModified: '2025-04-25',
-          name: 'Genograma relaciones paternas',
-          thumbnail: null,
-          description: 'Análisis de las relaciones con figuras paternas y su impacto en el desarrollo.'
-        },
-        {
-          id: 'gen3',
-          patientId: 'ignacia',
-          patientName: 'Ignacia Vázquez',
-          created: '2025-04-25',
-          lastModified: '2025-04-30',
-          name: 'Genograma familiar histórico',
-          thumbnail: null,
-          description: 'Representación de patrones familiares a lo largo de tres generaciones.'
-        },
-        {
-          id: 'gen4',
-          patientId: 'ignacia10',
-          patientName: 'Ignacia Fernandez',
-          created: '2025-04-25',
-          lastModified: '2025-04-25',
-          name: 'Genograma enfocado en salud',
-          thumbnail: null,
-          description: 'Análisis de patrones de salud mental y física en la familia.'
-        },
-        {
-          id: 'gen5',
-          patientId: 'ignacia12-gemini-pro',
-          patientName: 'Ignacia Rojas',
-          created: '2025-04-25',
-          lastModified: '2025-05-01',
-          name: 'Genograma de relaciones',
-          thumbnail: null,
-          description: 'Mapa de relaciones interpersonales y dinámicas familiares.'
-        },
-        {
-          id: 'gen6',
-          patientId: 'maria',
-          patientName: 'María Fernandez',
-          created: '2025-05-05',
-          lastModified: '2025-05-05',
-          name: 'Genograma familiar inicial',
-          thumbnail: null,
-          description: 'Primera representación gráfica de la estructura familiar básica.'
+      try {
+        // Llamada a la API para obtener los genogramas con info de pacientes
+        const response = await fetch('/api/genograms/list');
+        
+        if (!response.ok) {
+          throw new Error(`Error: ${response.status} ${response.statusText}`);
         }
-      ];
-      
-      setGenograms(mockGenograms);
-      setFilteredGenograms(mockGenograms);
-      setLoading(false);
+        
+        const data = await response.json();
+        
+        // Si no hay datos, configurar un array vacío
+        const genogramsData = data || [];
+        
+        setGenograms(genogramsData);
+        setFilteredGenograms(genogramsData);
+      } catch (error) {
+        console.error('Error al cargar genogramas:', error);
+        // En caso de error, podríamos mostrar un mensaje al usuario
+      } finally {
+        setLoading(false);
+      }
     };
     
     fetchGenograms();

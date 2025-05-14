@@ -27,21 +27,31 @@ const PatientForm = ({ isEditing = false }) => {
     }));
   };
 
-  const handleSubmit = async (e) => {
+    const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     
     try {
-      // Simulando una llamada a API para guardar los datos
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      // En un entorno real, aquí iría la llamada a la API para guardar el paciente
-      console.log('Datos del paciente a guardar:', patient);
+      const response = await fetch('/api/patients', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(patient),
+      });
+  
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status} - ${response.statusText}`);
+      }
+  
+      const savedPatient = await response.json();
+      console.log('Paciente guardado:', savedPatient);
       
       // Navegación a la lista de pacientes después de guardar
       navigate('/patients');
     } catch (error) {
       console.error('Error al guardar el paciente:', error);
+      // Aquí podrías añadir un estado para mostrar un mensaje de error en la UI
     } finally {
       setLoading(false);
     }
