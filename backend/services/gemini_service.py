@@ -8,7 +8,7 @@ import sys # Para salir del script en caso de errores críticos
 
 API_KEY = "AIzaSyAvAF1YlyjWPPBCZMb5Af64pAbK8AxTybA"
 
-MODEL = "gemini-2.5-pro-exp-03-25" #gemini-1.5-pro gemini-2.5-flash-preview-04-17 gemini-2.5-pro-exp-03-25
+MODEL = "gemini-2.5-flash-preview-04-17" #gemini-1.5-pro gemini-2.5-flash-preview-04-17 gemini-2.5-pro-exp-03-25
 
 # También podés probar con "gemini-1.5-flash"
 

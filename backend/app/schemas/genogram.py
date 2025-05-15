@@ -25,3 +25,6 @@ class GenogramWithPatientName(Genogram):
     patientName: str
     created: str  # Para formato compatible con frontend (YYYY-MM-DD)
     lastModified: str  # Para formato compatible con frontend (YYYY-MM-DD)
+
+    class Config:
+        from_attributes = True

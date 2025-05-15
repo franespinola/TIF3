@@ -20,6 +20,7 @@ import SubMenuBar from "../menuBar/SubMenuBar";
 import { transformToReactFlow } from "../../utils/transformToReactFlow";
 import useRecorder from "../../hooks/useRecorder";
 import layoutWithDagre from "../../utils/layoutWithDagre";
+import { normalizeGenogram } from "../../utils/normalizeGenogram";
 
 // Constante para la altura del MenuBar - asegúrate de que coincida con el height en MenuBar.jsx
 const MENU_BAR_HEIGHT = 48;
@@ -28,7 +29,7 @@ const SUB_MENU_BAR_HEIGHT = 40;
 // Altura total de la barra superior (MenuBar + SubMenuBar)
 const TOTAL_MENU_HEIGHT = MENU_BAR_HEIGHT + SUB_MENU_BAR_HEIGHT;
 
-function GenogramaEditorWrapper() {
+function GenogramaEditorWrapper({ initialData }) {
   // Estado para la conexión seleccionada
   const [selectedEdge, setSelectedEdge] = useState(null);
   const [selectedNode, setSelectedNode] = useState(null);
@@ -81,6 +82,25 @@ function GenogramaEditorWrapper() {
     updateEdgeRelation,
     updateNodeData
   } = useGenogramaState();
+  
+  // Efecto para cargar los datos iniciales del genograma
+  useEffect(() => {
+    if (initialData) {
+      try {
+        // Normalizar los datos recibidos
+        const { nodes: normalizedNodes, edges: normalizedEdges } = normalizeGenogram(initialData);
+
+        // Aplicar layout automático con dagre
+        const laidOutNodes = layoutWithDagre(normalizedNodes, normalizedEdges);
+
+        // Setear los nodos y aristas en el estado global del genograma
+        setNodes(laidOutNodes);
+        setEdges(normalizedEdges);
+      } catch (error) {
+        console.error("Error al procesar el genograma inicial:", error);
+      }
+    }
+  }, [initialData, setNodes, setEdges]);
   
   // Función para actualizar los estilos visuales de un nodo
   const updateNodeStyle = useCallback((nodeId, styleProps) => {

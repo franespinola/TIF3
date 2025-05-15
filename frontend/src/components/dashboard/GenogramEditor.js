@@ -16,6 +16,7 @@ const GenogramEditor = ({ isNew = false }) => {
     lastModified: '',
     createdAt: new Date().toISOString().slice(0, 10)
   });
+  const [genogramContent, setGenogramContent] = useState(null);
 
   useEffect(() => {
     const fetchGenogramData = async () => {
@@ -25,23 +26,24 @@ const GenogramEditor = ({ isNew = false }) => {
       }
 
       try {
-        // Simulación de carga de datos
-        await new Promise(resolve => setTimeout(resolve, 800));
-        
-        // Datos de ejemplo
-        const data = {
-          id: id,
-          name: 'Genograma familiar',
-          patientId: '1',
-          patientName: 'María Fernández',
-          lastModified: new Date().toISOString().slice(0, 10),
-          createdAt: '2025-05-01'
-        };
-        
-        setGenogramData(data);
-        setLoading(false);
+        const response = await fetch(`/api/genograms/view/${id}`);
+        const genogram = await response.json();
+
+        // Actualizar los datos del genograma
+        setGenogramData({
+          id: genogram.id,
+          name: genogram.name,
+          patientId: genogram.patientId,
+          patientName: genogram.patientName,
+          lastModified: genogram.lastModified,
+          createdAt: genogram.created
+        });
+
+        // Guardar el contenido del genograma
+        setGenogramContent(genogram.data);
       } catch (error) {
-        console.error('Error fetching genogram data:', error);
+        console.error('Error al obtener el genograma:', error);
+      } finally {
         setLoading(false);
       }
     };
@@ -153,7 +155,9 @@ const GenogramEditor = ({ isNew = false }) => {
       <div className="flex-grow overflow-hidden">
         <ErrorBoundary>
           <ReactFlowProvider>
-            <GenogramaEditorWrapper />
+            <GenogramaEditorWrapper
+              initialData={genogramContent}
+            />
           </ReactFlowProvider>
         </ErrorBoundary>
       </div>

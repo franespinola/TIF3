@@ -1,42 +1,44 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ReactFlowProvider } from 'reactflow';
-import GenogramaViewerWrapper from "./genogramaViewerWrapper/GenogramaViewerWrapper";
-import ErrorBoundary from "../ErrorBoundary/ErrorBoundary";
+import GenogramaViewerWrapper from './genogramaViewerWrapper/GenogramaViewerWrapper';
+import ErrorBoundary from '../ErrorBoundary/ErrorBoundary';
 
 const GenogramViewer = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+
   const [loading, setLoading] = useState(true);
-  const [genogramData, setGenogramData] = useState({
+  const [genogramHeader, setGenogramHeader] = useState({
     id: '',
     name: '',
-    patientId: '',
     patientName: '',
-    lastModified: '',
-    createdAt: ''
+    createdAt: '',
+    lastModified: ''
   });
+
+  const [genogramData, setGenogramData] = useState({ people: [], relationships: [] });
 
   useEffect(() => {
     const fetchGenogramData = async () => {
       try {
-        // Simulación de carga de datos
-        await new Promise(resolve => setTimeout(resolve, 800));
-        
-        // Datos de ejemplo
-        const data = {
-          id: id,
-          name: 'Genograma familiar',
-          patientId: '1',
-          patientName: 'María Fernández',
-          lastModified: '2025-05-05',
-          createdAt: '2025-05-01'
-        };
-        
-        setGenogramData(data);
-        setLoading(false);
+        const response = await fetch(`/api/genograms/view/${id}`);
+        const genogram = await response.json();
+
+        // Metadatos para la cabecera
+        setGenogramHeader({
+          id: genogram.id,
+          name: genogram.name,
+          patientName: genogram.patientName,
+          createdAt: genogram.created,
+          lastModified: genogram.lastModified
+        });
+
+        // Datos para React Flow
+        setGenogramData(genogram.data);
       } catch (error) {
-        console.error('Error fetching genogram data:', error);
+        console.error('Error al obtener el genograma:', error);
+      } finally {
         setLoading(false);
       }
     };
@@ -75,10 +77,10 @@ const GenogramViewer = () => {
             </button>
             <div>
               <h1 className="text-xl font-bold">
-                {genogramData.name}
+                {genogramHeader.name}
               </h1>
               <p className="text-sm text-gray-500">
-                Paciente: {genogramData.patientName} | Creado: {genogramData.createdAt} | Última modificación: {genogramData.lastModified}
+                Paciente: {genogramHeader.patientName} | Creado: {genogramHeader.createdAt} | Última modificación: {genogramHeader.lastModified}
               </p>
             </div>
           </div>
@@ -86,11 +88,7 @@ const GenogramViewer = () => {
           <div className="flex space-x-2">
             <button
               className="px-4 py-2 bg-gray-100 text-gray-800 rounded-md hover:bg-gray-200 border border-gray-300"
-              onClick={() => {
-                console.log('Exportando genograma...');
-                // Aquí iría la lógica para exportar el genograma
-                alert('Genograma exportado correctamente');
-              }}
+              onClick={() => alert('Genograma exportado correctamente')}
             >
               Exportar
             </button>
@@ -108,7 +106,11 @@ const GenogramViewer = () => {
       <div className="flex-grow overflow-hidden">
         <ErrorBoundary>
           <ReactFlowProvider>
-            <GenogramaViewerWrapper genogramId={id} readOnly={true} />
+            <GenogramaViewerWrapper
+              people={genogramData.people}
+              relationships={genogramData.relationships}
+              readOnly={true}
+            />
           </ReactFlowProvider>
         </ErrorBoundary>
       </div>

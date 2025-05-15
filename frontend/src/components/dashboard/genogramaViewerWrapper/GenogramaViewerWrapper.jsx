@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import ReactFlow, {
   Background,
   Controls,
@@ -13,13 +13,10 @@ import layoutWithDagre from "../../../utils/layoutWithDagre";
 
 /**
  * GenogramaViewerWrapper - Componente para visualización (solo lectura) de genogramas
- * Versión simplificada del GenogramaEditorWrapper sin capacidades de edición
  */
-function GenogramaViewerWrapper({ genogramId, readOnly = true }) {
-  // Estados
+function GenogramaViewerWrapper({ people, relationships, readOnly = true }) {
   const [isLoading, setIsLoading] = useState(true);
 
-  // Usar el hook de genograma pero solo para visualización
   const {
     nodes,
     edges,
@@ -29,61 +26,32 @@ function GenogramaViewerWrapper({ genogramId, readOnly = true }) {
     onExportJPG
   } = useGenogramaState();
 
-  // Memorizar tipos de nodos y aristas para rendimiento
   const memoizedNodeTypes = useMemo(() => nodeTypes, []);
   const memoizedEdgeTypes = useMemo(() => edgeTypes, []);
 
-  // Cargar datos del genograma al montar el componente
   useEffect(() => {
-    const fetchGenogramData = async () => {
-      try {
-        setIsLoading(true);
-        
-        // Simular la carga de datos (en un entorno real, esto sería una petición API)
-        await new Promise(resolve => setTimeout(resolve, 800));
-        
-        // Buscar el archivo de genograma en la carpeta del paciente
-        // Nota: En una implementación real, esto sería una llamada a API
-        const mockGenogramData = {
-          people: [
-            { id: 'p1', name: 'Paciente', gender: 'M', generation: 2, attributes: { isPatient: true } },
-            { id: 'p2', name: 'Madre', gender: 'F', generation: 1 },
-            { id: 'p3', name: 'Padre', gender: 'M', generation: 1 },
-            { id: 'p4', name: 'Hermana', gender: 'F', generation: 2 },
-            { id: 'p5', name: 'Abuelo Paterno', gender: 'M', generation: 0 },
-            { id: 'p6', name: 'Abuela Paterna', gender: 'F', generation: 0 }
-          ],
-          relationships: [
-            { id: 'r1', source: 'p1', target: 'p2', type: 'parentChild' },
-            { id: 'r2', source: 'p1', target: 'p3', type: 'parentChild' },
-            { id: 'r3', source: 'p4', target: 'p2', type: 'parentChild' },
-            { id: 'r4', source: 'p4', target: 'p3', type: 'parentChild' },
-            { id: 'r5', source: 'p3', target: 'p5', type: 'parentChild' },
-            { id: 'r6', source: 'p3', target: 'p6', type: 'parentChild' },
-            { id: 'r7', source: 'p5', target: 'p6', type: 'conyugal', legalStatus: 'matrimonio' },
-            { id: 'r8', source: 'p2', target: 'p3', type: 'conyugal', legalStatus: 'matrimonio' }
-          ]
-        };
+    try {
+      setIsLoading(true);
 
-        // Normalizar los datos para ReactFlow
-        const { nodes: normalizedNodes, edges: normalizedEdges } = normalizeGenogram(mockGenogramData);
+      // Normalizar los datos recibidos
+      const { nodes: normalizedNodes, edges: normalizedEdges } = normalizeGenogram({
+        people,
+        relationships
+      });
 
-        // Aplicar layout con dagre para posicionar correctamente
-        const laidOutNodes = layoutWithDagre(normalizedNodes, normalizedEdges);
-        
-        // Actualizar el estado con los nodos y aristas
-        setNodes(laidOutNodes);
-        setEdges(normalizedEdges);
-        
-        setIsLoading(false);
-      } catch (error) {
-        console.error("Error al cargar el genograma:", error);
-        setIsLoading(false);
-      }
-    };
+      // Aplicar layout automático con dagre
+      const laidOutNodes = layoutWithDagre(normalizedNodes, normalizedEdges);
 
-    fetchGenogramData();
-  }, [genogramId, setNodes, setEdges]);
+      // Setear los nodos y aristas en el estado global del genograma
+      setNodes(laidOutNodes);
+      setEdges(normalizedEdges);
+
+    } catch (error) {
+      console.error("Error al procesar el genograma:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [people, relationships, setNodes, setEdges]);
 
   if (isLoading) {
     return (
@@ -96,8 +64,8 @@ function GenogramaViewerWrapper({ genogramId, readOnly = true }) {
   return (
     <div
       id="genogramViewer"
-      style={{ 
-        width: "100%", 
+      style={{
+        width: "100%",
         height: "100%",
         position: "relative",
         overflow: "hidden"
@@ -105,9 +73,9 @@ function GenogramaViewerWrapper({ genogramId, readOnly = true }) {
     >
       <ReactFlow
         style={{
-          width: "100%", 
-          height: "100%", 
-          background: "#f8f8f8" 
+          width: "100%",
+          height: "100%",
+          background: "#f8f8f8"
         }}
         nodes={nodes}
         edges={edges}
@@ -126,9 +94,9 @@ function GenogramaViewerWrapper({ genogramId, readOnly = true }) {
       >
         <Background gap={12} size={1} />
         <Controls showInteractive={false} />
-        <MiniMap 
+        <MiniMap
           nodeStrokeWidth={3}
-          zoomable 
+          zoomable
           pannable
         />
       </ReactFlow>

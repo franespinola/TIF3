@@ -145,3 +145,31 @@ async def get_patient_genograms(
         raise HTTPException(status_code=404, detail="Paciente no encontrado")
     
     return patient.genograms
+
+@router.get("/genograms/view/{genogram_id}", response_model=GenogramWithPatientName)
+async def view_genogram(
+    genogram_id: str,
+    db: Session = Depends(get_db)
+):
+    """
+    Vista detallada de un genograma con nombre del paciente y todos los metadatos.
+    """
+    genogram = db.query(Genogram).options(selectinload(Genogram.patient)).filter(Genogram.id == genogram_id).first()
+    if not genogram:
+        raise HTTPException(status_code=404, detail="Genograma no encontrado")
+    
+    return {
+        "id": genogram.id,
+        "patient_id": genogram.patient_id,
+        "patientId": genogram.patient_id,
+        "patientName": genogram.patient.name,
+        "data": genogram.data,
+        "notes": genogram.notes,
+        "name": genogram.name or "Genograma sin título",
+        "description": genogram.description or "",
+        "thumbnail": genogram.thumbnail,
+        "created_at": genogram.created_at,
+        "updated_at": genogram.updated_at,
+        "created": genogram.created_at.strftime("%Y-%m-%d"),
+        "lastModified": genogram.updated_at.strftime("%Y-%m-%d")
+    }
