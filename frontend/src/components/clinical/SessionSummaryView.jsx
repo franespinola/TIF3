@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import DashboardLayout from '../dashboard/DashboardLayout';
+import DashboardLayout from '../dashboard/layout/DashboardLayout';
 import SessionSummary from './SessionSummary';
 import axios from 'axios';
 

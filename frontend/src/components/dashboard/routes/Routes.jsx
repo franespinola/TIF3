@@ -1,16 +1,16 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import Dashboard from './Dashboard';
-import PatientsList from './PatientsList';
-import PatientDetail from './PatientDetail';
-import PatientForm from './PatientForm';
-import GenogramsList from './GenogramsList';
-import GenogramEditor from './GenogramEditor';
-import GenogramViewer from './GenogramViewer';
-import AppointmentsCalendar from './AppointmentsCalendar';
-import AppointmentDetail from './AppointmentDetail';
-import SettingsPage from './SettingsPage';
-import SessionSummaryView from '../clinical/SessionSummaryView';
+import Dashboard from '../layout/Dashboard';
+import PatientsList from '../patients/PatientsList';
+import PatientDetail from '../patients/PatientDetail';
+import PatientForm from '../patients/PatientForm';
+import GenogramsList from '../genograms/GenogramsList';
+import GenogramEditor from '../genograms/GenogramEditor';
+import GenogramViewer from '../genograms/GenogramViewer';
+import AppointmentsCalendar from '../appointments/AppointmentsCalendar';
+import AppointmentDetail from '../appointments/AppointmentDetail';
+import SettingsPage from '../settings/SettingsPage';
+import SessionSummaryView from '../../clinical/SessionSummaryView';
 
 const DashboardRoutes = () => {
   return (

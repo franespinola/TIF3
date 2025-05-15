@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ReactFlowProvider } from 'reactflow';
-import GenogramaViewerWrapper from './genogramaViewerWrapper/GenogramaViewerWrapper';
-import ErrorBoundary from '../ErrorBoundary/ErrorBoundary';
-import api from '../../services/api';
+import GenogramaViewerWrapper from "../../genogramaEditorWrapper/GenogramaEditorWrapper";
+import ErrorBoundary from "../../ErrorBoundary/ErrorBoundary";
+import api from '../../../services/api';
 
 const GenogramViewer = () => {
   const { id } = useParams();

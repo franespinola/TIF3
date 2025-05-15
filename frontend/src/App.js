@@ -7,7 +7,7 @@ import GenogramaEditorWrapper from "./components/genogramaEditorWrapper/Genogram
 import ErrorBoundary from "./components/ErrorBoundary/ErrorBoundary";
 
 // Componente de rutas del Dashboard
-import DashboardRoutes from './components/dashboard/Routes';
+import DashboardRoutes from './components/dashboard/routes/Routes';
 
 // Componentes de Autenticación
 import Login from './components/auth/Login';

@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import DashboardLayout from './DashboardLayout';
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '../ui/Card';
-import { Button } from '../ui/Button';
-import { Badge } from '../ui/Badge';
-import { Avatar } from '../ui/Avatar';
-import { Icons } from '../ui/Icons';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import DashboardLayout from '../layout/DashboardLayout';
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '../../ui/Card';
+import Button from '../../ui/Button';
+import Badge from '../../ui/Badge';
+import Avatar from '../../ui/Avatar';
+import Icons from '../../ui/Icons';
 
 const PatientDetail = () => {
   // Obtener el ID del paciente desde los parámetros de la URL

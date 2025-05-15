@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { NavLink, Link, useLocation } from 'react-router-dom';
-import { Icons } from '../ui/Icons';
-import { Avatar } from '../ui/Avatar';
+import Icons from '../../ui/Icons';
+import Avatar from '../../ui/Avatar';
 
 /**
  * Componente de Layout para el dashboard que proporciona

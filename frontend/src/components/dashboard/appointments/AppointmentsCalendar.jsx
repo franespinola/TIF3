@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import DashboardLayout from './DashboardLayout';
-import { Card, CardHeader, CardTitle, CardContent } from '../ui/Card';
-import { Button } from '../ui/Button';
-import { Badge } from '../ui/Badge';
-import { Avatar } from '../ui/Avatar';
-import { Icons } from '../ui/Icons';
+import DashboardLayout from '../layout/DashboardLayout';
+import { Card, CardHeader, CardTitle, CardContent } from '../../ui/Card';
+import Button from '../../ui/Button';
+import Badge from '../../ui/Badge';
+import Avatar from '../../ui/Avatar';
+import Icons from '../../ui/Icons';
 
 const AppointmentsCalendar = () => {
   const [appointments, setAppointments] = useState([]);

@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import DashboardLayout from './DashboardLayout';
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '../ui/Card';
-import {Button} from '../ui/Button';
-import api from '../../services/api';
+import DashboardLayout from '../layout/DashboardLayout';
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '../../ui/Card';
+import Button from '../../ui/Button';
+import api from '../../../services/api';
 
 const PatientForm = ({ isEditing = false }) => {
   const navigate = useNavigate();
