@@ -8,6 +8,7 @@ const GenogramEditor = ({ isNew = false }) => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(!isNew);
+  const [error, setError] = useState(null);
   const [genogramData, setGenogramData] = useState({
     id: '',
     name: '',
@@ -26,8 +27,21 @@ const GenogramEditor = ({ isNew = false }) => {
       }
 
       try {
+        setError(null);
+        console.log('Fetching genogram data for ID:', id);
         const response = await fetch(`/api/genograms/view/${id}`);
+        
+        if (!response.ok) {
+          throw new Error(`Error al obtener el genograma: ${response.statusText}`);
+        }
+        
         const genogram = await response.json();
+        console.log('Received genogram data:', genogram);
+
+        // Validar la estructura de los datos
+        if (!genogram || typeof genogram !== 'object') {
+          throw new Error('Datos del genograma inválidos');
+        }
 
         // Actualizar los datos del genograma
         setGenogramData({
@@ -39,10 +53,24 @@ const GenogramEditor = ({ isNew = false }) => {
           createdAt: genogram.created
         });
 
-        // Guardar el contenido del genograma
-        setGenogramContent(genogram.data);
+        // Validar y estructurar los datos del genograma
+        if (genogram.data) {
+          // Asegurarse de que los datos tengan la estructura correcta
+          const normalizedData = {
+            people: Array.isArray(genogram.data.people) ? genogram.data.people : [],
+            relationships: Array.isArray(genogram.data.relationships) ? genogram.data.relationships : []
+          };
+          
+          console.log('Normalized genogram data:', normalizedData);
+          setGenogramContent(normalizedData);
+        } else {
+          console.error('No data found in genogram response');
+          setGenogramContent({ people: [], relationships: [] });
+        }
       } catch (error) {
         console.error('Error al obtener el genograma:', error);
+        setError(error.message);
+        setGenogramContent({ people: [], relationships: [] });
       } finally {
         setLoading(false);
       }
@@ -67,6 +95,23 @@ const GenogramEditor = ({ isNew = false }) => {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-red-600 text-center">
+          <p className="text-lg font-semibold mb-2">Error al cargar el genograma</p>
+          <p>{error}</p>
+          <button
+            onClick={handleBackClick}
+            className="mt-4 px-4 py-2 bg-gray-100 text-gray-800 rounded-md hover:bg-gray-200"
+          >
+            Volver
+          </button>
+        </div>
       </div>
     );
   }
@@ -157,6 +202,7 @@ const GenogramEditor = ({ isNew = false }) => {
           <ReactFlowProvider>
             <GenogramaEditorWrapper
               initialData={genogramContent}
+              key={genogramContent ? 'with-data' : 'without-data'}
             />
           </ReactFlowProvider>
         </ErrorBoundary>

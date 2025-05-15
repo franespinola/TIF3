@@ -51,7 +51,7 @@ const GenogramViewer = () => {
   };
 
   const handleEditClick = () => {
-    navigate(`/genograms/${id}/edit`);
+    navigate(`/genograms/edit/${id}`);
   };
 
   if (loading) {

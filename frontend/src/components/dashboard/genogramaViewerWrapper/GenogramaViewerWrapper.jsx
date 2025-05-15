@@ -16,6 +16,7 @@ import layoutWithDagre from "../../../utils/layoutWithDagre";
  */
 function GenogramaViewerWrapper({ people, relationships, readOnly = true }) {
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const {
     nodes,
@@ -32,12 +33,22 @@ function GenogramaViewerWrapper({ people, relationships, readOnly = true }) {
   useEffect(() => {
     try {
       setIsLoading(true);
+      setError(null);
+
+      // Validar datos de entrada
+      if (!Array.isArray(people) || !Array.isArray(relationships)) {
+        throw new Error('Los datos de entrada deben ser arrays');
+      }
 
       // Normalizar los datos recibidos
       const { nodes: normalizedNodes, edges: normalizedEdges } = normalizeGenogram({
         people,
         relationships
       });
+
+      if (!normalizedNodes.length) {
+        throw new Error('No se pudieron generar nodos a partir de los datos');
+      }
 
       // Aplicar layout automático con dagre
       const laidOutNodes = layoutWithDagre(normalizedNodes, normalizedEdges);
@@ -48,6 +59,7 @@ function GenogramaViewerWrapper({ people, relationships, readOnly = true }) {
 
     } catch (error) {
       console.error("Error al procesar el genograma:", error);
+      setError(error.message);
     } finally {
       setIsLoading(false);
     }
@@ -57,6 +69,17 @@ function GenogramaViewerWrapper({ people, relationships, readOnly = true }) {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="text-red-600 text-center">
+          <p className="text-lg font-semibold mb-2">Error al cargar el genograma</p>
+          <p>{error}</p>
+        </div>
       </div>
     );
   }

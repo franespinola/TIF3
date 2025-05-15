@@ -32,10 +32,18 @@ export default function layoutWithDagre(nodes, edges, options = {}) {
   } = options;
 
   if (!Array.isArray(nodes)) {
-    throw new Error("El parámetro 'nodes' debe ser un array.");
+    console.error("El parámetro 'nodes' debe ser un array.");
+    return nodes;
   }
   if (!Array.isArray(edges)) {
-    throw new Error("El parámetro 'edges' debe ser un array.");
+    console.error("El parámetro 'edges' debe ser un array.");
+    return nodes;
+  }
+
+  // Validar que haya nodos para procesar
+  if (nodes.length === 0) {
+    console.warn("No hay nodos para procesar en layoutWithDagre");
+    return nodes;
   }
 
   const g = new dagre.graphlib.Graph();
@@ -68,6 +76,10 @@ export default function layoutWithDagre(nodes, edges, options = {}) {
     
     // Obtener generación del nodo
     const generation = node.data?.generation;
+    if (typeof generation !== 'number') {
+      console.warn(`Nodo ${node.id} sin generación válida. Asignando 1.`);
+      node.data = { ...node.data, generation: 1 };
+    }
     
     // Agrupar por generación
     if (!nodesByGeneration.has(generation)) {
@@ -116,7 +128,7 @@ export default function layoutWithDagre(nodes, edges, options = {}) {
       width, 
       height,
       // Usar explícitamente generation como rank para Dagre
-      rank: node.data?.generation
+      rank: node.data?.generation || 1
     };
     
     g.setNode(node.id, nodeConfig);
@@ -135,6 +147,15 @@ export default function layoutWithDagre(nodes, edges, options = {}) {
       return false;
     }
     
+    // Verificar que los nodos source y target existen
+    const sourceExists = nodes.some(n => n.id === edge.source);
+    const targetExists = nodes.some(n => n.id === edge.target);
+    
+    if (!sourceExists || !targetExists) {
+      console.warn(`Edge ${edge.id} conecta nodos inexistentes: ${edge.source} -> ${edge.target}`);
+      return false;
+    }
+    
     return true;
   });
 
@@ -143,8 +164,13 @@ export default function layoutWithDagre(nodes, edges, options = {}) {
     g.setEdge(edge.source, edge.target);
   });
 
-  // Ejecutar el layout de Dagre
-  dagre.layout(g);
+  try {
+    // Ejecutar el layout de Dagre
+    dagre.layout(g);
+  } catch (error) {
+    console.error("Error al ejecutar el layout de Dagre:", error);
+    return nodes;
+  }
 
   // Actualizar la posición de cada nodo con lo calculado por Dagre
   const updatedNodes = nodes.map((node) => {

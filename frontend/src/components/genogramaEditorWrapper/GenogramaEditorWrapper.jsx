@@ -87,11 +87,40 @@ function GenogramaEditorWrapper({ initialData }) {
   useEffect(() => {
     if (initialData) {
       try {
+        console.log('Processing initial data in GenogramaEditorWrapper:', initialData);
+        
+        // Validar que los datos tengan la estructura esperada
+        if (!initialData.people || !initialData.relationships) {
+          console.error('Invalid initial data structure:', initialData);
+          return;
+        }
+
+        // Validar que people y relationships sean arrays
+        if (!Array.isArray(initialData.people) || !Array.isArray(initialData.relationships)) {
+          console.error('People and relationships must be arrays:', initialData);
+          return;
+        }
+
+        // Validar que cada persona tenga un ID
+        const invalidPeople = initialData.people.filter(person => !person || !person.id);
+        if (invalidPeople.length > 0) {
+          console.error('Found people without IDs:', invalidPeople);
+          return;
+        }
+
         // Normalizar los datos recibidos
         const { nodes: normalizedNodes, edges: normalizedEdges } = normalizeGenogram(initialData);
+        console.log('Normalized nodes:', normalizedNodes);
+        console.log('Normalized edges:', normalizedEdges);
+
+        if (!normalizedNodes.length) {
+          console.warn('No nodes were generated from the initial data');
+          return;
+        }
 
         // Aplicar layout automático con dagre
         const laidOutNodes = layoutWithDagre(normalizedNodes, normalizedEdges);
+        console.log('Nodes after layout:', laidOutNodes);
 
         // Setear los nodos y aristas en el estado global del genograma
         setNodes(laidOutNodes);
@@ -99,6 +128,8 @@ function GenogramaEditorWrapper({ initialData }) {
       } catch (error) {
         console.error("Error al procesar el genograma inicial:", error);
       }
+    } else {
+      console.log('No initial data provided to GenogramaEditorWrapper');
     }
   }, [initialData, setNodes, setEdges]);
   
