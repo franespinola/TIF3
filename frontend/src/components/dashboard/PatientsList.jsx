@@ -6,6 +6,7 @@ import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
 import { Avatar } from '../ui/Avatar';
 import { Icons } from '../ui/Icons';
+import api from '../../services/api';
 
 const PatientsList = () => {
   const [patients, setPatients] = useState([]);
@@ -18,30 +19,19 @@ const PatientsList = () => {
   const patientsPerPage = 12;
 
   useEffect(() => {
-    // Cargar datos reales desde la API
     const fetchPatients = async () => {
       setIsLoading(true);
       setError(null);
       
       try {
-        const response = await fetch('/api/patients');
+        const { data } = await api.get('/patients');
         
-        if (!response.ok) {
-          throw new Error(`Error: ${response.status} ${response.statusText}`);
-        }
-        
-        const data = await response.json();
-        
-        // Procesar y formatear datos
         const formattedPatients = data.map(patient => ({
           ...patient,
-          // Calcular si tiene genogramas
           hasGenogram: patient.genograms && patient.genograms.length > 0,
-          // Calcular si tiene una próxima cita
           nextAppointment: patient.appointments && 
                           patient.appointments.length > 0 ? 
                           patient.appointments.find(app => new Date(app.date) > new Date())?.date : null,
-          // Asegurar que tenemos la última visita
           lastVisit: patient.last_visit || patient.created_at
         }));
         

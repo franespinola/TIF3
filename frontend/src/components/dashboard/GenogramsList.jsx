@@ -6,35 +6,26 @@ import { Button } from '../ui/Button';
 import { Avatar } from '../ui/Avatar';
 import { Icons } from '../ui/Icons';
 import { Badge } from '../ui/Badge';
+import api from '../../services/api';
 
 const GenogramsList = () => {
   const [genograms, setGenograms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredGenograms, setFilteredGenograms] = useState([]);
+
   useEffect(() => {
-    // Función para obtener los genogramas de la API
     const fetchGenograms = async () => {
       setLoading(true);
       
       try {
-        // Llamada a la API para obtener los genogramas con info de pacientes
-        const response = await fetch('/api/genograms/list');
-        
-        if (!response.ok) {
-          throw new Error(`Error: ${response.status} ${response.statusText}`);
-        }
-        
-        const data = await response.json();
-        
-        // Si no hay datos, configurar un array vacío
+        const { data } = await api.get('/genograms/list');
         const genogramsData = data || [];
         
         setGenograms(genogramsData);
         setFilteredGenograms(genogramsData);
       } catch (error) {
         console.error('Error al cargar genogramas:', error);
-        // En caso de error, podríamos mostrar un mensaje al usuario
       } finally {
         setLoading(false);
       }

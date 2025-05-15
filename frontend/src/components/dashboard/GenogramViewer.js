@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ReactFlowProvider } from 'reactflow';
 import GenogramaViewerWrapper from './genogramaViewerWrapper/GenogramaViewerWrapper';
 import ErrorBoundary from '../ErrorBoundary/ErrorBoundary';
+import api from '../../services/api';
 
 const GenogramViewer = () => {
   const { id } = useParams();
@@ -22,10 +23,8 @@ const GenogramViewer = () => {
   useEffect(() => {
     const fetchGenogramData = async () => {
       try {
-        const response = await fetch(`/api/genograms/view/${id}`);
-        const genogram = await response.json();
-
-        // Metadatos para la cabecera
+        const { data: genogram } = await api.get(`/genograms/view/${id}`);
+        
         setGenogramHeader({
           id: genogram.id,
           name: genogram.name,
@@ -34,7 +33,6 @@ const GenogramViewer = () => {
           lastModified: genogram.lastModified
         });
 
-        // Datos para React Flow
         setGenogramData(genogram.data);
       } catch (error) {
         console.error('Error al obtener el genograma:', error);

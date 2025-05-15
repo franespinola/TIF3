@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ReactFlowProvider } from 'reactflow';
 import GenogramaEditorWrapper from "../genogramaEditorWrapper/GenogramaEditorWrapper";
 import ErrorBoundary from "../ErrorBoundary/ErrorBoundary";
+import api from '../../services/api';
 
 const GenogramEditor = ({ isNew = false }) => {
   const { id } = useParams();
@@ -28,22 +29,12 @@ const GenogramEditor = ({ isNew = false }) => {
 
       try {
         setError(null);
-        console.log('Fetching genogram data for ID:', id);
-        const response = await fetch(`/api/genograms/view/${id}`);
-        
-        if (!response.ok) {
-          throw new Error(`Error al obtener el genograma: ${response.statusText}`);
-        }
-        
-        const genogram = await response.json();
-        console.log('Received genogram data:', genogram);
+        const { data: genogram } = await api.get(`/genograms/view/${id}`);
 
-        // Validar la estructura de los datos
         if (!genogram || typeof genogram !== 'object') {
           throw new Error('Datos del genograma inválidos');
         }
 
-        // Actualizar los datos del genograma
         setGenogramData({
           id: genogram.id,
           name: genogram.name,
@@ -53,20 +44,12 @@ const GenogramEditor = ({ isNew = false }) => {
           createdAt: genogram.created
         });
 
-        // Validar y estructurar los datos del genograma
-        if (genogram.data) {
-          // Asegurarse de que los datos tengan la estructura correcta
-          const normalizedData = {
-            people: Array.isArray(genogram.data.people) ? genogram.data.people : [],
-            relationships: Array.isArray(genogram.data.relationships) ? genogram.data.relationships : []
-          };
-          
-          console.log('Normalized genogram data:', normalizedData);
-          setGenogramContent(normalizedData);
-        } else {
-          console.error('No data found in genogram response');
-          setGenogramContent({ people: [], relationships: [] });
-        }
+        const normalizedData = {
+          people: Array.isArray(genogram.data?.people) ? genogram.data.people : [],
+          relationships: Array.isArray(genogram.data?.relationships) ? genogram.data.relationships : []
+        };
+        
+        setGenogramContent(normalizedData);
       } catch (error) {
         console.error('Error al obtener el genograma:', error);
         setError(error.message);

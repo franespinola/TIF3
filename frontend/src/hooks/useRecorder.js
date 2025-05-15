@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
+import api from '../services/api';
 
 export default function useRecorder(patientName, onResult) {
   const [isRecording, setIsRecording] = useState(false);
@@ -19,14 +20,14 @@ export default function useRecorder(patientName, onResult) {
           formData.append('file', file);
           formData.append('patient', patientName);
 
-          const response = await fetch('/api/process_audio', { method: 'POST', body: formData });
-          if (!response.ok) {
-            const text = await response.text();
-            console.error('Error HTTP al procesar audio:', response.status, text);
-            return;
+          try {
+            const { data } = await api.post('/process_audio', formData, {
+              headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            onResult(data);
+          } catch (error) {
+            console.error('Error al procesar audio:', error);
           }
-          const result = await response.json();
-          onResult(result);
         };
         mr.start();
         mediaRecorderRef.current = mr;

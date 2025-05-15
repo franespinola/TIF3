@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import DashboardLayout from './DashboardLayout';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '../ui/Card';
 import {Button} from '../ui/Button';
+import api from '../../services/api';
 
 const PatientForm = ({ isEditing = false }) => {
   const navigate = useNavigate();
@@ -27,31 +28,16 @@ const PatientForm = ({ isEditing = false }) => {
     }));
   };
 
-    const handleSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     
     try {
-      const response = await fetch('/api/patients', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(patient),
-      });
-  
-      if (!response.ok) {
-        throw new Error(`Error: ${response.status} - ${response.statusText}`);
-      }
-  
-      const savedPatient = await response.json();
+      const { data: savedPatient } = await api.post('/patients', patient);
       console.log('Paciente guardado:', savedPatient);
-      
-      // Navegación a la lista de pacientes después de guardar
       navigate('/patients');
     } catch (error) {
       console.error('Error al guardar el paciente:', error);
-      // Aquí podrías añadir un estado para mostrar un mensaje de error en la UI
     } finally {
       setLoading(false);
     }
