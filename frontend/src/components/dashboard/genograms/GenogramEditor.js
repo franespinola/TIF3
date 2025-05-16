@@ -3,14 +3,14 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ReactFlowProvider } from 'reactflow';
 import GenogramaEditorWrapper from "../../genogramaEditorWrapper/GenogramaEditorWrapper";
 import ErrorBoundary from "../../ErrorBoundary/ErrorBoundary";
-import api from '../../../services/api';
+import genogramService from '../../../services/genogramService';
 
-const GenogramEditor = ({ isNew = false }) => {
+const GenogramEditor = ({ isNew = false, genogramData: initialGenogramData, genogramContent: initialContent }) => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(!isNew);
+  const [loading, setLoading] = useState(!isNew && !initialGenogramData);
   const [error, setError] = useState(null);
-  const [genogramData, setGenogramData] = useState({
+  const [genogramData, setGenogramData] = useState(initialGenogramData || {
     id: '',
     name: '',
     patientId: '',
@@ -18,18 +18,20 @@ const GenogramEditor = ({ isNew = false }) => {
     lastModified: '',
     createdAt: new Date().toISOString().slice(0, 10)
   });
-  const [genogramContent, setGenogramContent] = useState(null);
+  const [genogramContent, setGenogramContent] = useState(initialContent || null);
 
   useEffect(() => {
     const fetchGenogramData = async () => {
-      if (isNew) {
+      // If we already have data from props or it's a new genogram, don't fetch
+      if (isNew || initialGenogramData) {
         setLoading(false);
         return;
       }
 
       try {
         setError(null);
-        const { data: genogram } = await api.get(`/genograms/view/${id}`);
+        const response = await genogramService.getGenogramById(id);
+        const genogram = response.data;
 
         if (!genogram || typeof genogram !== 'object') {
           throw new Error('Datos del genograma inválidos');
@@ -44,9 +46,12 @@ const GenogramEditor = ({ isNew = false }) => {
           createdAt: genogram.created
         });
 
+        const contentResponse = await genogramService.getGenogramContent(id);
+        const genogramContentData = contentResponse.data;
+
         const normalizedData = {
-          people: Array.isArray(genogram.data?.people) ? genogram.data.people : [],
-          relationships: Array.isArray(genogram.data?.relationships) ? genogram.data.relationships : []
+          people: Array.isArray(genogramContentData?.people) ? genogramContentData.people : [],
+          relationships: Array.isArray(genogramContentData?.relationships) ? genogramContentData.relationships : []
         };
         
         setGenogramContent(normalizedData);
@@ -127,12 +132,29 @@ const GenogramEditor = ({ isNew = false }) => {
           <div className="flex space-x-2">
             <button
               className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-              onClick={() => {
-                console.log('Guardando genograma...');
-                // Aquí iría la lógica para guardar el genograma
-                setTimeout(() => {
+              onClick={async () => {
+                try {
+                  console.log('Guardando genograma...');
+                  
+                  // Preparar datos del genograma
+                  const saveData = {
+                    name: genogramData.name,
+                    patientId: genogramData.patientId,
+                    data: genogramContent
+                  };
+                  
+                  if (isNew) {
+                    await genogramService.createGenogram(saveData);
+                  } else {
+                    await genogramService.updateGenogram(id, saveData);
+                  }
+                  
                   navigate('/genograms');
-                }, 1000);
+                } catch (err) {
+                  console.error('Error al guardar el genograma:', err);
+                  setError('Error al guardar el genograma: ' + 
+                    (err.response?.data?.message || err.message || 'Error desconocido'));
+                }
               }}
             >
               Guardar Cambios

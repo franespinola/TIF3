@@ -6,7 +6,7 @@ import Button from '../../ui/Button';
 import Badge from '../../ui/Badge';
 import Avatar from '../../ui/Avatar';
 import Icons from '../../ui/Icons';
-import api from '../../../services/api';
+import patientService from '../../../services/patientService';
 
 const PatientsList = () => {
   const [patients, setPatients] = useState([]);
@@ -24,7 +24,9 @@ const PatientsList = () => {
       setError(null);
       
       try {
-        const { data } = await api.get('/patients');
+        // Utilizamos el servicio de pacientes para obtener todos los pacientes
+        const response = await patientService.getAllPatients();
+        const data = response.data;
         
         const formattedPatients = data.map(patient => ({
           ...patient,

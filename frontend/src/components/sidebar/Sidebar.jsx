@@ -22,11 +22,11 @@ const SIDEBAR_EXPANDED_MOBILE = 280;
 /**
  * Componente principal del Sidebar que orquesta todos los subcomponentes de la barra lateral
  */
-function Sidebar({
-  onRelate,
+function Sidebar({  onRelate,
   updateEdgeRelation,
   selectedEdge,
   isRecording,
+  isProcessing,
   onRecordToggle,
   patientName,
   onPatientNameChange,

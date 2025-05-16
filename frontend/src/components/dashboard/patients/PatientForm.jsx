@@ -3,12 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '../layout/DashboardLayout';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '../../ui/Card';
 import Button from '../../ui/Button';
-import api from '../../../services/api';
+import patientService from '../../../services/patientService';
 
-const PatientForm = ({ isEditing = false }) => {
+const PatientForm = ({ isEditing = false, patientId, initialData }) => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [patient, setPatient] = useState({
+  const [error, setError] = useState(null);
+  const [patient, setPatient] = useState(initialData || {
     name: '',
     age: '',
     gender: 'Femenino',
@@ -28,16 +29,62 @@ const PatientForm = ({ isEditing = false }) => {
     }));
   };
 
+  const validateForm = () => {
+    // Validar campos requeridos
+    if (!patient.name.trim()) {
+      setError('El nombre del paciente es obligatorio.');
+      return false;
+    }
+    if (!patient.age || patient.age < 0 || patient.age > 120) {
+      setError('La edad debe ser un número entre 0 y 120.');
+      return false;
+    }
+    if (!patient.gender) {
+      setError('El género es obligatorio.');
+      return false;
+    }
+    if (!patient.phone.trim()) {
+      setError('El teléfono es obligatorio.');
+      return false;
+    }
+    
+    // Si hay email, validar formato
+    if (patient.email && !/\S+@\S+\.\S+/.test(patient.email)) {
+      setError('El formato del correo electrónico no es válido.');
+      return false;
+    }
+    
+    return true;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError(null);
+    
+    // Validar formulario antes de enviar
+    if (!validateForm()) {
+      return;
+    }
+    
     setLoading(true);
     
     try {
-      const { data: savedPatient } = await api.post('/patients', patient);
-      console.log('Paciente guardado:', savedPatient);
+      let response;
+      if (isEditing && patientId) {
+        response = await patientService.updatePatient(patientId, patient);
+        console.log('Paciente actualizado:', response.data);
+      } else {
+        response = await patientService.createPatient(patient);
+        console.log('Paciente guardado:', response.data);
+      }
       navigate('/patients');
     } catch (error) {
       console.error('Error al guardar el paciente:', error);
+      setError(
+        error.response?.data?.message || 
+        error.message || 
+        'Ha ocurrido un error al guardar el paciente. Por favor, inténtelo de nuevo.'
+      );
     } finally {
       setLoading(false);
     }
@@ -60,6 +107,13 @@ const PatientForm = ({ isEditing = false }) => {
           </h1>
         </div>
       </div>
+      
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-lg mb-6">
+          <h3 className="text-lg font-medium mb-2">Error</h3>
+          <p>{error}</p>
+        </div>
+      )}
 
       <Card>
         <form onSubmit={handleSubmit}>
@@ -246,14 +300,21 @@ const PatientForm = ({ isEditing = false }) => {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  Guardando...
+                  {isEditing ? 'Actualizando...' : 'Guardando...'}
+                </>
+              ) : error ? (
+                <>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  Reintentar
                 </>
               ) : (
                 <>
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
                   </svg>
-                  Guardar
+                  {isEditing ? 'Actualizar' : 'Guardar'}
                 </>
               )}
             </Button>

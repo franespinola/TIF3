@@ -6,6 +6,7 @@ import React, { useState, useEffect } from "react";
  */
 const RecordingControls = ({ 
   isRecording, 
+  isProcessing,
   onRecordToggle, 
   patientName, 
   onPatientNameChange 
@@ -179,15 +180,24 @@ const RecordingControls = ({
           onBlur={() => setIsFocused(false)}
         />
       </div>
-      
-      <button
+        <button
         onClick={onRecordToggle}
         style={recordButtonStyle}
-        disabled={patientName.trim().length === 0}
-        title={patientName.trim().length === 0 ? "Ingrese el nombre del paciente para grabar" : ""}
+        disabled={patientName.trim().length === 0 || isProcessing}
+        title={
+          patientName.trim().length === 0 
+            ? "Ingrese el nombre del paciente para grabar" 
+            : isProcessing 
+              ? "Procesando audio..." 
+              : ""
+        }
       >
         <div style={micIconStyle}>
-          {isRecording ? (
+          {isProcessing ? (
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="animate-spin">
+              <circle cx="12" cy="12" r="10" stroke="white" strokeWidth="2" strokeDasharray="32" strokeDashoffset="12" fill="none" />
+            </svg>
+          ) : isRecording ? (
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M2 12H22" stroke="white" strokeWidth="3" strokeLinecap="round"/>
             </svg>
@@ -202,7 +212,9 @@ const RecordingControls = ({
           )}
         </div>
         
-        {isRecording ? (
+        {isProcessing ? (
+          <span>Procesando audio...</span>
+        ) : isRecording ? (
           <>
             <RecordingIndicator />
             <span>Grabando ({formatTime(recordingTime)})</span>

@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import appointmentService from '../../../services/appointmentService';
 
-const AppointmentDetail = ({ isNew = false }) => {
+const AppointmentDetail = ({ isNew = false, isEditing = false, initialData }) => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(!isNew);
-  const [appointment, setAppointment] = useState({
+  const [loading, setLoading] = useState(!isNew && !initialData);
+  const [error, setError] = useState(null);
+  const [appointment, setAppointment] = useState(initialData || {
     id: '',
     patientId: '',
     patientName: '',
@@ -19,32 +21,28 @@ const AppointmentDetail = ({ isNew = false }) => {
 
   useEffect(() => {
     const fetchAppointmentData = async () => {
-      if (isNew) {
+      if (isNew || initialData) {
         setLoading(false);
         return;
       }
 
       try {
-        // Simulación de carga de datos
-        await new Promise(resolve => setTimeout(resolve, 800));
+        setError(null);
+        const response = await appointmentService.getAppointmentById(id);
         
-        // Datos de ejemplo
-        const appointmentData = {
-          id: id,
-          patientId: '1',
-          patientName: 'María Fernández',
-          date: '2025-05-10',
-          time: '15:00',
-          duration: 60,
-          type: 'Consulta',
-          notes: 'Seguimiento terapéutico. Revisar avances del tratamiento.',
-          status: 'scheduled'
-        };
+        if (!response.data) {
+          throw new Error('No se pudieron cargar los datos de la cita');
+        }
         
-        setAppointment(appointmentData);
+        setAppointment(response.data);
         setLoading(false);
       } catch (error) {
         console.error('Error fetching appointment data:', error);
+        setError(
+          error.response?.data?.message || 
+          error.message || 
+          'Error al cargar los datos de la cita'
+        );
         setLoading(false);
       }
     };
@@ -59,15 +57,32 @@ const AppointmentDetail = ({ isNew = false }) => {
       [name]: value
     }));
   };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Appointment data to save:', appointment);
+    setLoading(true);
+    setError(null);
     
-    // Simulación de guardado
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    navigate('/appointments');
+    try {
+      let response;
+      
+      if (isNew) {
+        response = await appointmentService.createAppointment(appointment);
+        console.log('Cita creada:', response.data);
+      } else {
+        response = await appointmentService.updateAppointment(id, appointment);
+        console.log('Cita actualizada:', response.data);
+      }
+      
+      navigate('/appointments');
+    } catch (error) {
+      console.error('Error al guardar la cita:', error);
+      setError(
+        error.response?.data?.message || 
+        error.message || 
+        'Ha ocurrido un error al guardar la cita. Por favor, inténtelo de nuevo.'
+      );
+      setLoading(false);
+    }
   };
 
   if (loading) {
@@ -78,8 +93,14 @@ const AppointmentDetail = ({ isNew = false }) => {
     );
   }
 
-  return (
-    <div className="container mx-auto px-4 py-8">
+  return (      <div className="container mx-auto px-4 py-8">
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-lg mb-6">
+          <h3 className="text-lg font-medium mb-2">Error</h3>
+          <p>{error}</p>
+        </div>
+      )}
+      
       <div className="mb-6">
         <div className="flex items-center justify-between flex-wrap gap-4 mb-4">
           <div className="flex items-center">
@@ -250,14 +271,25 @@ const AppointmentDetail = ({ isNew = false }) => {
               Cancelar
             </button>
             
-            <div className="flex space-x-2">
-              {!isNew && (
+            <div className="flex space-x-2">              {!isNew && (
                 <button 
                   type="button" 
                   className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
-                  onClick={() => {
+                  onClick={async () => {
                     if (window.confirm('¿Estás seguro de que deseas eliminar esta cita?')) {
-                      navigate('/appointments');
+                      try {
+                        setLoading(true);
+                        await appointmentService.deleteAppointment(id);
+                        navigate('/appointments');
+                      } catch (error) {
+                        console.error('Error al eliminar la cita:', error);
+                        setError(
+                          error.response?.data?.message || 
+                          error.message || 
+                          'Ha ocurrido un error al eliminar la cita'
+                        );
+                        setLoading(false);
+                      }
                     }
                   }}
                 >

@@ -170,9 +170,8 @@ function GenogramaEditorWrapper({ initialData }) {
     setNodes(laidOutNodes);
     setEdges(newEdges);
   }, [setNodes, setEdges]);
-
   // Hook de grabación modularizado
-  const { isRecording, toggleRecording } = useRecorder(patientName, handleRecordingResult);
+  const { isRecording, isProcessing, toggleRecording } = useRecorder(patientName, handleRecordingResult);
 
   const [activeTool, setActiveTool] = useState(null);
   const [drawingColor, setDrawingColor] = useState('#000000');
@@ -339,10 +338,10 @@ function GenogramaEditorWrapper({ initialData }) {
           onUpdateNodeStyle={updateNodeStyle}
           onSetNodes={setNodes}
           collapsed={sidebarCollapsed}
-          onSidebarCollapse={setSidebarCollapsed}
-          toggleClinicalTabs={toggleClinicalTabs}
+          onSidebarCollapse={setSidebarCollapsed}          toggleClinicalTabs={toggleClinicalTabs}
           isClinicalTabsOpen={isClinicalTabsOpen}
           isRecording={isRecording}
+          isProcessing={isProcessing}
           onRecordToggle={toggleRecording}
           patientName={patientName}
           onPatientNameChange={setPatientName}

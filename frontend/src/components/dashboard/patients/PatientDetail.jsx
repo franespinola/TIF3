@@ -6,6 +6,11 @@ import Button from '../../ui/Button';
 import Badge from '../../ui/Badge';
 import Avatar from '../../ui/Avatar';
 import Icons from '../../ui/Icons';
+import patientService from '../../../services/patientService';
+import appointmentService from '../../../services/appointmentService';
+import clinicalNotesService from '../../../services/clinicalNotesService';
+import genogramService from '../../../services/genogramService';
+import sessionService from '../../../services/sessionService';
 
 const PatientDetail = () => {
   // Obtener el ID del paciente desde los parámetros de la URL
@@ -13,31 +18,41 @@ const PatientDetail = () => {
   const navigate = useNavigate();
   const [patient, setPatient] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('summary');
+  const [clinicalHistory, setClinicalHistory] = useState([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
 
   useEffect(() => {
-    // En un proyecto real, esto sería una llamada a la API
-    const fetchPatientData = () => {
+    const fetchPatientData = async () => {
       setLoading(true);
       
-      // Simulando carga de datos
-      setTimeout(() => {
-        // Datos de ejemplo basados en el ID proporcionado
+      try {
+        // Obtener datos del paciente usando el servicio
+        const patientResponse = await patientService.getPatientById(patientId);
+        const patient = patientResponse.data;
+        
+        // Obtener citas del paciente
+        const appointmentsResponse = await appointmentService.getPatientAppointments(patientId);
+        const appointments = appointmentsResponse.data;
+        
+        // Obtener notas clínicas del paciente
+        const clinicalNotesResponse = await clinicalNotesService.getPatientClinicalNotes(patientId);
+        const clinicalNotes = clinicalNotesResponse.data;
+
+        // Obtener genogramas del paciente
+        const genogramsResponse = await genogramService.getGenogramsList(patientId);
+        const genograms = genogramsResponse.data;
+        
+        // Combinar toda la información
         setPatient({
-          id: patientId,
-          name: patientId === 'maria' ? 'María Fernandez' : 
-                patientId === 'cristian' ? 'Cristian Rodríguez' : 
-                patientId === 'francisco' ? 'Francisco Torres' : 
-                patientId === 'ignacia' ? 'Ignacia Vázquez' : 'Paciente',
-          age: 34,
-          gender: 'Femenino',
-          phone: '555-123-4567',
-          email: `${patientId}@ejemplo.com`,
-          address: 'Av. Ejemplo 1234, Ciudad',
-          emergencyContact: 'Juan Pérez (Esposo) - 555-987-6543',
-          firstVisit: '2024-12-15',
-          lastVisit: '2025-05-05',
-          nextAppointment: '2025-05-15T14:00:00',
+          ...patient,
+          appointments: appointments,
+          clinicalNotes: clinicalNotes,
+          genograms: genograms,
+          nextAppointment: appointments && 
+                          appointments.length > 0 ? 
+                          appointments.find(app => new Date(app.date_time) > new Date())?.date_time : null,
           diagnosis: patientId === 'maria' ? 'Problemas familiares' : 
                     patientId === 'cristian' ? 'Ansiedad generalizada' :
                     patientId === 'francisco' ? 'Depresión moderada' :
@@ -45,9 +60,6 @@ const PatientDetail = () => {
           notes: 'Paciente presenta problemas de comunicación con su familia inmediata. Ha mostrado signos de frustración y ansiedad relacionados con conflictos no resueltos en el ámbito familiar.',
           medications: [
             { name: 'Sertralina', dosage: '50mg', frequency: 'Diaria', startDate: '2025-01-10' }
-          ],
-          genograms: [
-            { id: 'gen1', date: '2025-05-05', name: 'Genograma familiar completo' }
           ],
           clinicalHistory: [
             { id: 'session1', date: '2025-05-05', type: 'Sesión regular', notes: 'La paciente relató nuevos conflictos con su madre.' },
@@ -57,7 +69,11 @@ const PatientDetail = () => {
         });
         
         setLoading(false);
-      }, 800);
+      } catch (error) {
+        console.error("Error al cargar datos del paciente:", error);
+        setError("No se pudieron cargar los datos del paciente.");
+        setLoading(false);
+      }
     };
     
     if (patientId) {
@@ -65,11 +81,48 @@ const PatientDetail = () => {
     }
   }, [patientId]);
 
+  useEffect(() => {
+    const fetchClinicalHistory = async () => {
+      if (activeTab === 'history' && patientId) {
+        setLoadingHistory(true);
+        try {
+          const response = await sessionService.getPatientSessions(patientId);
+          setClinicalHistory(response.data);
+        } catch (error) {
+          console.error("Error al cargar el historial clínico:", error);
+          setError("No se pudo cargar el historial clínico.");
+        } finally {
+          setLoadingHistory(false);
+        }
+      }
+    };
+
+    fetchClinicalHistory();
+  }, [activeTab, patientId]);
+
   if (loading) {
     return (
       <DashboardLayout>
         <div className="flex justify-center items-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <DashboardLayout>
+        <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-lg mb-6">
+          <h3 className="text-lg font-medium mb-2">Error</h3>
+          <p>{error}</p>
+          <Button 
+            variant="outline" 
+            className="mt-4"
+            onClick={() => window.location.reload()}
+          >
+            Reintentar
+          </Button>
         </div>
       </DashboardLayout>
     );
@@ -147,6 +200,7 @@ const PatientDetail = () => {
               variant="ghost" 
               size="md"
               icon={<Icons.Edit className="w-4 h-4" />}
+              onClick={() => navigate(`/patients/edit/${patient.id}`)}
             >
               Editar
             </Button>
@@ -368,16 +422,19 @@ const PatientDetail = () => {
             </div>
           </CardHeader>
           <CardContent>
-            {patient.clinicalHistory.length > 0 ? (
+            {loadingHistory ? (
+              <div className="flex justify-center items-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+              </div>
+            ) : clinicalHistory.length > 0 ? (
               <div className="space-y-8">
-                {/* Para cada entrada en la historia clínica */}
-                {patient.clinicalHistory.map((entry, index) => (
-                  <div key={index} className={`border-l-2 pl-6 pb-6 ${index === 0 ? 'border-blue-500' : 'border-gray-200'}`}>
+                {clinicalHistory.map((session) => (
+                  <div key={session.id} className="border-l-2 pl-6 pb-6 border-gray-200">
                     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-2">
                       <div>
-                        <h4 className="font-medium text-gray-900">{entry.type}</h4>
+                        <h4 className="font-medium text-gray-900">{session.type}</h4>
                         <div className="text-sm text-gray-600">
-                          {new Date(entry.date).toLocaleDateString('es', {
+                          {new Date(session.date).toLocaleDateString('es', {
                             weekday: 'long',
                             year: 'numeric',
                             month: 'long',
@@ -386,18 +443,15 @@ const PatientDetail = () => {
                         </div>
                       </div>
                       <div className="flex mt-2 sm:mt-0 space-x-2">
-                        {/* Botón para ver/editar la sesión */}
                         <Button variant="ghost" size="sm">
                           <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                           </svg>
                         </Button>
-
-                        {/* Nuevo botón para ver el resumen de la sesión */}
                         <Button 
                           variant="ghost" 
                           size="sm"
-                          onClick={() => navigate(`/patients/${patientId}/sessions/${entry.id}/summary`)}
+                          onClick={() => navigate(`/patients/${patientId}/sessions/${session.id}/summary`)}
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -405,7 +459,7 @@ const PatientDetail = () => {
                         </Button>
                       </div>
                     </div>
-                    <p className="mt-2 text-gray-700">{entry.notes}</p>
+                    <p className="mt-2 text-gray-700">{session.notes}</p>
                   </div>
                 ))}
               </div>
@@ -427,15 +481,24 @@ const PatientDetail = () => {
                 <div className="aspect-video bg-gray-100 flex items-center justify-center rounded-md mb-4">
                   <Icons.Genogram className="w-12 h-12 text-gray-400" />
                 </div>
-                <h3 className="font-medium">{genogram.name}</h3>
-                <p className="text-sm text-gray-500">Creado el {new Date(genogram.date).toLocaleDateString()}</p>
+                <h3 className="font-medium">{genogram.name || 'Genograma sin título'}</h3>
+                <p className="text-sm text-gray-500">Creado el {new Date(genogram.created_at).toLocaleDateString()}</p>
               </CardContent>
               <CardFooter className="border-t border-gray-100 bg-gray-50">
                 <div className="w-full flex justify-between">
-                  <Button variant="ghost" size="sm" className="text-blue-600">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="text-blue-600"
+                    onClick={() => navigate(`/genograms/view/${genogram.id}`)}
+                  >
                     Ver
                   </Button>
-                  <Button variant="ghost" size="sm">
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => navigate(`/genograms/edit/${genogram.id}`)}
+                  >
                     Editar
                   </Button>
                 </div>
@@ -444,7 +507,10 @@ const PatientDetail = () => {
           ))}
           
           {/* Create New Genogram Card */}
-          <Card className="border-dashed hover:bg-gray-50 hover:border-blue-300 transition-colors cursor-pointer">
+          <Card 
+            className="border-dashed hover:bg-gray-50 hover:border-blue-300 transition-colors cursor-pointer"
+            onClick={() => navigate(`/genograms/new?patientId=${patientId}`)}
+          >
             <CardContent className="h-full flex flex-col items-center justify-center py-10">
               <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mb-4">
                 <Icons.Plus className="w-8 h-8 text-blue-500" />

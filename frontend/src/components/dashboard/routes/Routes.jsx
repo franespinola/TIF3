@@ -4,13 +4,16 @@ import Dashboard from '../layout/Dashboard';
 import PatientsList from '../patients/PatientsList';
 import PatientDetail from '../patients/PatientDetail';
 import PatientForm from '../patients/PatientForm';
+import PatientEditWrapper from '../patients/PatientEditWrapper';
 import GenogramsList from '../genograms/GenogramsList';
 import GenogramEditor from '../genograms/GenogramEditor';
+import GenogramEditWrapper from '../genograms/GenogramEditWrapper';
 import GenogramViewer from '../genograms/GenogramViewer';
 import AppointmentsCalendar from '../appointments/AppointmentsCalendar';
 import AppointmentDetail from '../appointments/AppointmentDetail';
+import AppointmentEditWrapper from '../appointments/AppointmentEditWrapper';
 import SettingsPage from '../settings/SettingsPage';
-import SessionSummaryView from '../../clinical/SessionSummaryView';
+import SessionSummaryView from '../sessions/SessionSummaryView';
 
 const DashboardRoutes = () => {
   return (
@@ -20,17 +23,20 @@ const DashboardRoutes = () => {
       
       {/* Rutas de Pacientes */}
       <Route path="/patients" element={<PatientsList />} />
-      <Route path="/patients/:patientId" element={<PatientDetail />} />
       <Route path="/patients/new" element={<PatientForm />} />
+      <Route path="/patients/edit/:patientId" element={<PatientEditWrapper />} />
+      <Route path="/patients/:patientId" element={<PatientDetail />} />
       
       {/* Rutas de Genogramas */}
       <Route path="/genograms" element={<GenogramsList />} />
       <Route path="/genograms/new" element={<GenogramEditor isNew={true} />} />
-      <Route path="/genograms/edit/:id" element={<GenogramEditor />} />
+      <Route path="/genograms/edit/:id" element={<GenogramEditWrapper />} />
       <Route path="/genograms/view/:id" element={<GenogramViewer />} />
       
       {/* Rutas de Citas */}
       <Route path="/appointments" element={<AppointmentsCalendar />} />
+      <Route path="/appointments/new" element={<AppointmentDetail isNew={true} />} />
+      <Route path="/appointments/edit/:id" element={<AppointmentEditWrapper />} />
       <Route path="/appointments/:id" element={<AppointmentDetail />} />
       
       {/* Rutas de Resúmenes de Sesión */}

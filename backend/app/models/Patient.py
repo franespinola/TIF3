@@ -24,13 +24,12 @@ class Patient(Base):
     notes = Column(Text)
     birth_date = Column(DateTime)
     created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-
-    # Relaciones
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)    # Relaciones
     medications = relationship("Medication", back_populates="patient")
     clinical_entries = relationship("ClinicalEntry", back_populates="patient")
     appointments = relationship("Appointment", back_populates="patient")
     genograms = relationship("Genogram", back_populates="patient")
+    sessions = relationship("Session", back_populates="patient")
 
 class Medication(Base):
     __tablename__ = "medications"

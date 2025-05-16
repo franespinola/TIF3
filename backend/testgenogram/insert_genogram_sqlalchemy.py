@@ -1,6 +1,6 @@
 from app.core.database import engine, SessionLocal, Base
 from app.models import Genogram, Patient
-from datetime import datetime
+from datetime import datetime, timezone
 
 # Datos del genograma
 genogram_data = {
@@ -271,7 +271,7 @@ def insert_genogram_with_sqlalchemy():
             existing_genogram.data = genogram_data["data"]
             existing_genogram.notes = genogram_data["notes"]
             # Las fechas se mantienen como están o se pueden actualizar si es necesario
-            existing_genogram.updated_at = datetime.utcnow()
+            existing_genogram.updated_at = datetime.now(timezone.utc)
             
             print(f"Genograma actualizado con ID: {genogram_data['id']}")
         else:
@@ -296,7 +296,9 @@ def insert_genogram_with_sqlalchemy():
                 data=genogram_data["data"],
                 notes=genogram_data["notes"],
                 # Si no se proporcionan fechas, usar la actual                created_at=datetime.fromisoformat(genogram_data.get("created_at", datetime.utcnow().isoformat()).replace("Z", "+00:00")),
-                updated_at=datetime.fromisoformat(genogram_data.get("updated_at", datetime.utcnow().isoformat()).replace("Z", "+00:00"))
+                updated_at = datetime.fromisoformat(
+                  genogram_data.get("updated_at", datetime.now(timezone.utc).isoformat()).replace("Z", "+00:00")
+              )
             )
             
             # Añadir a la sesión

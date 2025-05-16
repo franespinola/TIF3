@@ -1,5 +1,5 @@
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 
 # Importar el servicio de Gemini que ya existe
 from services.gemini_service import call_gemini_api
@@ -48,7 +48,7 @@ def generate_session_summary(transcripcion: str) -> dict:
         respuesta = call_gemini_api(prompt)
         
         # Crear timestamp único para el archivo
-        timestamp = datetime.utcnow().strftime("%Y%m%d%H%M%S")
+        timestamp = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")
         
         return {
             "timestamp": timestamp,
@@ -58,7 +58,7 @@ def generate_session_summary(transcripcion: str) -> dict:
         }
     except Exception as e:
         return {
-            "timestamp": datetime.utcnow().strftime("%Y%m%d%H%M%S"),
+            "timestamp": datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S"),
             "summary_text": "",
             "status": "error",
             "error_message": str(e)
@@ -70,7 +70,7 @@ def save_session_summary(summary_text: str, patient_dir: str, timestamp: str = N
     Retorna la ruta del archivo guardado.
     """
     if timestamp is None:
-        timestamp = datetime.utcnow().strftime("%Y%m%d%H%M%S")
+        timestamp = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")
     
     # Asegurarse de que el directorio del paciente exista
     os.makedirs(patient_dir, exist_ok=True)

@@ -1,5 +1,5 @@
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 
 def save_recording(content: bytes, filename: str) -> str:
     """
@@ -10,7 +10,7 @@ def save_recording(content: bytes, filename: str) -> str:
     recordings_dir = os.path.abspath(os.path.join(base_dir, '../recordings'))
     os.makedirs(recordings_dir, exist_ok=True)
 
-    timestamp = datetime.utcnow().strftime("%Y%m%d%H%M%S")
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")
     safe_filename = f"{timestamp}_{filename}"
     filepath = os.path.join(recordings_dir, safe_filename)
 

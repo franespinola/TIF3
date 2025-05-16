@@ -1,7 +1,7 @@
 from app.core.database import engine, SessionLocal, Base
-from app.models import Genogram, Patient
+from app.models import Patient
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 
 # Datos del paciente asociado al genograma
 patient_data = {
@@ -44,9 +44,9 @@ def ensure_patient_exists():
                 emergency_contact=patient_data["emergency_contact"],
                 diagnosis=patient_data["diagnosis"],
                 notes=patient_data["notes"],
-                first_visit=datetime.utcnow(),
-                created_at=datetime.utcnow(),
-                updated_at=datetime.utcnow()
+                first_visit=datetime.now(timezone.utc),
+                created_at=datetime.now(timezone.utc),
+                updated_at=datetime.now(timezone.utc)
             )
             
             db.add(new_patient)
