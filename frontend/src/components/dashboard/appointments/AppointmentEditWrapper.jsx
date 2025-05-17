@@ -2,12 +2,12 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import DashboardLayout from '../layout/DashboardLayout';
-import AppointmentDetail from './AppointmentDetail';
 import appointmentService from '../../../services/appointmentService';
+import AppointmentForm from './AppointmentForm';
 
 /**
  * Wrapper component for editing appointments
- * Fetches appointment data before rendering the AppointmentDetail
+ * Fetches appointment data before rendering the AppointmentForm
  */
 const AppointmentEditWrapper = () => {
   const { id } = useParams();
@@ -58,6 +58,25 @@ const AppointmentEditWrapper = () => {
     }
   }, [id]);
 
+  const handleAppointmentSaved = () => {
+    navigate('/appointments');
+  };
+
+  // Adaptar los datos recibidos para que el formulario los entienda
+  const adaptAppointmentData = () => {
+    if (!appointmentData) return null;
+    
+    // Si los datos vienen con date_time pero no con date, usar date_time como date
+    if (appointmentData.date_time && !appointmentData.date) {
+      return {
+        ...appointmentData,
+        date: appointmentData.date_time
+      };
+    }
+    
+    return appointmentData;
+  };
+
   if (loading) {
     return (
       <DashboardLayout>
@@ -93,7 +112,50 @@ const AppointmentEditWrapper = () => {
     );
   }
 
-  return <AppointmentDetail isEditing={true} initialData={appointmentData} />;
+  return (
+    <DashboardLayout>
+      <div className="mb-6">
+        <div className="flex items-center justify-between flex-wrap gap-4 mb-4">
+          <div className="flex items-center">
+            <button 
+              onClick={() => navigate('/appointments')}
+              className="mr-4 text-gray-500 hover:text-gray-700"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+            </button>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Editar Cita
+            </h1>
+          </div>
+          
+          {appointmentData && (
+            <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
+              {appointmentData.status === 'scheduled' ? 'Programada' : 
+               appointmentData.status === 'completed' ? 'Completada' :
+               appointmentData.status === 'cancelled' ? 'Cancelada' : 'Reprogramada'}
+            </div>
+          )}
+        </div>
+      </div>
+      
+      <div className="bg-white rounded-lg shadow-md overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-100">
+          <h3 className="text-lg font-medium text-gray-900">
+            Información de la Cita
+          </h3>
+        </div>
+        <div className="p-6">
+          <AppointmentForm 
+            initialData={adaptAppointmentData()}
+            onSave={handleAppointmentSaved}
+            onCancel={() => navigate('/appointments')}
+          />
+        </div>
+      </div>
+    </DashboardLayout>
+  );
 };
 
 export default AppointmentEditWrapper;

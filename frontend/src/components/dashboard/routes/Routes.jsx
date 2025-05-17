@@ -10,8 +10,8 @@ import GenogramEditor from '../genograms/GenogramEditor';
 import GenogramEditWrapper from '../genograms/GenogramEditWrapper';
 import GenogramViewer from '../genograms/GenogramViewer';
 import AppointmentsCalendar from '../appointments/AppointmentsCalendar';
-import AppointmentDetail from '../appointments/AppointmentDetail';
 import AppointmentEditWrapper from '../appointments/AppointmentEditWrapper';
+import AppointmentCreateWrapper from '../appointments/AppointmentCreateWrapper';
 import SettingsPage from '../settings/SettingsPage';
 import SessionSummaryView from '../sessions/SessionSummaryView';
 
@@ -35,9 +35,8 @@ const DashboardRoutes = () => {
       
       {/* Rutas de Citas */}
       <Route path="/appointments" element={<AppointmentsCalendar />} />
-      <Route path="/appointments/new" element={<AppointmentDetail isNew={true} />} />
-      <Route path="/appointments/edit/:id" element={<AppointmentEditWrapper />} />
-      <Route path="/appointments/:id" element={<AppointmentDetail />} />
+      <Route path="/appointments/new" element={<AppointmentCreateWrapper />} />
+      <Route path="/appointments/:id" element={<AppointmentEditWrapper />} />
       
       {/* Rutas de Resúmenes de Sesión */}
       <Route path="/sessions/:sessionId/summary" element={<SessionSummaryView />} />

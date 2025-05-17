@@ -2,10 +2,11 @@
 
 from fastapi import APIRouter, HTTPException, Depends, Query
 from sqlalchemy.orm import Session
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from datetime import datetime, timedelta
 from app.core.database import get_db
-from app.models import Appointment, Patient
+from app.models.Appointment import Appointment
+from app.models.Patient import Patient
 from app.schemas import AppointmentCreate, Appointment as AppointmentSchema
 
 router = APIRouter()
@@ -22,7 +23,7 @@ async def get_appointments(
     Obtiene la lista de citas.
     Opcionalmente filtra por paciente, rango de fechas y estado.
     """
-    query = db.query(Appointment)
+    query = db.query(Appointment).join(Patient, Appointment.patient_id == Patient.id)
     
     if patient_id:
         query = query.filter(Appointment.patient_id == patient_id)
@@ -36,7 +37,25 @@ async def get_appointments(
     if status:
         query = query.filter(Appointment.status == status)
     
-    return query.order_by(Appointment.date_time).all()
+    appointments = query.order_by(Appointment.date_time).all()
+    
+    # Enriquecemos los datos con información del paciente
+    result = []
+    for appointment in appointments:
+        patient = db.query(Patient).filter(Patient.id == appointment.patient_id).first()
+        appointment_dict = {
+            "id": appointment.id,
+            "patient_id": appointment.patient_id,
+            "date_time": appointment.date_time,
+            "duration_minutes": appointment.duration_minutes,
+            "status": appointment.status,
+            "notes": appointment.notes,
+            "created_at": appointment.created_at,
+            "patientName": patient.name if patient else "Paciente desconocido"
+        }
+        result.append(appointment_dict)
+    
+    return result
 
 @router.get("/appointments/{appointment_id}", response_model=AppointmentSchema)
 async def get_appointment(
@@ -49,7 +68,23 @@ async def get_appointment(
     appointment = db.query(Appointment).filter(Appointment.id == appointment_id).first()
     if not appointment:
         raise HTTPException(status_code=404, detail="Cita no encontrada")
-    return appointment
+    
+    # Obtener los datos del paciente
+    patient = db.query(Patient).filter(Patient.id == appointment.patient_id).first()
+    
+    # Crear diccionario con datos de la cita
+    appointment_dict = {
+        "id": appointment.id,
+        "patient_id": appointment.patient_id,
+        "date_time": appointment.date_time,
+        "duration_minutes": appointment.duration_minutes,
+        "status": appointment.status,
+        "notes": appointment.notes,
+        "created_at": appointment.created_at,
+        "patientName": patient.name if patient else "Paciente desconocido"
+    }
+    
+    return appointment_dict
 
 @router.post("/appointments", response_model=AppointmentSchema)
 async def create_appointment(
@@ -148,8 +183,26 @@ async def get_upcoming_appointments(
     Obtiene las citas próximas en los próximos N días.
     """
     end_date = datetime.now() + timedelta(days=days)
-    return db.query(Appointment).filter(
+    appointments = db.query(Appointment).filter(
         Appointment.date_time >= datetime.now(),
         Appointment.date_time <= end_date,
         Appointment.status == "scheduled"
-    ).order_by(Appointment.date_time).all() 
+    ).order_by(Appointment.date_time).all()
+    
+    # Enriquecemos los datos con información del paciente
+    result = []
+    for appointment in appointments:
+        patient = db.query(Patient).filter(Patient.id == appointment.patient_id).first()
+        appointment_dict = {
+            "id": appointment.id,
+            "patient_id": appointment.patient_id,
+            "date_time": appointment.date_time,
+            "duration_minutes": appointment.duration_minutes,
+            "status": appointment.status,
+            "notes": appointment.notes,
+            "created_at": appointment.created_at,
+            "patientName": patient.name if patient else "Paciente desconocido"
+        }
+        result.append(appointment_dict)
+    
+    return result 

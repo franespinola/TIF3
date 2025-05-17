@@ -141,7 +141,22 @@ async def get_patient_appointments(
     if not patient:
         raise HTTPException(status_code=404, detail="Paciente no encontrado")
     
-    return patient.appointments
+    # Preparar la respuesta incluyendo el nombre del paciente
+    result = []
+    for appointment in patient.appointments:
+        appointment_dict = {
+            "id": appointment.id,
+            "patient_id": appointment.patient_id,
+            "date_time": appointment.date_time,
+            "duration_minutes": appointment.duration_minutes,
+            "status": appointment.status,
+            "notes": appointment.notes,
+            "created_at": appointment.created_at,
+            "patientName": patient.name
+        }
+        result.append(appointment_dict)
+    
+    return result
 
 @router.post("/patients/{patient_id}/appointments", response_model=AppointmentSchema)
 async def create_patient_appointment(

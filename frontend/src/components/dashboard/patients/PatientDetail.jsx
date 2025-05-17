@@ -11,6 +11,8 @@ import appointmentService from '../../../services/appointmentService';
 import clinicalNotesService from '../../../services/clinicalNotesService';
 import genogramService from '../../../services/genogramService';
 import sessionService from '../../../services/sessionService';
+import Modal from '../../ui/Modal';
+import AppointmentForm from '../appointments/AppointmentForm';
 
 const PatientDetail = () => {
   // Obtener el ID del paciente desde los parámetros de la URL
@@ -22,6 +24,7 @@ const PatientDetail = () => {
   const [activeTab, setActiveTab] = useState('summary');
   const [clinicalHistory, setClinicalHistory] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
+  const [showAppointmentModal, setShowAppointmentModal] = useState(false);
 
   useEffect(() => {
     const fetchPatientData = async () => {
@@ -99,6 +102,32 @@ const PatientDetail = () => {
 
     fetchClinicalHistory();
   }, [activeTab, patientId]);
+
+  // Manejador para cerrar el modal y refrescar los datos
+  const handleAppointmentSaved = (data) => {
+    // Refrescar las citas del paciente
+    const fetchPatientAppointments = async () => {
+      try {
+        const appointmentsResponse = await appointmentService.getPatientAppointments(patientId);
+        setPatient(prev => ({
+          ...prev,
+          appointments: appointmentsResponse.data,
+          nextAppointment: appointmentsResponse.data && 
+                           appointmentsResponse.data.length > 0 ? 
+                           appointmentsResponse.data.find(app => new Date(app.date_time) > new Date())?.date_time : null,
+        }));
+      } catch (error) {
+        console.error("Error al actualizar citas:", error);
+      }
+    };
+
+    fetchPatientAppointments();
+    
+    // Cerrar el modal después de un breve retraso para mostrar el mensaje de éxito
+    setTimeout(() => {
+      setShowAppointmentModal(false);
+    }, 2000);
+  };
 
   if (loading) {
     return (
@@ -193,6 +222,7 @@ const PatientDetail = () => {
               variant="outline" 
               size="md"
               icon={<Icons.CalendarPlus className="w-4 h-4" />}
+              onClick={() => setShowAppointmentModal(true)}
             >
               Agendar Cita
             </Button>
@@ -229,6 +259,16 @@ const PatientDetail = () => {
               onClick={() => setActiveTab('history')}
             >
               Historia Clínica
+            </button>
+            <button
+              className={`px-6 py-3 text-sm font-medium whitespace-nowrap ${
+                activeTab === 'appointments' 
+                ? 'text-blue-600 border-b-2 border-blue-600' 
+                : 'text-gray-600 hover:text-gray-800'
+              }`}
+              onClick={() => setActiveTab('appointments')}
+            >
+              Citas
             </button>
             <button
               className={`px-6 py-3 text-sm font-medium whitespace-nowrap ${
@@ -298,18 +338,48 @@ const PatientDetail = () => {
               <CardTitle>Próxima Cita</CardTitle>
             </CardHeader>
             <CardContent>
-              {patient.nextAppointment ? (
-                <div className="text-center py-4">
-                  <div className="bg-blue-50 text-blue-700 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
-                    <Icons.Calendar className="w-8 h-8" />
-                  </div>
-                  <p className="font-medium text-lg">
-                    {new Date(patient.nextAppointment).toLocaleDateString('es', { weekday: 'long', day: 'numeric', month: 'long' })}
-                  </p>
-                  <p className="text-gray-600 mt-1">
-                    {new Date(patient.nextAppointment).toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' })}
-                  </p>
-                </div>
+              {patient.appointments && patient.appointments.length > 0 ? (
+                (() => {
+                  // Encontrar la próxima cita
+                  const now = new Date();
+                  const upcomingAppointments = patient.appointments
+                    .filter(app => new Date(app.date_time) > now && app.status === 'scheduled')
+                    .sort((a, b) => new Date(a.date_time) - new Date(b.date_time));
+                  
+                  const nextAppointment = upcomingAppointments.length > 0 ? upcomingAppointments[0] : null;
+                  
+                  if (nextAppointment) {
+                    const appointmentDate = new Date(nextAppointment.date_time);
+                    return (
+                      <div className="text-center py-4">
+                        <div className="bg-blue-50 text-blue-700 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
+                          <Icons.Calendar className="w-8 h-8" />
+                        </div>
+                        <p className="font-medium text-lg">
+                          {appointmentDate.toLocaleDateString('es', { weekday: 'long', day: 'numeric', month: 'long' })}
+                        </p>
+                        <p className="text-gray-600 mt-1">
+                          {appointmentDate.toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                        <p className="text-sm text-gray-500 mt-3">
+                          Tipo: {nextAppointment.type}
+                        </p>
+                        {nextAppointment.notes && (
+                          <p className="text-sm text-gray-500 mt-1">
+                            Notas: {nextAppointment.notes}
+                          </p>
+                        )}
+                      </div>
+                    );
+                  } else {
+                    return (
+                      <div className="text-center py-8 text-gray-500">
+                        <Icons.Calendar className="w-10 h-10 mx-auto mb-3 text-gray-300" />
+                        <p>No hay citas programadas</p>
+                      </div>
+                    );
+                  }
+                })()
               ) : (
                 <div className="text-center py-8 text-gray-500">
                   <Icons.Calendar className="w-10 h-10 mx-auto mb-3 text-gray-300" />
@@ -322,8 +392,11 @@ const PatientDetail = () => {
                 variant="outline"
                 size="sm"
                 icon={<Icons.CalendarPlus className="w-4 h-4" />}
+                onClick={() => setShowAppointmentModal(true)}
               >
-                {patient.nextAppointment ? 'Reprogramar' : 'Agendar'}
+                {patient.appointments && patient.appointments.some(app => new Date(app.date_time) > new Date() && app.status === 'scheduled') 
+                  ? 'Reprogramar' 
+                  : 'Agendar'}
               </Button>
             </CardFooter>
           </Card>
@@ -472,6 +545,118 @@ const PatientDetail = () => {
         </Card>
       )}
 
+      {activeTab === 'appointments' && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle>Historial de Citas</CardTitle>
+              <Button 
+                variant="primary" 
+                size="sm"
+                icon={<Icons.Plus className="w-4 h-4" />}
+                onClick={() => setShowAppointmentModal(true)}
+              >
+                Nueva Cita
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {patient.appointments && patient.appointments.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Notas</th>
+                      <th scope="col" className="relative px-6 py-3">
+                        <span className="sr-only">Acciones</span>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {patient.appointments
+                      .sort((a, b) => new Date(b.date_time) - new Date(a.date_time))
+                      .map((appointment) => {
+                        const appointmentDate = new Date(appointment.date_time);
+                        const isPast = appointmentDate < new Date();
+                        const statusClasses = {
+                          scheduled: 'bg-blue-100 text-blue-800',
+                          completed: 'bg-green-100 text-green-800',
+                          cancelled: 'bg-gray-100 text-gray-800',
+                          rescheduled: 'bg-yellow-100 text-yellow-800'
+                        };
+                        
+                        const statusLabels = {
+                          scheduled: 'Programada',
+                          completed: 'Completada',
+                          cancelled: 'Cancelada',
+                          rescheduled: 'Reprogramada'
+                        };
+                        
+                        return (
+                          <tr key={appointment.id} className={isPast && appointment.status !== 'completed' ? 'bg-gray-50' : ''}>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-sm font-medium text-gray-900">
+                                {appointmentDate.toLocaleDateString()}
+                              </div>
+                              <div className="text-sm text-gray-500">
+                                {appointmentDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-sm text-gray-900">{appointment.type}</div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClasses[appointment.status]}`}>
+                                {statusLabels[appointment.status] || appointment.status}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="text-sm text-gray-900 max-w-xs truncate">{appointment.notes || '-'}</div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                              <div className="flex justify-end space-x-2">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                >
+                                  <Icons.Eye className="w-4 h-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                >
+                                  <Icons.Edit className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                <Icons.Calendar className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                <p>No hay citas registradas para este paciente</p>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="mt-4"
+                  icon={<Icons.Plus className="w-4 h-4" />}
+                  onClick={() => setShowAppointmentModal(true)}
+                >
+                  Agendar primera cita
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       {activeTab === 'genograms' && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Existing Genograms */}
@@ -553,6 +738,22 @@ const PatientDetail = () => {
           </CardContent>
         </Card>
       )}
+
+      {/* Modal de citas */}
+      <Modal
+        isOpen={showAppointmentModal}
+        onClose={() => setShowAppointmentModal(false)}
+        title="Agendar Nueva Cita"
+        size="lg"
+      >
+        <div className="p-6">
+          <AppointmentForm 
+            patientId={patientId}
+            onSave={handleAppointmentSaved}
+            onCancel={() => setShowAppointmentModal(false)}
+          />
+        </div>
+      </Modal>
     </DashboardLayout>
   );
 };
