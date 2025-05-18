@@ -27,7 +27,7 @@ const AppointmentForm = ({ initialData = null, patientId = null, onSave, onCance
     duration_minutes: initialData?.duration_minutes || 60,
     notes: initialData?.notes || '',
     status: initialData?.status || 'scheduled',
-    type: initialData?.type || 'Consulta'
+    type: initialData?.type || 'consulta'
   });
 
   // Cargar la lista de pacientes
@@ -70,6 +70,9 @@ const AppointmentForm = ({ initialData = null, patientId = null, onSave, onCance
         date_time: formData.date
       };
       
+      // Imprimir el payload para verificar
+      console.log("Payload enviado:", appointment);
+      
       // Enviar la petición al servidor
       let response;
       if (initialData?.id) {
@@ -94,11 +97,12 @@ const AppointmentForm = ({ initialData = null, patientId = null, onSave, onCance
 
   // Tipos de cita disponibles
   const appointmentTypes = [
-    'Consulta',
-    'Primera sesión',
-    'Sesión familiar',
-    'Seguimiento',
-    'Emergencia'
+    { label: "Consulta", value: "consulta" },
+    { label: "Primera sesión familiar", value: "primera_sesion_familiar" },
+    { label: "Sesión familiar", value: "sesion_familiar" },
+    { label: "Consulta familiar", value: "consulta_familiar" },
+    { label: "Seguimiento", value: "seguimiento" },
+    { label: "Emergencia", value: "emergencia" }
   ];
 
   return (
@@ -189,7 +193,7 @@ const AppointmentForm = ({ initialData = null, patientId = null, onSave, onCance
           required
         >
           {appointmentTypes.map(type => (
-            <option key={type} value={type}>{type}</option>
+            <option key={type.value} value={type.value}>{type.label}</option>
           ))}
         </select>
       </div>

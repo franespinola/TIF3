@@ -49,6 +49,7 @@ async def get_appointments(
             "date_time": appointment.date_time,
             "duration_minutes": appointment.duration_minutes,
             "status": appointment.status,
+            "type": appointment.type,
             "notes": appointment.notes,
             "created_at": appointment.created_at,
             "patientName": patient.name if patient else "Paciente desconocido"
@@ -79,6 +80,7 @@ async def get_appointment(
         "date_time": appointment.date_time,
         "duration_minutes": appointment.duration_minutes,
         "status": appointment.status,
+        "type": appointment.type,
         "notes": appointment.notes,
         "created_at": appointment.created_at,
         "patientName": patient.name if patient else "Paciente desconocido"
@@ -112,7 +114,14 @@ async def create_appointment(
         )
     
     # Crear nueva cita
-    db_appointment = Appointment(**appointment_data.model_dump())
+    appointment_dict = appointment_data.model_dump()
+    
+    # Importar el tipo de cita predeterminado si no viene en la solicitud
+    from app.models.Appointment import AppointmentType
+    if "type" not in appointment_dict or not appointment_dict["type"]:
+        appointment_dict["type"] = AppointmentType.consulta
+    
+    db_appointment = Appointment(**appointment_dict)
     db.add(db_appointment)
     db.commit()
     db.refresh(db_appointment)
@@ -151,6 +160,12 @@ async def update_appointment(
     
     # Actualizar campos
     update_data = appointment_data.model_dump(exclude_unset=True)
+    
+    # Asegurar que el campo type esté presente
+    from app.models.Appointment import AppointmentType
+    if "type" not in update_data or not update_data["type"]:
+        update_data["type"] = AppointmentType.consulta
+    
     for key, value in update_data.items():
         setattr(appointment, key, value)
     
@@ -199,6 +214,7 @@ async def get_upcoming_appointments(
             "date_time": appointment.date_time,
             "duration_minutes": appointment.duration_minutes,
             "status": appointment.status,
+            "type": appointment.type,
             "notes": appointment.notes,
             "created_at": appointment.created_at,
             "patientName": patient.name if patient else "Paciente desconocido"

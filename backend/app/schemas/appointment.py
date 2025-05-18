@@ -27,7 +27,7 @@ class AppointmentBase(BaseModel):
     duration_minutes: int = 60
     notes: Optional[str] = None
     status: AppointmentStatus = AppointmentStatus.scheduled
-    type: AppointmentType  # <--- requerido
+    type: Optional[AppointmentType] = AppointmentType.consulta  # Ahora es opcional con valor predeterminado
 
 # Para crear
 class AppointmentCreate(AppointmentBase):
