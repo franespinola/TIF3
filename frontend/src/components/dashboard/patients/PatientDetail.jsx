@@ -13,6 +13,7 @@ import genogramService from '../../../services/genogramService';
 import sessionService from '../../../services/sessionService';
 import Modal from '../../ui/Modal';
 import AppointmentForm from '../appointments/AppointmentForm';
+import { getAppointmentStatusProps, getAppointmentTypeProps } from '../../../utils/appointmentUtils';
 
 const PatientDetail = () => {
   // Obtener el ID del paciente desde los parámetros de la URL
@@ -25,6 +26,10 @@ const PatientDetail = () => {
   const [clinicalHistory, setClinicalHistory] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [showAppointmentModal, setShowAppointmentModal] = useState(false);
+  const [showConfirmDeleteModal, setShowConfirmDeleteModal] = useState(false);
+  const [appointmentToDelete, setAppointmentToDelete] = useState(null);
+  const [appointmentToEdit, setAppointmentToEdit] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   useEffect(() => {
     const fetchPatientData = async () => {
@@ -127,6 +132,42 @@ const PatientDetail = () => {
     setTimeout(() => {
       setShowAppointmentModal(false);
     }, 2000);
+  };
+
+  // Manejador para abrir modal de confirmación de eliminación
+  const handleDeleteAppointment = (appointment) => {
+    setAppointmentToDelete(appointment);
+    setShowConfirmDeleteModal(true);
+  };
+
+  // Manejador para confirmar eliminación de cita
+  const confirmDeleteAppointment = async () => {
+    if (!appointmentToDelete) return;
+    
+    setDeleteLoading(true);
+    try {
+      await appointmentService.deleteAppointment(appointmentToDelete.id);
+      
+      // Actualizar la lista de citas después de eliminar
+      setPatient(prev => ({
+        ...prev,
+        appointments: prev.appointments.filter(app => app.id !== appointmentToDelete.id)
+      }));
+      
+      // Cerrar el modal de confirmación
+      setShowConfirmDeleteModal(false);
+      setAppointmentToDelete(null);
+    } catch (error) {
+      console.error("Error al eliminar la cita:", error);
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+  
+  // Manejador para editar cita
+  const handleEditAppointment = (appointment) => {
+    setAppointmentToEdit(appointment);
+    setShowAppointmentModal(true);
   };
 
   if (loading) {
@@ -350,6 +391,7 @@ const PatientDetail = () => {
                   
                   if (nextAppointment) {
                     const appointmentDate = new Date(nextAppointment.date_time);
+                    const statusProps = getAppointmentStatusProps(nextAppointment.status);
                     return (
                       <div className="text-center py-4">
                         <div className="bg-blue-50 text-blue-700 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
@@ -361,11 +403,16 @@ const PatientDetail = () => {
                         <p className="text-gray-600 mt-1">
                           {appointmentDate.toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' })}
                         </p>
-                        <p className="text-sm text-gray-500 mt-3">
-                          Tipo: {nextAppointment.type}
-                        </p>
+                        <div className="flex flex-col items-center mt-3 space-y-2">
+                          <p className="text-sm text-gray-500">
+                            Tipo: {nextAppointment.type}
+                          </p>
+                          <Badge className={statusProps.colorClass}>
+                            {statusProps.label}
+                          </Badge>
+                        </div>
                         {nextAppointment.notes && (
-                          <p className="text-sm text-gray-500 mt-1">
+                          <p className="text-sm text-gray-500 mt-3">
                             Notas: {nextAppointment.notes}
                           </p>
                         )}
@@ -581,19 +628,7 @@ const PatientDetail = () => {
                       .map((appointment) => {
                         const appointmentDate = new Date(appointment.date_time);
                         const isPast = appointmentDate < new Date();
-                        const statusClasses = {
-                          scheduled: 'bg-blue-100 text-blue-800',
-                          completed: 'bg-green-100 text-green-800',
-                          cancelled: 'bg-gray-100 text-gray-800',
-                          rescheduled: 'bg-yellow-100 text-yellow-800'
-                        };
-                        
-                        const statusLabels = {
-                          scheduled: 'Programada',
-                          completed: 'Completada',
-                          cancelled: 'Cancelada',
-                          rescheduled: 'Reprogramada'
-                        };
+                        const statusProps = getAppointmentStatusProps(appointment.status);
                         
                         return (
                           <tr key={appointment.id} className={isPast && appointment.status !== 'completed' ? 'bg-gray-50' : ''}>
@@ -609,8 +644,8 @@ const PatientDetail = () => {
                               <div className="text-sm text-gray-900">{appointment.type}</div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
-                              <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClasses[appointment.status]}`}>
-                                {statusLabels[appointment.status] || appointment.status}
+                              <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusProps.colorClass}`}>
+                                {statusProps.label}
                               </span>
                             </td>
                             <td className="px-6 py-4">
@@ -621,14 +656,26 @@ const PatientDetail = () => {
                                 <Button
                                   variant="ghost"
                                   size="sm"
+                                  className="transition-transform hover:scale-110 focus:scale-110 text-blue-600 hover:text-blue-700"
+                                  onClick={() => navigate(`/appointments/${appointment.id}`)}
                                 >
                                   <Icons.Eye className="w-4 h-4" />
                                 </Button>
                                 <Button
                                   variant="ghost"
                                   size="sm"
+                                  className="transition-transform hover:scale-110 focus:scale-110 text-amber-600 hover:text-amber-700"
+                                  onClick={() => handleEditAppointment(appointment)}
                                 >
                                   <Icons.Edit className="w-4 h-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="transition-all hover:scale-110 focus:scale-110 text-red-500 hover:text-red-700 hover:bg-red-50"
+                                  onClick={() => handleDeleteAppointment(appointment)}
+                                >
+                                  <Icons.Trash className="w-4 h-4" />
                                 </Button>
                               </div>
                             </td>
@@ -742,16 +789,75 @@ const PatientDetail = () => {
       {/* Modal de citas */}
       <Modal
         isOpen={showAppointmentModal}
-        onClose={() => setShowAppointmentModal(false)}
-        title="Agendar Nueva Cita"
+        onClose={() => {
+          setShowAppointmentModal(false);
+          setAppointmentToEdit(null);
+        }}
+        title={appointmentToEdit ? "Modificar Cita" : "Agendar Nueva Cita"}
         size="lg"
       >
         <div className="p-6">
           <AppointmentForm 
             patientId={patientId}
+            initialData={appointmentToEdit}
             onSave={handleAppointmentSaved}
-            onCancel={() => setShowAppointmentModal(false)}
+            onCancel={() => {
+              setShowAppointmentModal(false);
+              setAppointmentToEdit(null);
+            }}
           />
+        </div>
+      </Modal>
+
+      {/* Modal de confirmación para eliminar cita */}
+      <Modal
+        isOpen={showConfirmDeleteModal}
+        onClose={() => setShowConfirmDeleteModal(false)}
+        title="Confirmar eliminación"
+        size="sm"
+      >
+        <div className="p-6">
+          <div className="flex items-center justify-center mb-4 text-red-500">
+            <div className="bg-red-100 p-3 rounded-full">
+              <Icons.AlertTriangle className="w-8 h-8" />
+            </div>
+          </div>
+          <p className="text-center mb-6">
+            ¿Estás seguro que deseas eliminar esta cita? Esta acción no se puede deshacer.
+          </p>
+          
+          {appointmentToDelete && (
+            <div className="bg-gray-50 p-3 rounded-lg mb-6 text-sm">
+              <p><span className="font-medium">Fecha:</span> {new Date(appointmentToDelete.date_time).toLocaleDateString()}</p>
+              <p><span className="font-medium">Hora:</span> {new Date(appointmentToDelete.date_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+              <p><span className="font-medium">Tipo:</span> {getAppointmentTypeProps(appointmentToDelete.type).label}</p>
+            </div>
+          )}
+          
+          <div className="flex justify-end space-x-3">
+            <Button 
+              variant="outline" 
+              onClick={() => setShowConfirmDeleteModal(false)}
+              disabled={deleteLoading}
+            >
+              Cancelar
+            </Button>
+            <Button 
+              variant="destructive"
+              onClick={confirmDeleteAppointment}
+              disabled={deleteLoading}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              {deleteLoading ? (
+                <>
+                  <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"></div>
+                  Eliminando...
+                </>
+              ) : (
+                'Eliminar'
+              )}
+            </Button>
+          </div>
         </div>
       </Modal>
     </DashboardLayout>

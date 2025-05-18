@@ -8,6 +8,10 @@ import Button from "../../ui/Button"
 import Badge from "../../ui/Badge"
 import Avatar from "../../ui/Avatar"
 import Icons from "../../ui/Icons"
+import { getAppointmentTypeProps, getAppointmentStatusProps } from '../../../utils/appointmentUtils'
+import appointmentService from "../../../services/appointmentService"
+import patientService from "../../../services/patientService"
+import genogramService from "../../../services/genogramService"
 
 const Dashboard = () => {
   const [patients, setPatients] = useState([])
@@ -24,35 +28,60 @@ const Dashboard = () => {
     else if (hour < 18) setGreeting("Buenas tardes")
     else setGreeting("Buenas noches")
 
-    const fetchDashboardData = () => {
+    const fetchDashboardData = async () => {
       setIsLoading(true)
-
-      setTimeout(() => {
+      
+      try {
+        // Obtener datos reales
+        const [patientsResponse, appointmentsResponse, genogramsResponse] = await Promise.all([
+          patientService.getAllPatients(),
+          appointmentService.getAllAppointments(),
+          genogramService.getAllGenograms().catch(() => ({ data: [] })) // Si no hay genogramas, devolver array vacío
+        ]);
+        
+        // Configurar pacientes
+        setPatients(patientsResponse.data || []);
+        
+        // Filtrar las próximas citas (futuras)
+        const now = new Date();
+        const upcoming = (appointmentsResponse.data || [])
+          .filter(appt => new Date(appt.date_time) > now)
+          .sort((a, b) => new Date(a.date_time) - new Date(b.date_time))
+          .slice(0, 3); // Mostrar solo las 3 más próximas
+        
+        setUpcomingAppointments(upcoming);
+        
+        // Configurar genogramas recientes
+        setRecentGenograms(genogramsResponse.data || []);
+      } catch (error) {
+        console.error("Error al cargar datos del dashboard:", error);
+        
+        // Cargar datos de fallback en caso de error
         setPatients([
           { id: "cristian", name: "Cristian Rodríguez", lastVisit: "2025-04-29", diagnosis: "Ansiedad generalizada" },
           { id: "francisco", name: "Francisco Torres", lastVisit: "2025-04-20", diagnosis: "Depresión moderada" },
           { id: "ignacia", name: "Ignacia Vázquez", lastVisit: "2025-04-25", diagnosis: "Trastorno de estrés" },
           { id: "maria", name: "María Fernandez", lastVisit: "2025-05-05", diagnosis: "Problemas familiares" },
-        ])
+        ]);
 
         setUpcomingAppointments([
-          { id: 1, patientName: "Cristian Rodríguez", date: "2025-05-10T10:00:00", type: "Sesión regular" },
-          { id: 2, patientName: "María Fernandez", date: "2025-05-09T15:30:00", type: "Primera consulta" },
-          { id: 3, patientName: "Ignacia Vázquez", date: "2025-05-11T11:00:00", type: "Seguimiento" },
-        ])
+          { id: 1, patientName: "Cristian Rodríguez", date: "2025-05-10T10:00:00", type: "sesion_familiar", status: "scheduled" },
+          { id: 2, patientName: "María Fernandez", date: "2025-05-09T15:30:00", type: "primera_sesion_familiar", status: "confirmed" },
+          { id: 3, patientName: "Ignacia Vázquez", date: "2025-05-11T11:00:00", type: "seguimiento", status: "rescheduled" },
+        ]);
 
         setRecentGenograms([
           { id: "gen1", patientName: "Francisco Torres", date: "2025-04-20", thumbnail: null },
           { id: "gen2", patientName: "María Fernandez", date: "2025-05-05", thumbnail: null },
           { id: "gen3", patientName: "Ignacia Vázquez", date: "2025-04-25", thumbnail: null },
-        ])
-
-        setIsLoading(false)
-      }, 800)
+        ]);
+      } finally {
+        setIsLoading(false);
+      }
     }
 
-    fetchDashboardData()
-  }, [])
+    fetchDashboardData();
+  }, []);
 
   // Format date to display in a more readable format
   const formatDate = (dateString) => {
@@ -79,22 +108,6 @@ const Dashboard = () => {
     const diffTime = Math.abs(today - lastVisit)
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
     return diffDays
-  }
-
-  // Get appointment badge color based on type
-  const getAppointmentBadgeVariant = (type) => {
-    switch (type.toLowerCase()) {
-      case "primera consulta":
-        return "primary"
-      case "sesión regular":
-        return "success"
-      case "seguimiento":
-        return "info"
-      case "urgencia":
-        return "danger"
-      default:
-        return "default"
-    }
   }
 
   // Get time until appointment
@@ -298,21 +311,27 @@ const Dashboard = () => {
                             <p className="font-medium">{appointment.patientName}</p>
                             <div className="flex items-center text-xs sm:text-sm text-gray-500">
                               <Icons.Calendar className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                              <span className="hidden sm:inline">{formatDate(appointment.date)}</span>
-                              <span className="sm:hidden">{formatMobileDate(appointment.date)}</span>
+                              <span className="hidden sm:inline">{formatDate(appointment.date_time || appointment.date)}</span>
+                              <span className="sm:hidden">{formatMobileDate(appointment.date_time || appointment.date)}</span>
                             </div>
                           </div>
                         </div>
                         <div className="flex items-center justify-between sm:flex-col sm:items-end">
                           <Badge
-                            variant={getAppointmentBadgeVariant(appointment.type)}
-                            className="border border-opacity-50"
+                            className={`border border-opacity-50 ${getAppointmentTypeProps(appointment.type).colorClass}`}
                           >
-                            {appointment.type}
+                            {getAppointmentTypeProps(appointment.type).label}
                           </Badge>
-                          <span className="text-xs font-medium sm:mt-1 text-gray-500 ml-2 sm:ml-0">
-                            {getTimeUntil(appointment.date)}
-                          </span>
+                          <div className="flex flex-col items-end">
+                            <span className="text-xs font-medium sm:mt-1 text-gray-500">
+                              {getTimeUntil(appointment.date_time || appointment.date)}
+                            </span>
+                            {appointment.status && (
+                              <Badge className={`text-xs mt-1 ${getAppointmentStatusProps(appointment.status).colorClass}`}>
+                                {getAppointmentStatusProps(appointment.status).label}
+                              </Badge>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>

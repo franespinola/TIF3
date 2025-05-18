@@ -15,6 +15,7 @@ import { Calendar, dateFnsLocalizer } from "react-big-calendar"
 import { format, parse, startOfWeek, getDay, isToday as isDateToday } from "date-fns"
 import es from "date-fns/locale/es"
 import "react-big-calendar/lib/css/react-big-calendar.css"
+import { getAppointmentStatusProps, getAppointmentTypeProps } from '../../../utils/appointmentUtils'
 
 const locales = { es }
 const localizer = dateFnsLocalizer({
@@ -85,6 +86,14 @@ const AppointmentsCalendar = () => {
   const [selectedDate, setSelectedDate] = useState(null)
   const [isMobile, setIsMobile] = useState(false)
   const [showLegend, setShowLegend] = useState(false)
+  const [activeFilters, setActiveFilters] = useState({
+    consulta: true,
+    primera_sesion_familiar: true,
+    sesion_familiar: true,
+    consulta_familiar: true,
+    seguimiento: true,
+    emergencia: true,
+  })
 
   // Detectar si es dispositivo móvil
   useEffect(() => {
@@ -275,25 +284,6 @@ const AppointmentsCalendar = () => {
     return date.toLocaleTimeString("es", { hour: "2-digit", minute: "2-digit", hour12: false })
   }
 
-  // Determinar el color de la insignia según el tipo de cita
-  const getAppointmentBadgeVariant = (type) => {
-    // Si type es undefined o null, devolver valor por defecto
-    if (!type) return "default"
-
-    switch (type.toLowerCase()) {
-      case "primera consulta":
-        return "primary"
-      case "urgencia":
-        return "danger"
-      case "seguimiento":
-        return "info"
-      case "sesión regular":
-        return "success"
-      default:
-        return "default"
-    }
-  }
-
   // Obtener el título según la vista actual
   const getCurrentViewTitle = () => {
     if (view === "day") {
@@ -309,30 +299,55 @@ const AppointmentsCalendar = () => {
     }
   }
 
-  // Obtener las próximas citas (futuras)
+  // Obtener las próximas citas (futuras) con filtrado por tipo
   const getUpcomingAppointments = () => {
     const now = new Date()
+    // Filtrar por citas futuras y con estados válidos: scheduled, confirmed o rescheduled
     return sortAppointmentsByTime(
       appointments.filter((appointment) => {
         const appointmentDate = getAppointmentDate(appointment)
-        return appointmentDate >= now
+        const validStatus = ['scheduled', 'confirmed', 'rescheduled']
+        // Añadir filtro por tipo de cita
+        const appointmentType = appointment.type?.toLowerCase() || 'consulta';
+        return appointmentDate >= now && 
+               validStatus.includes(appointment.status) && 
+               activeFilters[appointmentType];
       }),
     ).slice(0, 5) // Mostrar solo las 5 próximas
   }
 
-  // Tipos de citas para la leyenda
+  // Filtrar todas las citas según los filtros activos
+  const getFilteredAppointments = () => {
+    return appointments.filter(appointment => {
+      const appointmentType = appointment.type?.toLowerCase() || 'consulta';
+      return activeFilters[appointmentType];
+    });
+  }
+
+  // Cambiar el estado de un filtro
+  const toggleFilter = (typeKey) => {
+    setActiveFilters(prev => ({
+      ...prev,
+      [typeKey]: !prev[typeKey]
+    }));
+  }
+
+  // Tipos de citas para la leyenda, basados en appointmentUtils
   const appointmentTypes = [
-    { type: "Primera consulta", color: "bg-blue-100 border-l-4 border-blue-500 text-blue-800" },
-    { type: "Urgencia", color: "bg-red-100 border-l-4 border-red-500 text-red-800" },
-    { type: "Seguimiento", color: "bg-sky-100 border-l-4 border-sky-500 text-sky-800" },
-    { type: "Sesión regular", color: "bg-emerald-100 border-l-4 border-emerald-500 text-emerald-800" },
-  ]
+    { key: "consulta", label: getAppointmentTypeProps("consulta").label, colorClass: getAppointmentTypeProps("consulta").colorClass },
+    { key: "primera_sesion_familiar", label: getAppointmentTypeProps("primera_sesion_familiar").label, colorClass: getAppointmentTypeProps("primera_sesion_familiar").colorClass },
+    { key: "sesion_familiar", label: getAppointmentTypeProps("sesion_familiar").label, colorClass: getAppointmentTypeProps("sesion_familiar").colorClass },
+    { key: "consulta_familiar", label: getAppointmentTypeProps("consulta_familiar").label, colorClass: getAppointmentTypeProps("consulta_familiar").colorClass },
+    { key: "seguimiento", label: getAppointmentTypeProps("seguimiento").label, colorClass: getAppointmentTypeProps("seguimiento").colorClass },
+    { key: "emergencia", label: getAppointmentTypeProps("emergencia").label, colorClass: getAppointmentTypeProps("emergencia").colorClass },
+  ];
 
   // Personalizar los componentes del calendario
   const calendarComponents = {
     event: (props) => {
       const { event } = props
-      const appointmentType = event.resource?.type || event.resource?.status || ""
+      const appointmentType = event.resource?.type || "";
+      const typeProps = getAppointmentTypeProps(appointmentType);
 
       return (
         <div className="flex items-center p-1 overflow-hidden h-full">
@@ -340,8 +355,8 @@ const AppointmentsCalendar = () => {
             <div className="font-medium text-sm truncate">{event.resource?.patientName || "Paciente"}</div>
             <div className="text-xs truncate flex items-center">
               <span className="mr-1">{formatAppointmentTime(event.start)}</span>
-              <Badge variant={getAppointmentBadgeVariant(appointmentType)} className="text-xs border border-opacity-50">
-                {appointmentType}
+              <Badge className={`text-xs border border-opacity-50 ${typeProps.colorClass}`}>
+                {typeProps.label}
               </Badge>
             </div>
           </div>
@@ -477,7 +492,7 @@ const AppointmentsCalendar = () => {
                   className="border-gray-200 hover:bg-gray-50"
                 >
                   <Icons.Calendar className="w-4 h-4 mr-1" />
-                  <span className="hidden sm:inline">Leyenda</span>
+                  <span className="hidden sm:inline">Leyenda {Object.values(activeFilters).filter(f => f).length < appointmentTypes.length && `(${Object.values(activeFilters).filter(f => f).length}/${appointmentTypes.length})`}</span>
                 </Button>
               </div>
             </div>
@@ -487,10 +502,15 @@ const AppointmentsCalendar = () => {
           {showLegend && (
             <div className="bg-white p-3 border-b border-gray-200">
               <div className="flex flex-wrap gap-2 justify-center">
-                {appointmentTypes.map((type, index) => (
-                  <div key={index} className={`px-3 py-1 rounded-md text-xs ${type.color} border border-opacity-50`}>
-                    {type.type}
-                  </div>
+                {appointmentTypes.map((type) => (
+                  <button
+                    key={type.key}
+                    className={`px-3 py-1 rounded-md text-xs ${type.colorClass} border border-opacity-50 transition-all flex items-center ${!activeFilters[type.key] ? 'opacity-50' : ''}`}
+                    onClick={() => toggleFilter(type.key)}
+                  >
+                    <span className={`h-3 w-3 rounded-full mr-1 ${activeFilters[type.key] ? 'bg-teal-500' : 'bg-gray-300'}`}></span>
+                    {type.label}
+                  </button>
                 ))}
               </div>
             </div>
@@ -509,64 +529,86 @@ const AppointmentsCalendar = () => {
           ) : (
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
               <div className="calendar-container" style={{ height: isMobile ? "500px" : "700px" }}>
-                <Calendar
-                  localizer={localizer}
-                  events={mapAppointmentsToEvents(appointments)}
-                  startAccessor="start"
-                  endAccessor="end"
-                  view={view}
-                  onView={(newView) => setView(newView)}
-                  date={currentDate}
-                  onNavigate={(date) => setCurrentDate(date)}
-                  views={{
-                    month: true,
-                    week: true,
-                    day: true,
-                    agenda: true,
-                  }}
-                  messages={{
-                    today: "Hoy",
-                    previous: "Anterior",
-                    next: "Siguiente",
-                    month: "Mes",
-                    week: "Semana",
-                    day: "Día",
-                    agenda: "Agenda",
-                    date: "Fecha",
-                    time: "Hora",
-                    event: "Evento",
-                    noEventsInRange: "No hay citas en este rango.",
-                    allDay: "Todo el día",
-                    work_week: "Semana laboral",
-                    yesterday: "Ayer",
-                    tomorrow: "Mañana",
-                    showMore: (total) => `+ Ver ${total} más`,
-                  }}
-                  onSelectSlot={({ start }) => openNewAppointmentModal(start)}
-                  onSelectEvent={(event) => {
-                    const patientId = event.resource.patient_id
-                    const appointmentId = event.resource.id
-                    if (patientId && appointmentId) {
-                      window.location.href = `/appointments/${appointmentId}`
-                    }
-                  }}
-                  selectable
-                  popup
-                  components={calendarComponents}
-                  eventPropGetter={(event) => ({
-                    style: getAppointmentEventStyle(event),
-                  })}
-                  dayPropGetter={(date) => {
-                    if (isDateToday(date)) {
-                      return {
-                        style: {
-                          backgroundColor: "#f0fdfa", // teal-50
-                        },
+                {getFilteredAppointments().length === 0 && !loading ? (
+                  <div className="flex flex-col items-center justify-center h-full">
+                    <Icons.Calendar className="w-16 h-16 text-gray-300 mb-4" />
+                    <p className="text-gray-500 text-lg">No hay citas que coincidan con los filtros seleccionados</p>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="mt-4"
+                      onClick={() => setActiveFilters({
+                        consulta: true,
+                        primera_sesion_familiar: true,
+                        sesion_familiar: true,
+                        consulta_familiar: true,
+                        seguimiento: true,
+                        emergencia: true,
+                      })}
+                    >
+                      Restablecer filtros
+                    </Button>
+                  </div>
+                ) : (
+                  <Calendar
+                    localizer={localizer}
+                    events={mapAppointmentsToEvents(getFilteredAppointments())}
+                    startAccessor="start"
+                    endAccessor="end"
+                    view={view}
+                    onView={(newView) => setView(newView)}
+                    date={currentDate}
+                    onNavigate={(date) => setCurrentDate(date)}
+                    views={{
+                      month: true,
+                      week: true,
+                      day: true,
+                      agenda: true,
+                    }}
+                    messages={{
+                      today: "Hoy",
+                      previous: "Anterior",
+                      next: "Siguiente",
+                      month: "Mes",
+                      week: "Semana",
+                      day: "Día",
+                      agenda: "Agenda",
+                      date: "Fecha",
+                      time: "Hora",
+                      event: "Evento",
+                      noEventsInRange: "No hay citas en este rango.",
+                      allDay: "Todo el día",
+                      work_week: "Semana laboral",
+                      yesterday: "Ayer",
+                      tomorrow: "Mañana",
+                      showMore: (total) => `+ Ver ${total} más`,
+                    }}
+                    onSelectSlot={({ start }) => openNewAppointmentModal(start)}
+                    onSelectEvent={(event) => {
+                      const patientId = event.resource.patient_id
+                      const appointmentId = event.resource.id
+                      if (patientId && appointmentId) {
+                        window.location.href = `/appointments/${appointmentId}`
                       }
-                    }
-                    return {}
-                  }}
-                />
+                    }}
+                    selectable
+                    popup
+                    components={calendarComponents}
+                    eventPropGetter={(event) => ({
+                      style: getAppointmentEventStyle(event),
+                    })}
+                    dayPropGetter={(date) => {
+                      if (isDateToday(date)) {
+                        return {
+                          style: {
+                            backgroundColor: "#f0fdfa", // teal-50
+                          },
+                        }
+                      }
+                      return {}
+                    }}
+                  />
+                )}
               </div>
             </div>
           )}
@@ -590,7 +632,10 @@ const AppointmentsCalendar = () => {
                 <div className="divide-y divide-gray-200">
                   {getUpcomingAppointments().map((appointment) => {
                     const appointmentDate = getAppointmentDate(appointment)
-                    const type = appointment.type || appointment.status || ""
+                    const type = appointment.type || ""
+                    const status = appointment.status || "scheduled"
+                    const statusProps = getAppointmentStatusProps(status)
+                    
                     const bgColorClass = type.toLowerCase().includes("primera consulta")
                       ? "bg-blue-50"
                       : type.toLowerCase().includes("urgencia")
@@ -609,8 +654,8 @@ const AppointmentsCalendar = () => {
                           }`}
                         >
                           <div className="flex items-center justify-between mb-2">
-                            <Badge variant={getAppointmentBadgeVariant(type)} className="border border-opacity-50">
-                              {type}
+                            <Badge className={`border border-opacity-50 ${getAppointmentTypeProps(type).colorClass}`}>
+                              {getAppointmentTypeProps(type).label}
                             </Badge>
                             <span className="text-xs font-medium text-gray-500">
                               {formatAppointmentTime(appointmentDate)}
@@ -620,12 +665,17 @@ const AppointmentsCalendar = () => {
                             <Avatar name={appointment.patientName || "Paciente"} size="sm" className="mr-2" />
                             <div>
                               <p className="font-medium text-sm">{appointment.patientName || "Paciente"}</p>
-                              <div className="text-xs text-gray-500">
-                                {appointmentDate.toLocaleDateString("es", {
-                                  weekday: "short",
-                                  day: "numeric",
-                                  month: "short",
-                                })}
+                              <div className="flex items-center gap-2 mt-1">
+                                <div className="text-xs text-gray-500">
+                                  {appointmentDate.toLocaleDateString("es", {
+                                    weekday: "short",
+                                    day: "numeric",
+                                    month: "short",
+                                  })}
+                                </div>
+                                <Badge className={`text-xs ${statusProps.colorClass}`}>
+                                  {statusProps.label}
+                                </Badge>
                               </div>
                             </div>
                           </div>
@@ -683,6 +733,20 @@ const AppointmentsCalendar = () => {
               <div className="divide-y divide-gray-200">
                 {getUpcomingAppointments().map((appointment) => {
                   const appointmentDate = getAppointmentDate(appointment)
+                  const type = appointment.type || ""
+                  const status = appointment.status || "scheduled"
+                  const statusProps = getAppointmentStatusProps(status)
+                  
+                  const bgColorClass = type.toLowerCase().includes("primera consulta")
+                    ? "bg-blue-50"
+                    : type.toLowerCase().includes("urgencia")
+                      ? "bg-red-50"
+                      : type.toLowerCase().includes("seguimiento")
+                        ? "bg-sky-50"
+                        : type.toLowerCase().includes("sesión regular")
+                          ? "bg-emerald-50"
+                          : "bg-gray-50"
+
                   return (
                     <Link key={appointment.id} to={`/appointments/${appointment.id}`} className="block">
                       <div
@@ -691,11 +755,8 @@ const AppointmentsCalendar = () => {
                         }`}
                       >
                         <div className="flex items-center justify-between mb-2">
-                          <Badge
-                            variant={getAppointmentBadgeVariant(appointment.type || appointment.status)}
-                            className="border border-opacity-50"
-                          >
-                            {appointment.type || appointment.status}
+                          <Badge className={`border border-opacity-50 ${getAppointmentTypeProps(type).colorClass}`}>
+                            {getAppointmentTypeProps(type).label}
                           </Badge>
                           <span className="text-xs font-medium text-gray-500">
                             {formatAppointmentTime(appointmentDate)}
@@ -705,12 +766,17 @@ const AppointmentsCalendar = () => {
                           <Avatar name={appointment.patientName || "Paciente"} size="sm" className="mr-2" />
                           <div>
                             <p className="font-medium text-sm">{appointment.patientName || "Paciente"}</p>
-                            <div className="text-xs text-gray-500">
-                              {appointmentDate.toLocaleDateString("es", {
-                                weekday: "short",
-                                day: "numeric",
-                                month: "short",
-                              })}
+                            <div className="flex items-center gap-2 mt-1">
+                              <div className="text-xs text-gray-500">
+                                {appointmentDate.toLocaleDateString("es", {
+                                  weekday: "short",
+                                  day: "numeric",
+                                  month: "short",
+                                })}
+                              </div>
+                              <Badge className={`text-xs ${statusProps.colorClass}`}>
+                                {statusProps.label}
+                              </Badge>
                             </div>
                           </div>
                         </div>
