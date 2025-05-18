@@ -12,7 +12,7 @@ import appointmentService from "../../../services/appointmentService"
 import Modal from "../../ui/Modal"
 import AppointmentForm from "./AppointmentForm"
 import { Calendar, dateFnsLocalizer } from "react-big-calendar"
-import { format, parse, startOfWeek, getDay } from "date-fns"
+import { format, parse, startOfWeek, getDay, isToday as isDateToday } from "date-fns"
 import es from "date-fns/locale/es"
 import "react-big-calendar/lib/css/react-big-calendar.css"
 
@@ -84,6 +84,7 @@ const AppointmentsCalendar = () => {
   const [selectedPatientId, setSelectedPatientId] = useState(null)
   const [selectedDate, setSelectedDate] = useState(null)
   const [isMobile, setIsMobile] = useState(false)
+  const [showLegend, setShowLegend] = useState(false)
 
   // Detectar si es dispositivo móvil
   useEffect(() => {
@@ -319,6 +320,14 @@ const AppointmentsCalendar = () => {
     ).slice(0, 5) // Mostrar solo las 5 próximas
   }
 
+  // Tipos de citas para la leyenda
+  const appointmentTypes = [
+    { type: "Primera consulta", color: "bg-blue-100 border-l-4 border-blue-500 text-blue-800" },
+    { type: "Urgencia", color: "bg-red-100 border-l-4 border-red-500 text-red-800" },
+    { type: "Seguimiento", color: "bg-sky-100 border-l-4 border-sky-500 text-sky-800" },
+    { type: "Sesión regular", color: "bg-emerald-100 border-l-4 border-emerald-500 text-emerald-800" },
+  ]
+
   // Personalizar los componentes del calendario
   const calendarComponents = {
     event: (props) => {
@@ -331,7 +340,7 @@ const AppointmentsCalendar = () => {
             <div className="font-medium text-sm truncate">{event.resource?.patientName || "Paciente"}</div>
             <div className="text-xs truncate flex items-center">
               <span className="mr-1">{formatAppointmentTime(event.start)}</span>
-              <Badge variant={getAppointmentBadgeVariant(appointmentType)} className="text-xs">
+              <Badge variant={getAppointmentBadgeVariant(appointmentType)} className="text-xs border border-opacity-50">
                 {appointmentType}
               </Badge>
             </div>
@@ -343,15 +352,16 @@ const AppointmentsCalendar = () => {
 
   return (
     <DashboardLayout>
-      <div className="mb-4 sm:mb-6">
+      {/* Header con gradiente */}
+      <div className="bg-gradient-to-r from-teal-500 to-emerald-600 text-white rounded-xl p-4 sm:p-6 mb-4 sm:mb-6 shadow-md border border-teal-400">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Calendario de Citas</h1>
-            <p className="text-sm sm:text-base text-gray-600">Gestiona tus citas y consultas con pacientes</p>
+            <h1 className="text-xl sm:text-2xl font-bold">Calendario de Citas</h1>
+            <p className="text-sm sm:text-base text-teal-100">Gestiona tus citas y consultas con pacientes</p>
           </div>
           <Button
-            variant="primary"
-            className="bg-teal-600 hover:bg-teal-700 text-white w-full sm:w-auto"
+            variant="white"
+            className="bg-white/90 hover:bg-white text-teal-700 border border-white/30 hover:border-white w-full sm:w-auto"
             icon={<Icons.CalendarPlus className="w-4 h-4" />}
             onClick={() => openNewAppointmentModal()}
           >
@@ -361,80 +371,130 @@ const AppointmentsCalendar = () => {
       </div>
 
       {/* Calendar Navigation */}
-      <Card className="mb-4 sm:mb-6 border-none shadow-sm">
-        <CardContent className="p-3 sm:p-4">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div className="flex items-center space-x-2">
-              <Button variant="outline" size="sm" onClick={handlePrevious} className="px-2">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
+      <Card className="mb-4 sm:mb-6 border border-gray-200 shadow-sm overflow-hidden">
+        <CardContent className="p-0">
+          <div className="bg-gradient-to-r from-gray-50 to-white border-b border-gray-200 p-3 sm:p-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handlePrevious}
+                  className="px-2 border-gray-200 hover:bg-gray-50"
                 >
-                  <path d="m15 18-6-6 6-6" />
-                </svg>
-              </Button>
-              <Button variant="outline" size="sm" onClick={goToToday}>
-                Hoy
-              </Button>
-              <Button variant="outline" size="sm" onClick={handleNext} className="px-2">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="m15 18-6-6 6-6" />
+                  </svg>
+                </Button>
+                <Button variant="outline" size="sm" onClick={goToToday} className="border-gray-200 hover:bg-gray-50">
+                  Hoy
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleNext}
+                  className="px-2 border-gray-200 hover:bg-gray-50"
                 >
-                  <path d="m9 18 6-6-6-6" />
-                </svg>
-              </Button>
-              <h2 className="text-base sm:text-lg font-medium text-gray-800">{getCurrentViewTitle()}</h2>
-            </div>
-            <div className="flex items-center space-x-2 overflow-x-auto pb-1 -mx-3 px-3 sm:pb-0 sm:mx-0 sm:px-0">
-              <Button
-                variant={view === "day" ? "primary" : "outline"}
-                size="sm"
-                onClick={() => setView("day")}
-                className={view === "day" ? "bg-teal-600 hover:bg-teal-700 text-white" : ""}
-              >
-                Día
-              </Button>
-              <Button
-                variant={view === "week" ? "primary" : "outline"}
-                size="sm"
-                onClick={() => setView("week")}
-                className={view === "week" ? "bg-teal-600 hover:bg-teal-700 text-white" : ""}
-              >
-                Semana
-              </Button>
-              <Button
-                variant={view === "month" ? "primary" : "outline"}
-                size="sm"
-                onClick={() => setView("month")}
-                className={view === "month" ? "bg-teal-600 hover:bg-teal-700 text-white" : ""}
-              >
-                Mes
-              </Button>
-              <Button
-                variant={view === "agenda" ? "primary" : "outline"}
-                size="sm"
-                onClick={() => setView("agenda")}
-                className={view === "agenda" ? "bg-teal-600 hover:bg-teal-700 text-white" : ""}
-              >
-                Agenda
-              </Button>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="m9 18 6-6-6-6" />
+                  </svg>
+                </Button>
+                <h2 className="text-base sm:text-lg font-medium text-gray-800">{getCurrentViewTitle()}</h2>
+              </div>
+              <div className="flex items-center space-x-2 overflow-x-auto pb-1 -mx-3 px-3 sm:pb-0 sm:mx-0 sm:px-0">
+                <Button
+                  variant={view === "day" ? "primary" : "outline"}
+                  size="sm"
+                  onClick={() => setView("day")}
+                  className={
+                    view === "day"
+                      ? "bg-teal-600 hover:bg-teal-700 text-white border border-teal-700"
+                      : "border-gray-200 hover:bg-gray-50"
+                  }
+                >
+                  Día
+                </Button>
+                <Button
+                  variant={view === "week" ? "primary" : "outline"}
+                  size="sm"
+                  onClick={() => setView("week")}
+                  className={
+                    view === "week"
+                      ? "bg-teal-600 hover:bg-teal-700 text-white border border-teal-700"
+                      : "border-gray-200 hover:bg-gray-50"
+                  }
+                >
+                  Semana
+                </Button>
+                <Button
+                  variant={view === "month" ? "primary" : "outline"}
+                  size="sm"
+                  onClick={() => setView("month")}
+                  className={
+                    view === "month"
+                      ? "bg-teal-600 hover:bg-teal-700 text-white border border-teal-700"
+                      : "border-gray-200 hover:bg-gray-50"
+                  }
+                >
+                  Mes
+                </Button>
+                <Button
+                  variant={view === "agenda" ? "primary" : "outline"}
+                  size="sm"
+                  onClick={() => setView("agenda")}
+                  className={
+                    view === "agenda"
+                      ? "bg-teal-600 hover:bg-teal-700 text-white border border-teal-700"
+                      : "border-gray-200 hover:bg-gray-50"
+                  }
+                >
+                  Agenda
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowLegend(!showLegend)}
+                  className="border-gray-200 hover:bg-gray-50"
+                >
+                  <Icons.Calendar className="w-4 h-4 mr-1" />
+                  <span className="hidden sm:inline">Leyenda</span>
+                </Button>
+              </div>
             </div>
           </div>
+
+          {/* Leyenda de tipos de citas */}
+          {showLegend && (
+            <div className="bg-white p-3 border-b border-gray-200">
+              <div className="flex flex-wrap gap-2 justify-center">
+                {appointmentTypes.map((type, index) => (
+                  <div key={index} className={`px-3 py-1 rounded-md text-xs ${type.color} border border-opacity-50`}>
+                    {type.type}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -443,11 +503,11 @@ const AppointmentsCalendar = () => {
         <div className="lg:col-span-2">
           {/* React Big Calendar */}
           {loading ? (
-            <div className="flex justify-center items-center h-64 bg-white rounded-lg shadow-sm">
+            <div className="flex justify-center items-center h-64 bg-white rounded-lg shadow-sm border border-gray-200">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-500"></div>
             </div>
           ) : (
-            <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
               <div className="calendar-container" style={{ height: isMobile ? "500px" : "700px" }}>
                 <Calendar
                   localizer={localizer}
@@ -497,7 +557,7 @@ const AppointmentsCalendar = () => {
                     style: getAppointmentEventStyle(event),
                   })}
                   dayPropGetter={(date) => {
-                    if (isToday(date)) {
+                    if (isDateToday(date)) {
                       return {
                         style: {
                           backgroundColor: "#f0fdfa", // teal-50
@@ -514,28 +574,43 @@ const AppointmentsCalendar = () => {
 
         {/* Upcoming Appointments Sidebar */}
         <div className="hidden lg:block">
-          <Card className="border-none shadow-sm h-full">
-            <CardHeader className="pb-0">
+          <Card className="border border-gray-200 shadow-sm h-full">
+            <CardHeader className="pb-0 bg-gradient-to-r from-gray-50 to-white border-b border-gray-200">
               <CardTitle className="text-lg font-bold flex items-center">
                 <Icons.Calendar className="w-5 h-5 mr-2 text-teal-500" />
                 Próximas Citas
               </CardTitle>
             </CardHeader>
-            <CardContent className="overflow-y-auto" style={{ maxHeight: "650px" }}>
+            <CardContent className="overflow-y-auto p-0" style={{ maxHeight: "650px" }}>
               {loading ? (
                 <div className="py-8 flex justify-center">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-500"></div>
                 </div>
               ) : getUpcomingAppointments().length > 0 ? (
-                <div className="space-y-3 mt-2">
+                <div className="divide-y divide-gray-200">
                   {getUpcomingAppointments().map((appointment) => {
                     const appointmentDate = getAppointmentDate(appointment)
+                    const type = appointment.type || appointment.status || ""
+                    const bgColorClass = type.toLowerCase().includes("primera consulta")
+                      ? "bg-blue-50"
+                      : type.toLowerCase().includes("urgencia")
+                        ? "bg-red-50"
+                        : type.toLowerCase().includes("seguimiento")
+                          ? "bg-sky-50"
+                          : type.toLowerCase().includes("sesión regular")
+                            ? "bg-emerald-50"
+                            : "bg-gray-50"
+
                     return (
                       <Link key={appointment.id} to={`/appointments/${appointment.id}`} className="block">
-                        <div className="bg-white border border-gray-100 rounded-lg p-3 hover:shadow-md transition-shadow">
+                        <div
+                          className={`p-4 hover:bg-gray-50 transition-colors ${
+                            isToday(appointmentDate) ? "border-l-4 border-teal-500" : ""
+                          }`}
+                        >
                           <div className="flex items-center justify-between mb-2">
-                            <Badge variant={getAppointmentBadgeVariant(appointment.type || appointment.status)}>
-                              {appointment.type || appointment.status}
+                            <Badge variant={getAppointmentBadgeVariant(type)} className="border border-opacity-50">
+                              {type}
                             </Badge>
                             <span className="text-xs font-medium text-gray-500">
                               {formatAppointmentTime(appointmentDate)}
@@ -563,7 +638,7 @@ const AppointmentsCalendar = () => {
                   })}
                 </div>
               ) : (
-                <div className="py-10 text-center text-gray-500 bg-gray-50 rounded-lg mt-3">
+                <div className="py-10 text-center text-gray-500 bg-gray-50 border border-gray-200 m-3 rounded-lg">
                   <Icons.Calendar className="w-10 h-10 mx-auto text-gray-300 mb-2" />
                   <p>No hay citas programadas próximamente</p>
                   <Button
@@ -577,7 +652,7 @@ const AppointmentsCalendar = () => {
                 </div>
               )}
             </CardContent>
-            <CardFooter className="pt-0">
+            <CardFooter className="pt-3 pb-3 border-t border-gray-200 bg-gradient-to-r from-gray-50 to-white">
               <Link
                 to="/appointments"
                 className="text-teal-600 text-sm font-medium hover:underline flex items-center mx-auto"
@@ -592,27 +667,34 @@ const AppointmentsCalendar = () => {
 
       {/* Mobile Upcoming Appointments */}
       <div className="lg:hidden mt-4 sm:mt-6">
-        <Card className="border-none shadow-sm">
-          <CardHeader className="pb-0">
+        <Card className="border border-gray-200 shadow-sm">
+          <CardHeader className="pb-0 bg-gradient-to-r from-gray-50 to-white border-b border-gray-200">
             <CardTitle className="text-lg font-bold flex items-center">
               <Icons.Calendar className="w-5 h-5 mr-2 text-teal-500" />
               Próximas Citas
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-0">
             {loading ? (
               <div className="py-8 flex justify-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-500"></div>
               </div>
             ) : getUpcomingAppointments().length > 0 ? (
-              <div className="space-y-3 mt-2">
+              <div className="divide-y divide-gray-200">
                 {getUpcomingAppointments().map((appointment) => {
                   const appointmentDate = getAppointmentDate(appointment)
                   return (
                     <Link key={appointment.id} to={`/appointments/${appointment.id}`} className="block">
-                      <div className="bg-white border border-gray-100 rounded-lg p-3 hover:shadow-md transition-shadow">
+                      <div
+                        className={`p-4 hover:bg-gray-50 transition-colors ${
+                          isToday(appointmentDate) ? "border-l-4 border-teal-500" : ""
+                        }`}
+                      >
                         <div className="flex items-center justify-between mb-2">
-                          <Badge variant={getAppointmentBadgeVariant(appointment.type || appointment.status)}>
+                          <Badge
+                            variant={getAppointmentBadgeVariant(appointment.type || appointment.status)}
+                            className="border border-opacity-50"
+                          >
                             {appointment.type || appointment.status}
                           </Badge>
                           <span className="text-xs font-medium text-gray-500">
@@ -638,7 +720,7 @@ const AppointmentsCalendar = () => {
                 })}
               </div>
             ) : (
-              <div className="py-8 text-center text-gray-500 bg-gray-50 rounded-lg mt-3">
+              <div className="py-8 text-center text-gray-500 bg-gray-50 border border-gray-200 m-3 rounded-lg">
                 <Icons.Calendar className="w-8 h-8 mx-auto text-gray-300 mb-2" />
                 <p>No hay citas programadas próximamente</p>
                 <Button
@@ -652,7 +734,7 @@ const AppointmentsCalendar = () => {
               </div>
             )}
           </CardContent>
-          <CardFooter className="pt-0">
+          <CardFooter className="pt-3 pb-3 border-t border-gray-200 bg-gradient-to-r from-gray-50 to-white">
             <Link
               to="/appointments"
               className="text-teal-600 text-sm font-medium hover:underline flex items-center mx-auto"
@@ -685,6 +767,10 @@ const AppointmentsCalendar = () => {
       <style jsx global>{`
         .rbc-calendar {
           font-family: inherit;
+          background-color: white;
+          border-radius: 0.5rem;
+          overflow: hidden;
+          border: 1px solid #e5e7eb;
         }
         
         .rbc-toolbar {
@@ -692,11 +778,37 @@ const AppointmentsCalendar = () => {
         }
         
         .rbc-header {
-          padding: 8px 3px;
-          font-weight: 500;
+          padding: 10px 3px;
+          font-weight: 600;
           font-size: 0.875rem;
           background-color: #f9fafb;
           border-bottom: 1px solid #e5e7eb;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          color: #4b5563;
+        }
+        
+        .rbc-month-view {
+          border: none;
+          border-radius: 0.5rem;
+          overflow: hidden;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+        
+        .rbc-month-row {
+          border-top: 1px solid #f3f4f6;
+        }
+        
+        .rbc-day-bg {
+          transition: background-color 0.2s;
+        }
+        
+        .rbc-day-bg:hover {
+          background-color: #f9fafb;
+        }
+        
+        .rbc-off-range-bg {
+          background-color: #f9fafb;
         }
         
         .rbc-today {
@@ -704,32 +816,78 @@ const AppointmentsCalendar = () => {
         }
         
         .rbc-event {
-          border-radius: 4px;
-          padding: 2px;
-          border: none;
+          border-radius: 6px;
+          padding: 2px 4px;
+          border: 1px solid rgba(0, 0, 0, 0.1);
           box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+          transition: transform 0.1s, box-shadow 0.1s;
+        }
+        
+        .rbc-event:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.1);
         }
         
         .rbc-event-label {
           display: none;
         }
         
+        .rbc-time-view {
+          border: 1px solid #e5e7eb;
+          border-radius: 0.5rem;
+          overflow: hidden;
+        }
+        
+        .rbc-time-header {
+          border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .rbc-time-content {
+          border-top: 1px solid #e5e7eb;
+        }
+        
+        .rbc-timeslot-group {
+          border-bottom: 1px solid #f3f4f6;
+        }
+        
+        .rbc-time-slot {
+          border-top: none;
+        }
+        
+        .rbc-day-slot .rbc-time-slot {
+          border-top: 1px solid #f3f4f6;
+        }
+        
+        .rbc-current-time-indicator {
+          background-color: #10b981;
+          height: 2px;
+        }
+        
         .rbc-agenda-view table.rbc-agenda-table {
           border: 1px solid #e5e7eb;
           border-radius: 8px;
           overflow: hidden;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
         }
         
         .rbc-agenda-view table.rbc-agenda-table thead > tr > th {
           background-color: #f9fafb;
-          padding: 8px;
-          font-weight: 500;
+          padding: 12px 8px;
+          font-weight: 600;
           border-bottom: 1px solid #e5e7eb;
+          color: #4b5563;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          font-size: 0.75rem;
         }
         
         .rbc-agenda-view table.rbc-agenda-table tbody > tr > td {
-          padding: 8px;
-          border-bottom: 1px solid #e5e7eb;
+          padding: 12px 8px;
+          border-bottom: 1px solid #f3f4f6;
+        }
+        
+        .rbc-agenda-view table.rbc-agenda-table tbody > tr:hover {
+          background-color: #f9fafb;
         }
         
         .rbc-agenda-view table.rbc-agenda-table tbody > tr:last-child > td {
@@ -738,6 +896,7 @@ const AppointmentsCalendar = () => {
         
         .rbc-agenda-time-cell {
           font-size: 0.875rem;
+          font-weight: 500;
         }
         
         .rbc-agenda-date-cell, .rbc-agenda-event-cell {
@@ -747,16 +906,26 @@ const AppointmentsCalendar = () => {
         /* Responsive adjustments */
         @media (max-width: 640px) {
           .rbc-header {
-            padding: 6px 2px;
-            font-size: 0.75rem;
+            padding: 8px 2px;
+            font-size: 0.7rem;
           }
           
           .rbc-event {
-            padding: 1px;
+            padding: 1px 2px;
           }
           
           .rbc-day-slot .rbc-events-container {
             margin-right: 0;
+          }
+          
+          .rbc-agenda-view table.rbc-agenda-table thead > tr > th {
+            padding: 8px 4px;
+            font-size: 0.7rem;
+          }
+          
+          .rbc-agenda-view table.rbc-agenda-table tbody > tr > td {
+            padding: 8px 4px;
+            font-size: 0.8rem;
           }
         }
       `}</style>

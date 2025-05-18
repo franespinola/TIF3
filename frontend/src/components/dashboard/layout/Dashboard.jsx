@@ -171,7 +171,7 @@ const Dashboard = () => {
   return (
     <DashboardLayout>
       {/* Header with greeting and time */}
-      <div className="bg-gradient-to-r from-teal-500 to-emerald-600 text-white rounded-xl p-4 sm:p-6 mb-4 sm:mb-6 shadow-md">
+      <div className="bg-gradient-to-r from-teal-500 to-emerald-600 text-white rounded-xl p-4 sm:p-6 mb-4 sm:mb-6 shadow-md border border-teal-400">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold">{greeting}, Dr. Profesional</h1>
@@ -189,7 +189,7 @@ const Dashboard = () => {
               <Link key={index} to={action.link} className="flex-1 sm:flex-auto">
                 <Button
                   variant="white"
-                  className="bg-white/90 hover:bg-white text-teal-700 border-none w-full sm:w-auto"
+                  className="bg-white/90 hover:bg-white text-teal-700 border border-white/30 hover:border-white w-full sm:w-auto"
                   icon={action.icon}
                 >
                   <span className="whitespace-nowrap">{action.title}</span>
@@ -208,7 +208,7 @@ const Dashboard = () => {
               <Button
                 variant="outline"
                 size="sm"
-                className={`whitespace-nowrap border-${action.color.split(" ")[1].split("-")[0]}-200`}
+                className={`whitespace-nowrap border-${action.color.split(" ")[1].split("-")[0]}-200 border`}
                 icon={action.icon}
               >
                 {action.title}
@@ -221,7 +221,10 @@ const Dashboard = () => {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 md:gap-6 mb-4 sm:mb-6">
         {stats.map((stat, index) => (
-          <Card key={index} className="border-none shadow-sm hover:shadow-md transition-shadow">
+          <Card
+            key={index}
+            className="border border-gray-200 shadow-sm hover:shadow-md hover:border-gray-300 transition-all"
+          >
             <CardContent className="p-0">
               <div className="flex items-stretch h-full">
                 <div className={`w-2 bg-${stat.color}-500 rounded-l-lg`}></div>
@@ -231,7 +234,9 @@ const Dashboard = () => {
                       <p className="text-xs sm:text-sm font-medium text-gray-500">{stat.label}</p>
                       <h3 className="text-xl sm:text-2xl md:text-3xl font-bold mt-1">{stat.value}</h3>
                     </div>
-                    <div className={`p-2 sm:p-3 rounded-full bg-${stat.color}-100 text-${stat.color}-600`}>
+                    <div
+                      className={`p-2 sm:p-3 rounded-full bg-${stat.color}-100 text-${stat.color}-600 border border-${stat.color}-200`}
+                    >
                       {stat.icon}
                     </div>
                   </div>
@@ -253,7 +258,7 @@ const Dashboard = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-4 sm:mb-6">
         {/* Upcoming Appointments */}
-        <Card className="lg:col-span-2 border-none shadow-sm">
+        <Card className="lg:col-span-2 border border-gray-200 shadow-sm">
           <CardHeader className="pb-0 px-4 pt-4 sm:px-6 sm:pt-6">
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg sm:text-xl font-bold flex items-center">
@@ -282,7 +287,7 @@ const Dashboard = () => {
               <div className="space-y-3 mt-3">
                 {upcomingAppointments.map((appointment) => (
                   <Link key={appointment.id} to={`/appointments/${appointment.id}`} className="block">
-                    <div className="bg-white border border-gray-100 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow">
+                    <div className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4 hover:shadow-md hover:border-green-200 transition-all">
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                         <div className="flex items-center">
                           <div className="relative">
@@ -299,7 +304,12 @@ const Dashboard = () => {
                           </div>
                         </div>
                         <div className="flex items-center justify-between sm:flex-col sm:items-end">
-                          <Badge variant={getAppointmentBadgeVariant(appointment.type)}>{appointment.type}</Badge>
+                          <Badge
+                            variant={getAppointmentBadgeVariant(appointment.type)}
+                            className="border border-opacity-50"
+                          >
+                            {appointment.type}
+                          </Badge>
                           <span className="text-xs font-medium sm:mt-1 text-gray-500 ml-2 sm:ml-0">
                             {getTimeUntil(appointment.date)}
                           </span>
@@ -310,7 +320,7 @@ const Dashboard = () => {
                 ))}
               </div>
             ) : (
-              <div className="py-8 sm:py-10 text-center text-gray-500 bg-gray-50 rounded-lg mt-3">
+              <div className="py-8 sm:py-10 text-center text-gray-500 bg-gray-50 rounded-lg mt-3 border border-gray-200">
                 <Icons.Calendar className="w-8 h-8 sm:w-10 sm:h-10 mx-auto text-gray-300 mb-2" />
                 <p>No hay citas programadas próximamente</p>
                 <Link to="/appointments/new">
@@ -325,7 +335,7 @@ const Dashboard = () => {
               </div>
             )}
           </CardContent>
-          <CardFooter className="pt-0 pb-4 px-4 sm:px-6">
+          <CardFooter className="pt-0 pb-4 px-4 sm:px-6 border-t border-gray-100">
             <Link
               to="/appointments"
               className="text-green-600 text-xs sm:text-sm font-medium hover:underline flex items-center mx-auto"
@@ -337,8 +347,8 @@ const Dashboard = () => {
         </Card>
 
         {/* Quick Actions - Desktop */}
-        <Card className="border-none shadow-sm hidden lg:block">
-          <CardHeader className="pb-0 px-4 pt-4 sm:px-6 sm:pt-6">
+        <Card className="border border-gray-200 shadow-sm hidden lg:block">
+          <CardHeader className="pb-0 px-4 pt-4 sm:px-6 sm:pt-6 border-b border-gray-100">
             <CardTitle className="text-lg sm:text-xl font-bold flex items-center">
               <Icons.Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-amber-500" />
               Acciones Rápidas
@@ -348,8 +358,12 @@ const Dashboard = () => {
             <div className="space-y-3 mt-3">
               {quickActions.map((action, index) => (
                 <Link key={index} to={action.link} className="block">
-                  <div className="flex items-center p-3 rounded-lg border border-gray-100 hover:shadow-sm transition-all hover:border-gray-200">
-                    <div className={`p-2 rounded-lg mr-3 ${action.color}`}>{action.icon}</div>
+                  <div className="flex items-center p-3 rounded-lg border border-gray-200 hover:shadow-sm transition-all hover:border-gray-300">
+                    <div
+                      className={`p-2 rounded-lg mr-3 ${action.color} border border-${action.color.split(" ")[1].split("-")[0]}-200`}
+                    >
+                      {action.icon}
+                    </div>
                     <div>
                       <h3 className="font-medium">{action.title}</h3>
                       <p className="text-xs text-gray-500">{action.description}</p>
@@ -363,8 +377,8 @@ const Dashboard = () => {
       </div>
 
       {/* Recent Patients */}
-      <Card className="border-none shadow-sm mb-4 sm:mb-6">
-        <CardHeader className="pb-0 px-4 pt-4 sm:px-6 sm:pt-6">
+      <Card className="border border-gray-200 shadow-sm mb-4 sm:mb-6">
+        <CardHeader className="pb-0 px-4 pt-4 sm:px-6 sm:pt-6 border-b border-gray-100">
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg sm:text-xl font-bold flex items-center">
               <Icons.Patients className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-blue-500" />
@@ -387,7 +401,7 @@ const Dashboard = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mt-3">
               {patients.map((patient) => (
                 <Link key={patient.id} to={`/patients/${patient.id}`} className="block">
-                  <div className="bg-white rounded-lg border border-gray-100 overflow-hidden hover:shadow-md transition-shadow cursor-pointer h-full">
+                  <div className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md hover:border-blue-200 transition-all cursor-pointer h-full">
                     <div className="p-3 sm:p-4">
                       <div className="flex items-center mb-3">
                         <Avatar name={patient.name} size="md" className="mr-3" />
@@ -400,11 +414,11 @@ const Dashboard = () => {
                         </div>
                       </div>
                       <div className="mt-2">
-                        <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-100 text-xs">
+                        <Badge variant="secondary" className="bg-blue-50 text-blue-700 border border-blue-100 text-xs">
                           {patient.diagnosis}
                         </Badge>
                       </div>
-                      <div className="mt-3 pt-3 border-t border-gray-100 flex justify-between text-xs sm:text-sm">
+                      <div className="mt-3 pt-3 border-t border-gray-200 flex justify-between text-xs sm:text-sm">
                         <Button variant="ghost" size="sm" className="text-blue-600 p-0 hover:bg-blue-50">
                           <Icons.Notes className="w-3 h-3 mr-1" />
                           <span className="hidden xs:inline">Historia</span>
@@ -432,8 +446,12 @@ const Dashboard = () => {
         <div className="grid grid-cols-2 gap-3">
           {quickActions.map((action, index) => (
             <Link key={index} to={action.link} className="block">
-              <div className="flex flex-col items-center p-4 rounded-lg border border-gray-100 hover:shadow-sm transition-all hover:border-gray-200 text-center h-full">
-                <div className={`p-3 rounded-full mb-2 ${action.color}`}>{action.icon}</div>
+              <div className="flex flex-col items-center p-4 rounded-lg border border-gray-200 hover:shadow-sm transition-all hover:border-gray-300 text-center h-full">
+                <div
+                  className={`p-3 rounded-full mb-2 ${action.color} border border-${action.color.split(" ")[1].split("-")[0]}-200`}
+                >
+                  {action.icon}
+                </div>
                 <h3 className="font-medium text-sm">{action.title}</h3>
               </div>
             </Link>
