@@ -41,31 +41,55 @@ const mapAppointmentsToEvents = (appointments) => {
 
 // Función para obtener el color de fondo según el tipo de cita
 const getAppointmentEventStyle = (event) => {
-  const type = event.resource?.type?.toLowerCase() || event.resource?.status?.toLowerCase() || ""
+  const type = event.resource?.type?.toLowerCase() || "";
+  const status = event.resource?.status?.toLowerCase() || "";
+  
+  // Si la cita está cancelada, darle un estilo distintivo
+  if (status === 'cancelled') {
+    return {
+      backgroundColor: "#f3f4f6", // gray-100
+      borderLeft: "4px solid #ef4444", // red-500
+      color: "#9ca3af", // gray-400
+      opacity: 0.7,
+      textDecoration: "line-through"
+    }
+  }
 
-  if (type.includes("primera consulta")) {
+  if (type.includes("primera consulta") || type === "primera_sesion_familiar") {
     return {
       backgroundColor: "#dbeafe", // blue-100
       borderLeft: "4px solid #3b82f6", // blue-500
       color: "#1e40af", // blue-800
     }
-  } else if (type.includes("urgencia")) {
+  } else if (type.includes("urgencia") || type === "emergencia") {
     return {
       backgroundColor: "#fee2e2", // red-100
       borderLeft: "4px solid #ef4444", // red-500
       color: "#991b1b", // red-800
     }
-  } else if (type.includes("seguimiento")) {
+  } else if (type.includes("seguimiento") || type === "seguimiento") {
     return {
       backgroundColor: "#e0f2fe", // sky-100
       borderLeft: "4px solid #0ea5e9", // sky-500
       color: "#075985", // sky-800
     }
-  } else if (type.includes("sesión regular")) {
+  } else if (type.includes("sesion familiar") || type === "sesion_familiar") {
     return {
       backgroundColor: "#d1fae5", // emerald-100
       borderLeft: "4px solid #10b981", // emerald-500
       color: "#065f46", // emerald-800
+    }
+  } else if (type === "consulta_familiar") {
+    return {
+      backgroundColor: "#ccfbf1", // teal-100
+      borderLeft: "4px solid #14b8a6", // teal-500
+      color: "#115e59", // teal-800
+    }
+  } else if (type === "consulta") {
+    return {
+      backgroundColor: "#dbeafe", // blue-100
+      borderLeft: "4px solid #3b82f6", // blue-500
+      color: "#1e40af", // blue-800
     }
   }
 
@@ -347,16 +371,24 @@ const AppointmentsCalendar = () => {
     event: (props) => {
       const { event } = props
       const appointmentType = event.resource?.type || "";
+      const appointmentStatus = event.resource?.status || "scheduled";
       const typeProps = getAppointmentTypeProps(appointmentType);
+      const statusProps = getAppointmentStatusProps(appointmentStatus);
+      const isCancelled = appointmentStatus === 'cancelled';
 
       return (
         <div className="flex items-center p-1 overflow-hidden h-full">
           <div className="flex-1 truncate">
-            <div className="font-medium text-sm truncate">{event.resource?.patientName || "Paciente"}</div>
+            <div className={`font-medium text-sm truncate flex items-center ${isCancelled ? 'line-through text-gray-400' : ''}`}>
+              {isCancelled && (
+                <div className={`h-2 w-2 rounded-full mr-1 ${statusProps.colorClass.replace('bg-', 'bg-red-')} flex-shrink-0`}></div>
+              )}
+              {event.resource?.patientName || "Paciente"}
+            </div>
             <div className="text-xs truncate flex items-center">
-              <span className="mr-1">{formatAppointmentTime(event.start)}</span>
-              <Badge className={`text-xs border border-opacity-50 ${typeProps.colorClass}`}>
-                {typeProps.label}
+              <span className={`mr-1 ${isCancelled ? 'text-gray-400' : ''}`}>{formatAppointmentTime(event.start)}</span>
+              <Badge className={`text-xs border border-opacity-50 ${isCancelled ? 'bg-gray-100 text-gray-500 border-gray-300' : typeProps.colorClass}`}>
+                {isCancelled ? 'Cancelada' : typeProps.label}
               </Badge>
             </div>
           </div>
@@ -635,26 +667,17 @@ const AppointmentsCalendar = () => {
                     const type = appointment.type || ""
                     const status = appointment.status || "scheduled"
                     const statusProps = getAppointmentStatusProps(status)
-                    
-                    const bgColorClass = type.toLowerCase().includes("primera consulta")
-                      ? "bg-blue-50"
-                      : type.toLowerCase().includes("urgencia")
-                        ? "bg-red-50"
-                        : type.toLowerCase().includes("seguimiento")
-                          ? "bg-sky-50"
-                          : type.toLowerCase().includes("sesión regular")
-                            ? "bg-emerald-50"
-                            : "bg-gray-50"
+                    const isCancelled = status === 'cancelled';
 
                     return (
                       <Link key={appointment.id} to={`/appointments/${appointment.id}`} className="block">
                         <div
                           className={`p-4 hover:bg-gray-50 transition-colors ${
                             isToday(appointmentDate) ? "border-l-4 border-teal-500" : ""
-                          }`}
+                          } ${isCancelled ? "opacity-75" : ""}`}
                         >
                           <div className="flex items-center justify-between mb-2">
-                            <Badge className={`border border-opacity-50 ${getAppointmentTypeProps(type).colorClass}`}>
+                            <Badge className={`border border-opacity-50 ${isCancelled ? "bg-gray-100 text-gray-500 border-gray-200" : getAppointmentTypeProps(type).colorClass}`}>
                               {getAppointmentTypeProps(type).label}
                             </Badge>
                             <span className="text-xs font-medium text-gray-500">
@@ -664,7 +687,12 @@ const AppointmentsCalendar = () => {
                           <div className="flex items-center">
                             <Avatar name={appointment.patientName || "Paciente"} size="sm" className="mr-2" />
                             <div>
-                              <p className="font-medium text-sm">{appointment.patientName || "Paciente"}</p>
+                              <p className={`font-medium text-sm ${isCancelled ? "line-through text-gray-400" : ""}`}>
+                                {isCancelled && (
+                                  <span className="inline-block h-2 w-2 rounded-full bg-red-400 mr-1"></span>
+                                )}
+                                {appointment.patientName || "Paciente"}
+                              </p>
                               <div className="flex items-center gap-2 mt-1">
                                 <div className="text-xs text-gray-500">
                                   {appointmentDate.toLocaleDateString("es", {
@@ -736,26 +764,17 @@ const AppointmentsCalendar = () => {
                   const type = appointment.type || ""
                   const status = appointment.status || "scheduled"
                   const statusProps = getAppointmentStatusProps(status)
-                  
-                  const bgColorClass = type.toLowerCase().includes("primera consulta")
-                    ? "bg-blue-50"
-                    : type.toLowerCase().includes("urgencia")
-                      ? "bg-red-50"
-                      : type.toLowerCase().includes("seguimiento")
-                        ? "bg-sky-50"
-                        : type.toLowerCase().includes("sesión regular")
-                          ? "bg-emerald-50"
-                          : "bg-gray-50"
+                  const isCancelled = status === 'cancelled';
 
                   return (
                     <Link key={appointment.id} to={`/appointments/${appointment.id}`} className="block">
                       <div
                         className={`p-4 hover:bg-gray-50 transition-colors ${
                           isToday(appointmentDate) ? "border-l-4 border-teal-500" : ""
-                        }`}
+                        } ${isCancelled ? "opacity-75" : ""}`}
                       >
                         <div className="flex items-center justify-between mb-2">
-                          <Badge className={`border border-opacity-50 ${getAppointmentTypeProps(type).colorClass}`}>
+                          <Badge className={`border border-opacity-50 ${isCancelled ? "bg-gray-100 text-gray-500 border-gray-200" : getAppointmentTypeProps(type).colorClass}`}>
                             {getAppointmentTypeProps(type).label}
                           </Badge>
                           <span className="text-xs font-medium text-gray-500">
@@ -765,7 +784,12 @@ const AppointmentsCalendar = () => {
                         <div className="flex items-center">
                           <Avatar name={appointment.patientName || "Paciente"} size="sm" className="mr-2" />
                           <div>
-                            <p className="font-medium text-sm">{appointment.patientName || "Paciente"}</p>
+                            <p className={`font-medium text-sm ${isCancelled ? "line-through text-gray-400" : ""}`}>
+                              {isCancelled && (
+                                <span className="inline-block h-2 w-2 rounded-full bg-red-400 mr-1"></span>
+                              )}
+                              {appointment.patientName || "Paciente"}
+                            </p>
                             <div className="flex items-center gap-2 mt-1">
                               <div className="text-xs text-gray-500">
                                 {appointmentDate.toLocaleDateString("es", {

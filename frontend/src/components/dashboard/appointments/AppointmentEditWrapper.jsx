@@ -4,6 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import DashboardLayout from '../layout/DashboardLayout';
 import appointmentService from '../../../services/appointmentService';
 import AppointmentForm from './AppointmentForm';
+import { getAppointmentStatusProps, getAppointmentTypeProps } from '../../../utils/appointmentUtils';
 
 /**
  * Wrapper component for editing appointments
@@ -131,13 +132,39 @@ const AppointmentEditWrapper = () => {
           </div>
           
           {appointmentData && (
-            <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
-              {appointmentData.status === 'scheduled' ? 'Programada' : 
-               appointmentData.status === 'completed' ? 'Completada' :
-               appointmentData.status === 'cancelled' ? 'Cancelada' : 'Reprogramada'}
+            <div className="flex items-center space-x-3">
+              {appointmentData.type && (
+                <div className={`px-3 py-1 rounded-full text-sm ${getAppointmentTypeProps(appointmentData.type).colorClass}`}>
+                  {getAppointmentTypeProps(appointmentData.type).label}
+                </div>
+              )}
+              
+              {appointmentData.status && (
+                <div className={`px-3 py-1 rounded-full text-sm ${getAppointmentStatusProps(appointmentData.status).colorClass}`}>
+                  {getAppointmentStatusProps(appointmentData.status).label}
+                </div>
+              )}
             </div>
           )}
         </div>
+        
+        {appointmentData && (
+          <div className="flex items-center text-sm text-gray-500 mb-6">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <span>
+              {new Date(appointmentData.date_time).toLocaleDateString('es-ES', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              })}
+            </span>
+          </div>
+        )}
       </div>
       
       <div className="bg-white rounded-lg shadow-md overflow-hidden">

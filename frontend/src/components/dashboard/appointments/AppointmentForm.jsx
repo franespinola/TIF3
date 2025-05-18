@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import appointmentService from '../../../services/appointmentService';
 import patientService from '../../../services/patientService';
 import { v4 as uuidv4 } from 'uuid';
+import { getAppointmentStatusProps } from '../../../utils/appointmentUtils';
 
 /**
  * Formulario para crear o editar citas
@@ -105,6 +106,17 @@ const AppointmentForm = ({ initialData = null, patientId = null, onSave, onCance
     { label: "Emergencia", value: "emergencia" }
   ];
 
+  // Estados de cita disponibles
+  const appointmentStatuses = [
+    { label: "Agendada", value: "scheduled" },
+    { label: "Confirmada", value: "confirmed" },
+    { label: "Reprogramada", value: "rescheduled" },
+    { label: "En consulta", value: "in_progress" },
+    { label: "Finalizada", value: "completed" },
+    { label: "Cancelada", value: "cancelled" },
+    { label: "Ausente", value: "no_show" }
+  ];
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {error && (
@@ -180,22 +192,50 @@ const AppointmentForm = ({ initialData = null, patientId = null, onSave, onCance
         </div>
       </div>
       
-      <div>
-        <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-1">
-          Tipo de cita *
-        </label>
-        <select
-          id="type"
-          name="type"
-          className="w-full rounded-md border border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          value={formData.type}
-          onChange={handleChange}
-          required
-        >
-          {appointmentTypes.map(type => (
-            <option key={type.value} value={type.value}>{type.label}</option>
-          ))}
-        </select>
+      <div className="grid md:grid-cols-2 gap-4">
+        <div>
+          <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-1">
+            Tipo de cita *
+          </label>
+          <select
+            id="type"
+            name="type"
+            className="w-full rounded-md border border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value={formData.type}
+            onChange={handleChange}
+            required
+          >
+            {appointmentTypes.map(type => (
+              <option key={type.value} value={type.value}>{type.label}</option>
+            ))}
+          </select>
+        </div>
+        
+        <div>
+          <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
+            Estado de la cita *
+          </label>
+          <select
+            id="status"
+            name="status"
+            className="w-full rounded-md border border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value={formData.status}
+            onChange={handleChange}
+            required
+          >
+            {appointmentStatuses.map(status => (
+              <option key={status.value} value={status.value}>
+                {status.label}
+              </option>
+            ))}
+          </select>
+          <div className="mt-2 flex items-center">
+            <div className={`h-3 w-3 rounded-full mr-2 ${getAppointmentStatusProps(formData.status).colorClass}`}></div>
+            <span className="text-xs text-gray-500">
+              {getAppointmentStatusProps(formData.status).label}
+            </span>
+          </div>
+        </div>
       </div>
       
       <div>

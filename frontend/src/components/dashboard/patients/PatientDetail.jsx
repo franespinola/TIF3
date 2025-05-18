@@ -404,9 +404,11 @@ const PatientDetail = () => {
                           {appointmentDate.toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' })}
                         </p>
                         <div className="flex flex-col items-center mt-3 space-y-2">
-                          <p className="text-sm text-gray-500">
-                            Tipo: {nextAppointment.type}
-                          </p>
+                          <div className="text-sm">
+                            <span className={`px-2 py-1 inline-flex text-xs font-semibold rounded-full ${getAppointmentTypeProps(nextAppointment.type).colorClass}`}>
+                              {getAppointmentTypeProps(nextAppointment.type).label}
+                            </span>
+                          </div>
                           <Badge className={statusProps.colorClass}>
                             {statusProps.label}
                           </Badge>
@@ -641,7 +643,9 @@ const PatientDetail = () => {
                               </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm text-gray-900">{appointment.type}</div>
+                              <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getAppointmentTypeProps(appointment.type).colorClass}`}>
+                                {getAppointmentTypeProps(appointment.type).label}
+                              </span>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
                               <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusProps.colorClass}`}>

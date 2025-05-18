@@ -150,6 +150,7 @@ async def get_patient_appointments(
             "date_time": appointment.date_time,
             "duration_minutes": appointment.duration_minutes,
             "status": appointment.status,
+            "type": appointment.type,
             "notes": appointment.notes,
             "created_at": appointment.created_at,
             "patientName": patient.name

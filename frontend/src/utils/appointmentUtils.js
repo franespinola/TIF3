@@ -18,7 +18,7 @@ export const getAppointmentTypeProps = (type) => {
       };
     case "sesion_familiar":
       return {
-        label: "Sesión regular",
+        label: "Sesión familiar",
         variant: "success",
         colorClass: "bg-emerald-100 text-emerald-700"
       };
