@@ -1,4 +1,5 @@
 import React, { useCallback, useState, useEffect, useMemo } from "react";
+import { useParams } from "react-router-dom";
 import ReactFlow, {
   Background,
   Panel
@@ -21,6 +22,7 @@ import { transformToReactFlow } from "../../utils/transformToReactFlow";
 import useRecorder from "../../hooks/useRecorder";
 import layoutWithDagre from "../../utils/layoutWithDagre";
 import { normalizeGenogram } from "../../utils/normalizeGenogram";
+import genogramService from "../../services/genogramService";
 
 // Constante para la altura del MenuBar - asegúrate de que coincida con el height en MenuBar.jsx
 const MENU_BAR_HEIGHT = 48;
@@ -30,6 +32,21 @@ const SUB_MENU_BAR_HEIGHT = 40;
 const TOTAL_MENU_HEIGHT = MENU_BAR_HEIGHT + SUB_MENU_BAR_HEIGHT;
 
 function GenogramaEditorWrapper({ initialData }) {
+  // Obtener el ID del genograma desde los parámetros de la URL
+  const { id: genogramId } = useParams();
+  
+  // Información del genograma que se está editando
+  const [genogramInfo, setGenogramInfo] = useState({
+    name: "",
+    description: "",
+    notes: "",
+    patient_id: "",
+    patientName: ""
+  });
+  
+  // Indicador de carga
+  const [isLoading, setIsLoading] = useState(false);
+  
   // Estado para la conexión seleccionada
   const [selectedEdge, setSelectedEdge] = useState(null);
   const [selectedNode, setSelectedNode] = useState(null);
@@ -76,11 +93,12 @@ function GenogramaEditorWrapper({ initialData }) {
     onExportCSV,
     onExportPNG,
     onExportJPG,
-    onExportCanvas, // Agregamos la nueva función de exportación a canvas
+    onExportCanvas,
     setEdges,
     setNodes,
     updateEdgeRelation,
-    updateNodeData
+    updateNodeData,
+    saveToDatabase
   } = useGenogramaState();
   
   // Efecto para cargar los datos iniciales del genograma
@@ -89,42 +107,55 @@ function GenogramaEditorWrapper({ initialData }) {
       try {
         console.log('Processing initial data in GenogramaEditorWrapper:', initialData);
         
-        // Validar que los datos tengan la estructura esperada
-        if (!initialData.people || !initialData.relationships) {
-          console.error('Invalid initial data structure:', initialData);
+        // Determinar el formato de los datos recibidos
+        if (initialData.nodes && initialData.edges) {
+          // Si ya está en formato {nodes, edges}, usarlo directamente
+          console.log('Datos recibidos en formato nodes/edges, aplicando directamente');
+          
+          // Aplicar layout automático con dagre
+          const laidOutNodes = layoutWithDagre(initialData.nodes, initialData.edges);
+          console.log('Nodes after layout:', laidOutNodes);
+
+          // Setear los nodos y aristas en el estado global del genograma
+          setNodes(laidOutNodes);
+          setEdges(initialData.edges);
+          
+        } else if (initialData.people && initialData.relationships) {
+          // Si está en formato {people, relationships}, normalizar primero
+          // Validar que people y relationships sean arrays
+          if (!Array.isArray(initialData.people) || !Array.isArray(initialData.relationships)) {
+            console.error('People and relationships must be arrays:', initialData);
+            return;
+          }
+
+          // Validar que cada persona tenga un ID
+          const invalidPeople = initialData.people.filter(person => !person || !person.id);
+          if (invalidPeople.length > 0) {
+            console.error('Found people without IDs:', invalidPeople);
+            return;
+          }
+
+          // Normalizar los datos recibidos
+          const { nodes: normalizedNodes, edges: normalizedEdges } = normalizeGenogram(initialData);
+          console.log('Normalized nodes:', normalizedNodes);
+          console.log('Normalized edges:', normalizedEdges);
+
+          if (!normalizedNodes.length) {
+            console.warn('No nodes were generated from the initial data');
+            return;
+          }
+
+          // Aplicar layout automático con dagre
+          const laidOutNodes = layoutWithDagre(normalizedNodes, normalizedEdges);
+          console.log('Nodes after layout:', laidOutNodes);
+
+          // Setear los nodos y aristas en el estado global del genograma
+          setNodes(laidOutNodes);
+          setEdges(normalizedEdges);
+        } else {
+          console.error('Formato de datos no reconocido:', initialData);
           return;
         }
-
-        // Validar que people y relationships sean arrays
-        if (!Array.isArray(initialData.people) || !Array.isArray(initialData.relationships)) {
-          console.error('People and relationships must be arrays:', initialData);
-          return;
-        }
-
-        // Validar que cada persona tenga un ID
-        const invalidPeople = initialData.people.filter(person => !person || !person.id);
-        if (invalidPeople.length > 0) {
-          console.error('Found people without IDs:', invalidPeople);
-          return;
-        }
-
-        // Normalizar los datos recibidos
-        const { nodes: normalizedNodes, edges: normalizedEdges } = normalizeGenogram(initialData);
-        console.log('Normalized nodes:', normalizedNodes);
-        console.log('Normalized edges:', normalizedEdges);
-
-        if (!normalizedNodes.length) {
-          console.warn('No nodes were generated from the initial data');
-          return;
-        }
-
-        // Aplicar layout automático con dagre
-        const laidOutNodes = layoutWithDagre(normalizedNodes, normalizedEdges);
-        console.log('Nodes after layout:', laidOutNodes);
-
-        // Setear los nodos y aristas en el estado global del genograma
-        setNodes(laidOutNodes);
-        setEdges(normalizedEdges);
       } catch (error) {
         console.error("Error al procesar el genograma inicial:", error);
       }
@@ -285,6 +316,132 @@ function GenogramaEditorWrapper({ initialData }) {
   const memoizedNodeTypes = useMemo(() => nodeTypes, []);
   const memoizedEdgeTypes = useMemo(() => edgeTypes, []);
 
+  // Función para guardar el genograma actual
+  const handleSaveGenogram = useCallback(() => {
+    if (isLoading) return;
+    
+    // Llamar a la función saveToDatabase con los datos del genograma actual
+    saveToDatabase({
+      genogramId: genogramId,
+      patientId: genogramInfo.patient_id,
+      name: genogramInfo.name,
+      description: genogramInfo.description,
+      notes: genogramInfo.notes,
+      thumbnail: genogramInfo.thumbnail
+    });
+  }, [genogramId, genogramInfo, saveToDatabase, isLoading]);
+
+  // Cargar los detalles del genograma si estamos en modo edición
+  useEffect(() => {
+    if (genogramId) {
+      setIsLoading(true);
+      genogramService.viewGenogram(genogramId)
+        .then(response => {
+          const data = response.data;
+          setGenogramInfo({
+            name: data.name || "Genograma sin título",
+            description: data.description || "",
+            notes: data.notes || "",
+            patient_id: data.patient_id || data.patientId, // Usar cualquiera de los dos campos disponibles
+            patientName: data.patientName || "Paciente no disponible",
+            thumbnail: data.thumbnail
+          });
+          
+          // Cargar nodos y aristas del genograma si existen
+          if (data.nodes && data.edges) {
+            console.log('Cargando nodos y aristas del genograma desde backend');
+            
+            // Verificar si los nodos ya tienen posiciones definidas
+            const allNodesHavePositions = data.nodes.every(node => 
+              node.position && typeof node.position.x === 'number' && typeof node.position.y === 'number'
+            );
+            
+            if (allNodesHavePositions) {
+              // Si todos los nodos tienen posiciones definidas, usarlas directamente
+              console.log('Usando posiciones existentes de los nodos');
+              setNodes(data.nodes);
+            } else {
+              // Si algún nodo no tiene posición, aplicar layout automático
+              console.log('Aplicando layout automático a los nodos');
+              const laidOutNodes = layoutWithDagre(data.nodes, data.edges);
+              setNodes(laidOutNodes);
+            }
+            
+            setEdges(data.edges);
+          }
+          
+          setIsLoading(false);
+        })
+        .catch(error => {
+          console.error("Error al cargar los detalles del genograma:", error);
+          setIsLoading(false);
+          // Mostrar mensaje de error
+          const div = document.createElement("div");
+          div.textContent = "Error al cargar los datos del genograma";
+          Object.assign(div.style, {
+            position: "absolute",
+            top: "60px",
+            right: "10px",
+            background: "#f87171",
+            color: "white",
+            padding: "8px 12px",
+            borderRadius: "8px",
+            zIndex: 9999,
+          });
+          document.body.appendChild(div);
+          setTimeout(() => document.body.removeChild(div), 3000);
+        });
+    }
+  }, [genogramId, setNodes, setEdges]);
+
+  // Añadir manejador de eventos para el atajo de teclado Ctrl+S
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Detectar Ctrl+S (o Cmd+S en Mac)
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault(); // Prevenir el comportamiento por defecto del navegador
+        if (!isLoading && genogramInfo.patient_id) {
+          handleSaveGenogram();
+        }
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [handleSaveGenogram, isLoading, genogramInfo.patient_id]);
+  
+  // Añadir indicador visual de carga
+  useEffect(() => {
+    // Mostrar u ocultar el indicador de carga en la interfaz
+    const loadingIndicator = document.getElementById('saving-indicator');
+    
+    if (isLoading) {
+      if (!loadingIndicator) {
+        const indicator = document.createElement('div');
+        indicator.id = 'saving-indicator';
+        indicator.textContent = 'Guardando...';
+        Object.assign(indicator.style, {
+          position: 'fixed',
+          bottom: '20px',
+          right: '20px',
+          background: '#4ade80',
+          color: 'white',
+          padding: '8px 16px',
+          borderRadius: '4px',
+          zIndex: 9999,
+          boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+        });
+        document.body.appendChild(indicator);
+      }
+    } else {
+      if (loadingIndicator) {
+        document.body.removeChild(loadingIndicator);
+      }
+    }
+  }, [isLoading]);
+
   return (
     <>
       <MenuBar
@@ -293,7 +450,10 @@ function GenogramaEditorWrapper({ initialData }) {
         onExportCSV={onExportCSV}
         onExportPNG={onExportPNG}
         onExportJPG={onExportJPG}
-        onExportCanvas={onExportCanvas} // Pasamos la nueva función como prop
+        onExportCanvas={onExportCanvas}
+        onSaveGenogram={handleSaveGenogram}
+        genogramInfo={genogramInfo}
+        isLoading={isLoading}
         showNavigationPanel={showNavigationPanel}
         setShowNavigationPanel={setShowNavigationPanel}
         showSmartGuidesConfigPanel={showSmartGuidesConfigPanel}

@@ -11,6 +11,9 @@ export default function MenuBar({
   onExportPNG,
   onExportJPG,
   onExportCanvas, // Nueva prop para exportar como canvas
+  onSaveGenogram, // Nueva prop para guardar el genograma en la base de datos
+  genogramInfo, // Información del genograma actual
+  isLoading, // Indicador de carga
   // Propiedades para controlar la visibilidad de los paneles
   showNavigationPanel,
   setShowNavigationPanel,
@@ -398,6 +401,30 @@ export default function MenuBar({
               closeDelay={300}
             >
               <div ref={fileMenuRef} style={dropdownStyle}>
+                <div
+                  style={{
+                    ...dropdownItemStyle,
+                    display: 'flex', 
+                    alignItems: 'center',
+                    gap: '6px',
+                    opacity: isLoading ? 0.5 : 1,
+                    cursor: isLoading ? 'not-allowed' : 'pointer'
+                  }}
+                  onMouseEnter={!isLoading ? dropdownItemHover : undefined}
+                  onMouseLeave={!isLoading ? dropdownItemLeave : undefined}
+                  onClick={() => {
+                    if (!isLoading && onSaveGenogram) {
+                      onSaveGenogram();
+                      setShowFileMenu(false);
+                    }
+                  }}
+                >
+                  <span>{`Guardar${genogramInfo?.name ? ` "${genogramInfo.name}"` : ''}`}</span>
+                  <span style={{ fontSize: '10px', color: '#666', marginLeft: 'auto' }}>
+                    Ctrl+S
+                  </span>
+                </div>
+
                 <div
                   ref={importItemRef}
                   style={dropdownItemStyle}

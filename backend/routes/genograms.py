@@ -41,12 +41,17 @@ async def list_genograms(
     result = []
     
     for genogram in genograms:
+        # Manejar el caso donde el paciente no existe
+        patient_name = "Paciente no disponible"
+        if genogram.patient:
+            patient_name = genogram.patient.name
+            
         # Convertimos el modelo de base de datos al formato que espera el frontend
         item = {
             "id": genogram.id,
             "patient_id": genogram.patient_id,
             "patientId": genogram.patient_id,  # Para compatibilidad con frontend
-            "patientName": genogram.patient.name,
+            "patientName": patient_name,
             "data": genogram.data,
             "notes": genogram.notes,
             "name": genogram.name or "Genograma sin título",
@@ -158,11 +163,16 @@ async def view_genogram(
     if not genogram:
         raise HTTPException(status_code=404, detail="Genograma no encontrado")
     
+    # Manejar el caso donde el paciente no existe
+    patient_name = "Paciente no disponible"
+    if genogram.patient:
+        patient_name = genogram.patient.name
+    
     return {
         "id": genogram.id,
         "patient_id": genogram.patient_id,
         "patientId": genogram.patient_id,
-        "patientName": genogram.patient.name,
+        "patientName": patient_name,
         "data": genogram.data,
         "notes": genogram.notes,
         "name": genogram.name or "Genograma sin título",

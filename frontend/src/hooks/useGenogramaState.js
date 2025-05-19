@@ -7,6 +7,7 @@ import layoutWithDagre from '../utils/layoutWithDagre';
 import { normalizeGenogram } from '../utils/normalizeGenogram';
 // Importar las funciones de exportación de imágenes
 import { exportAsPng, exportAsJpeg, exportAsCanvas } from '../utils/imageExport';
+import genogramService from '../services/genogramService'; // Importación para guardar en la base de datos
 
 /**
  * Hook personalizado para manejar el estado del genograma.
@@ -243,6 +244,48 @@ export default function useGenogramaState() {
     showToast("✅ Snapshot exportado correctamente");
   }, [nodes, edges, showToast]);
 
+  const saveToDatabase = useCallback(async ({ genogramId = null, patientId, name, description, notes, thumbnail = null }) => {
+    // Crear una copia profunda de nodos y aristas para asegurar que se guarden todas las propiedades
+    const snapshot = {
+      isSnapshot: true,
+      nodes: nodes.map(n => ({ 
+        ...n,
+        // Asegurar que la posición se guarde correctamente
+        position: { 
+          x: n.position?.x || 0,
+          y: n.position?.y || 0
+        },
+        // Asegurar que todos los datos se guarden
+        data: { ...n.data }
+      })),
+      edges: edges.map(e => ({ ...e, data: { ...e.data } }))
+    };
+
+    const payload = {
+      patient_id: patientId,
+      name,
+      description,
+      notes,
+      thumbnail,
+      data: snapshot
+    };
+
+    try {
+      let response;
+      if (genogramId) {
+        response = await genogramService.updateGenogram(genogramId, payload);
+        showToast("✅ Genograma actualizado correctamente");
+      } else {
+        response = await genogramService.createGenogram(payload);
+        showToast("✅ Genograma creado correctamente");
+      }
+      return response;
+    } catch (error) {
+      console.error("❌ Error al guardar genograma:", error);
+      showToast("❌ Error al guardar genograma", false);
+    }
+  }, [nodes, edges, showToast]);
+
   const onExportCSV = useCallback(() => {
     let csv = "type,id,label,x,y,source,target,relType\n";
     nodes.forEach((node) => { csv += `"node","${node.id}","${node.data.label}",${node.position.x},${node.position.y},,,\n`; });
@@ -355,7 +398,8 @@ export default function useGenogramaState() {
     onExportCSV,
     onExportPNG,
     onExportJPG,
-    onExportCanvas
+    onExportCanvas,
+    saveToDatabase
   };
 }
 // --- END OF FILE useGenogramaState.js ---

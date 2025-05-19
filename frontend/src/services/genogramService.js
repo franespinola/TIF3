@@ -34,6 +34,30 @@ const genogramService = {
   },
   
   /**
+   * Obtiene la vista detallada de un genograma con datos del paciente
+   * @param {string} genogramId - ID del genograma
+   * @returns {Promise} - Respuesta con los detalles completos del genograma incluyendo nombre del paciente
+   */
+  viewGenogram: (genogramId) => {
+    return api.get(`/genograms/view/${genogramId}`)
+      .then(response => {
+        // Procesar la respuesta para exponer los datos del genograma en el formato requerido
+        if (response.data && response.data.data) {
+          // Extraer los nodes y edges del campo data y ponerlos también en el nivel superior
+          const genogramData = response.data.data;
+          if (genogramData.nodes && genogramData.edges) {
+            response.data.nodes = genogramData.nodes;
+            response.data.edges = genogramData.edges;
+          } else if (genogramData.isSnapshot && genogramData.nodes && genogramData.edges) {
+            response.data.nodes = genogramData.nodes;
+            response.data.edges = genogramData.edges;
+          }
+        }
+        return response;
+      });
+  },
+  
+  /**
    * Obtiene el contenido de un genograma específico
    * @param {string} genogramId - ID del genograma
    * @returns {Promise} - Respuesta con el contenido del genograma
