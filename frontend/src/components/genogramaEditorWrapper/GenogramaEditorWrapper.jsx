@@ -540,7 +540,8 @@ function GenogramaEditorWrapper({ initialData }) {
             style={{
               width: "100%", 
               height: "100%", 
-              background: "#f8f8f8" 
+              background: "#f8f8f8",
+              touchAction: "none"
             }}
             nodes={nodes.map((node) => ({
               ...node,
@@ -564,6 +565,29 @@ function GenogramaEditorWrapper({ initialData }) {
             onEdgeClick={handleEdgeClick}
             onNodeClick={handleNodeClick}
             onPaneClick={handlePaneClick}
+            defaultViewport={{ x: 0, y: 0, zoom: 1 }}
+            minZoom={0.1}
+            maxZoom={4}
+            zoomOnScroll={true}
+            zoomOnPinch={true}
+            panOnScroll={true}
+            panOnDrag={true}
+            preventScrolling={true}
+            defaultEdgeOptions={{
+              type: 'smoothstep',
+              animated: false,
+              style: { stroke: '#555' }
+            }}
+            attributionPosition="bottom-right"
+            proOptions={{ hideAttribution: true }}
+            onTouchStart={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+            onTouchMove={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
           >
             <Background gap={12} size={1} />
             

@@ -1,5 +1,8 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { 
+  createBrowserRouter,
+  RouterProvider
+} from 'react-router-dom';
 import { ReactFlowProvider } from 'reactflow';
 
 // Componente original de Genograma
@@ -12,6 +15,37 @@ import DashboardRoutes from './components/dashboard/routes/Routes';
 // Componentes de Autenticación
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
+
+// Configuración del router con banderas futuras
+const router = createBrowserRouter([
+  {
+    path: "/editor",
+    element: (
+      <ErrorBoundary>
+        <ReactFlowProvider>
+          <GenogramaEditorWrapper />
+        </ReactFlowProvider>
+      </ErrorBoundary>
+    )
+  },
+  {
+    path: "/login",
+    element: <Login />
+  },
+  {
+    path: "/register",
+    element: <Register />
+  },
+  {
+    path: "/*",
+    element: <DashboardRoutes />
+  }
+], {
+  future: {
+    v7_startTransition: true,
+    v7_relativeSplatPath: true
+  }
+});
 
 function App() {
   // Manejador de errores para ResizeObserver de ReactFlow
@@ -31,37 +65,15 @@ function App() {
     };
   }, []);
 
-  // Estado para verificar si el usuario está autenticado
-  // En una implementación real, esto vendría de un contexto o de una API
-  const isAuthenticated = true; // Por ahora siempre mostramos el dashboard
-
-  // Componente que envuelve el contenido con ReactFlowProvider
-  const GenogramaWithProvider = () => (
-    <ErrorBoundary>
-      <ReactFlowProvider>
-        <GenogramaEditorWrapper />
-      </ReactFlowProvider>
-    </ErrorBoundary>
-  );
-
   return (
     <ErrorBoundary>
-      <Router>
-        <Routes>
-          {/* Ruta original para el editor de genogramas */}
-          <Route path="/editor" element={<GenogramaWithProvider />} />
-          
-          {/* Rutas públicas */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-
-          {/* Rutas protegidas del dashboard */}
-          <Route 
-            path="/*" 
-            element={isAuthenticated ? <DashboardRoutes /> : <Navigate to="/login" />} 
-          />
-        </Routes>
-      </Router>
+      <RouterProvider 
+        router={router}
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true
+        }}
+      />
     </ErrorBoundary>
   );
 }
