@@ -201,13 +201,13 @@ const GenogramEditor = ({ isNew = false, genogramData: initialGenogramData, geno
           </div>
         )}
       </div>
-      
-      <div className="flex-grow overflow-hidden">
+        <div className="flex-grow overflow-hidden">
         <ErrorBoundary>
           <ReactFlowProvider>
             <GenogramaEditorWrapper
               initialData={genogramContent}
-              key={genogramContent ? 'with-data' : 'without-data'}
+              genogramId={id}
+              isEditMode={!isNew}
             />
           </ReactFlowProvider>
         </ErrorBoundary>

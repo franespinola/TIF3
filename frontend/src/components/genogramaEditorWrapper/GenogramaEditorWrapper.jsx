@@ -31,9 +31,10 @@ const SUB_MENU_BAR_HEIGHT = 40;
 // Altura total de la barra superior (MenuBar + SubMenuBar)
 const TOTAL_MENU_HEIGHT = MENU_BAR_HEIGHT + SUB_MENU_BAR_HEIGHT;
 
-function GenogramaEditorWrapper({ initialData }) {
-  // Obtener el ID del genograma desde los parámetros de la URL
-  const { id: genogramId } = useParams();
+function GenogramaEditorWrapper({ initialData, genogramId, isEditMode = false }) {
+  // Obtener el ID del genograma desde los parámetros de la URL como fallback
+  const { id: paramGenogramId } = useParams();
+  const effectiveGenogramId = genogramId || paramGenogramId;
   
   // Información del genograma que se está editando
   const [genogramInfo, setGenogramInfo] = useState({
@@ -100,12 +101,12 @@ function GenogramaEditorWrapper({ initialData }) {
     updateNodeData,
     saveToDatabase
   } = useGenogramaState();
-  
-  // Efecto para cargar los datos iniciales del genograma
+    // Efecto para cargar los datos iniciales del genograma SOLO en modo creación
   useEffect(() => {
-    if (initialData) {
+    // Solo procesar initialData si NO estamos en modo edición
+    if (!isEditMode && initialData) {
       try {
-        console.log('Processing initial data in GenogramaEditorWrapper:', initialData);
+        console.log('Processing initial data for NEW genogram:', initialData);
         
         // Determinar el formato de los datos recibidos
         if (initialData.nodes && initialData.edges) {
@@ -159,10 +160,12 @@ function GenogramaEditorWrapper({ initialData }) {
       } catch (error) {
         console.error("Error al procesar el genograma inicial:", error);
       }
+    } else if (isEditMode) {
+      console.log('En modo edición - los datos se cargarán desde la base de datos');
     } else {
       console.log('No initial data provided to GenogramaEditorWrapper');
     }
-  }, [initialData, setNodes, setEdges]);
+  }, [initialData, isEditMode, setNodes, setEdges]);
   
   // Función para actualizar los estilos visuales de un nodo
   const updateNodeStyle = useCallback((nodeId, styleProps) => {
@@ -315,29 +318,51 @@ function GenogramaEditorWrapper({ initialData }) {
 
   const memoizedNodeTypes = useMemo(() => nodeTypes, []);
   const memoizedEdgeTypes = useMemo(() => edgeTypes, []);
-
   // Función para guardar el genograma actual
   const handleSaveGenogram = useCallback(() => {
-    if (isLoading) return;
+    if (isLoading) {
+      console.log('Guardado ya en proceso, ignorando...');
+      return;
+    }
+    
+    console.log('Iniciando guardado manual del genograma...');
+    setIsLoading(true);
     
     // Llamar a la función saveToDatabase con los datos del genograma actual
     saveToDatabase({
-      genogramId: genogramId,
+      genogramId: effectiveGenogramId,
       patientId: genogramInfo.patient_id,
       name: genogramInfo.name,
       description: genogramInfo.description,
       notes: genogramInfo.notes,
       thumbnail: genogramInfo.thumbnail
+    }).finally(() => {
+      setIsLoading(false);
     });
-  }, [genogramId, genogramInfo, saveToDatabase, isLoading]);
-
+  }, [effectiveGenogramId, genogramInfo, saveToDatabase, isLoading]);
   // Cargar los detalles del genograma si estamos en modo edición
   useEffect(() => {
-    if (genogramId) {
+    if (effectiveGenogramId && isEditMode) {
+      console.log('Cargando genograma desde la base de datos, ID:', effectiveGenogramId);
       setIsLoading(true);
-      genogramService.viewGenogram(genogramId)
-        .then(response => {
+      genogramService.viewGenogram(effectiveGenogramId)        .then(response => {
           const data = response.data;
+          console.log('=== DIAGNÓSTICO DE DATOS CARGADOS ===');
+          console.log('Datos completos del genograma:', JSON.stringify(data, null, 2));
+          console.log('data.data existe?', !!data.data);
+          console.log('data.data:', data.data);
+          
+          if (data.data) {
+            console.log('Tipo de data.data:', typeof data.data);
+            console.log('data.data.nodes existe?', !!data.data.nodes);
+            console.log('data.data.edges existe?', !!data.data.edges);
+            console.log('data.data.isSnapshot:', data.data.isSnapshot);
+          }
+          
+          console.log('data.nodes existe?', !!data.nodes);
+          console.log('data.edges existe?', !!data.edges);
+          console.log('=== FIN DIAGNÓSTICO ===');
+          
           setGenogramInfo({
             name: data.name || "Genograma sin título",
             description: data.description || "",
@@ -346,28 +371,75 @@ function GenogramaEditorWrapper({ initialData }) {
             patientName: data.patientName || "Paciente no disponible",
             thumbnail: data.thumbnail
           });
-          
-          // Cargar nodos y aristas del genograma si existen
-          if (data.nodes && data.edges) {
-            console.log('Cargando nodos y aristas del genograma desde backend');
+            // Cargar nodos y aristas del genograma si existen
+          if (data.data && data.data.nodes && data.data.edges) {
+            console.log('Cargando nodos y aristas del genograma desde backend (formato snapshot)');
             
-            // Verificar si los nodos ya tienen posiciones definidas
-            const allNodesHavePositions = data.nodes.every(node => 
-              node.position && typeof node.position.x === 'number' && typeof node.position.y === 'number'
-            );
+            // Usar los datos exactamente como están guardados en la DB
+            const savedNodes = data.data.nodes;
+            const savedEdges = data.data.edges;
             
-            if (allNodesHavePositions) {
-              // Si todos los nodos tienen posiciones definidas, usarlas directamente
-              console.log('Usando posiciones existentes de los nodos');
-              setNodes(data.nodes);
-            } else {
-              // Si algún nodo no tiene posición, aplicar layout automático
-              console.log('Aplicando layout automático a los nodos');
-              const laidOutNodes = layoutWithDagre(data.nodes, data.edges);
+            console.log('Aplicando datos guardados sin modificaciones:', {
+              nodes: savedNodes.length,
+              edges: savedEdges.length
+            });
+            
+            // Setear directamente los datos guardados para preservar el estado exacto
+            setNodes(savedNodes);
+            setEdges(savedEdges);
+          } else if (data.data && data.data.people && data.data.relationships) {
+            console.log('Cargando genograma en formato people/relationships, convirtiendo a nodes/edges');
+            
+            try {
+              // Normalizar los datos del formato {people, relationships} al formato {nodes, edges}
+              const { nodes: normalizedNodes, edges: normalizedEdges } = normalizeGenogram(data.data);
+              console.log('Normalized nodes:', normalizedNodes.length);
+              console.log('Normalized edges:', normalizedEdges.length);
+
+              if (!normalizedNodes.length) {
+                console.warn('No se generaron nodos desde los datos people/relationships');
+                return;
+              }
+
+              // Aplicar layout automático con dagre
+              const laidOutNodes = layoutWithDagre(normalizedNodes, normalizedEdges);
+              console.log('Nodes after layout:', laidOutNodes.length);
+
+              // Setear los nodos y aristas normalizados
               setNodes(laidOutNodes);
+              setEdges(normalizedEdges);
+            } catch (error) {
+              console.error('Error al normalizar genograma people/relationships:', error);
             }
-            
+          } else if (data.nodes && data.edges) {
+            // Fallback si los datos están en el nivel superior
+            console.log('Usando datos de nivel superior (data.nodes, data.edges)');
+            setNodes(data.nodes);
             setEdges(data.edges);
+          } else if (data.people && data.relationships) {
+            // Fallback si people/relationships están en el nivel superior
+            console.log('Convirtiendo datos people/relationships de nivel superior');
+            
+            try {
+              const { nodes: normalizedNodes, edges: normalizedEdges } = normalizeGenogram(data);
+              console.log('Normalized nodes from top level:', normalizedNodes.length);
+              console.log('Normalized edges from top level:', normalizedEdges.length);
+
+              if (!normalizedNodes.length) {
+                console.warn('No se generaron nodos desde los datos de nivel superior');
+                return;
+              }
+
+              const laidOutNodes = layoutWithDagre(normalizedNodes, normalizedEdges);
+              setNodes(laidOutNodes);
+              setEdges(normalizedEdges);
+            } catch (error) {
+              console.error('Error al normalizar genograma de nivel superior:', error);
+            }
+          } else {
+            console.warn('No se encontraron datos de nodos/aristas en el genograma');
+            console.log('Estructura de datos disponible:', Object.keys(data.data || data));
+            console.log('Revisando si hay datos en data.data:', data.data);
           }
           
           setIsLoading(false);
@@ -392,25 +464,24 @@ function GenogramaEditorWrapper({ initialData }) {
           setTimeout(() => document.body.removeChild(div), 3000);
         });
     }
-  }, [genogramId, setNodes, setEdges]);
-
+  }, [effectiveGenogramId, isEditMode, setNodes, setEdges]);
   // Añadir manejador de eventos para el atajo de teclado Ctrl+S
   useEffect(() => {
     const handleKeyDown = (e) => {
       // Detectar Ctrl+S (o Cmd+S en Mac)
       if ((e.ctrlKey || e.metaKey) && e.key === 's') {
         e.preventDefault(); // Prevenir el comportamiento por defecto del navegador
-        if (!isLoading && genogramInfo.patient_id) {
+        if (!isLoading && genogramInfo.patient_id && isEditMode) {
+          console.log('Guardado por atajo de teclado Ctrl+S');
           handleSaveGenogram();
         }
       }
-    };
-    
+    };    
     window.addEventListener('keydown', handleKeyDown);
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [handleSaveGenogram, isLoading, genogramInfo.patient_id]);
+  }, [handleSaveGenogram, isLoading, genogramInfo.patient_id, isEditMode]);
   
   // Añadir indicador visual de carga
   useEffect(() => {

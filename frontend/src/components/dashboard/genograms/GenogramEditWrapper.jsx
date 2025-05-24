@@ -17,16 +17,20 @@ const GenogramEditWrapper = () => {
   const [error, setError] = useState(null);
   const [genogramData, setGenogramData] = useState(null);
   const [genogramContent, setGenogramContent] = useState(null);
-
   useEffect(() => {
     const fetchGenogramData = async () => {
       try {
+        console.log('=== GenogramEditWrapper: Cargando datos del genograma ===');
+        console.log('Genogram ID:', id);
+        
         // Get genogram details and content in a single request
         const response = await api.get(`/genograms/view/${id}`);
         
         if (!response.data) {
           throw new Error('No se encontró el genograma solicitado');
         }
+        
+        console.log('Datos cargados desde API:', response.data);
         
         setGenogramData({
           id: response.data.id,
@@ -37,6 +41,7 @@ const GenogramEditWrapper = () => {
           createdAt: response.data.created
         });
         
+        console.log('Estableciendo contenido del genograma:', response.data.data);
         setGenogramContent(response.data.data);
       } catch (err) {
         console.error('Error fetching genogram data:', err);

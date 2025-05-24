@@ -243,8 +243,13 @@ export default function useGenogramaState() {
     
     showToast("✅ Snapshot exportado correctamente");
   }, [nodes, edges, showToast]);
-
   const saveToDatabase = useCallback(async ({ genogramId = null, patientId, name, description, notes, thumbnail = null }) => {
+    console.log('=== INICIANDO GUARDADO EN BASE DE DATOS ===');
+    console.log('GenogramId:', genogramId);
+    console.log('PatientId:', patientId);
+    console.log('Name:', name);
+    console.log('Stack trace:', new Error().stack);
+    
     // Crear una copia profunda de nodos y aristas para asegurar que se guarden todas las propiedades
     const snapshot = {
       isSnapshot: true,
@@ -273,16 +278,21 @@ export default function useGenogramaState() {
     try {
       let response;
       if (genogramId) {
+        console.log('Actualizando genograma existente...');
         response = await genogramService.updateGenogram(genogramId, payload);
         showToast("✅ Genograma actualizado correctamente");
       } else {
+        console.log('Creando nuevo genograma...');
         response = await genogramService.createGenogram(payload);
         showToast("✅ Genograma creado correctamente");
       }
+      console.log('=== GUARDADO COMPLETADO EXITOSAMENTE ===');
       return response;
     } catch (error) {
       console.error("❌ Error al guardar genograma:", error);
+      console.log('=== ERROR EN GUARDADO ===');
       showToast("❌ Error al guardar genograma", false);
+      throw error; // Re-lanzar el error para que el componente pueda manejarlo
     }
   }, [nodes, edges, showToast]);
 
